@@ -1,0 +1,62 @@
+# Contributor: Damir Holovati
+# Maintainer: Damir Holovati
+pkgname=musl
+pkgver=1.2.5
+pkgrel=0
+pkgdesc="musl libc with emerixx patches"
+url="https://musl.libc.org/"
+arch="all"
+license="MIT"
+options="!check"
+subpackages="
+	$pkgname-dev
+	"
+
+source="
+	https://musl.libc.org/releases/musl-$pkgver.tar.gz
+	statx-rdev-fix.patch
+	vdso-not-usefull.patch
+	"
+
+prepare() {
+	default_prepare
+}
+
+build() {
+
+	export CFLAGS="${CFLAGS/-0* /}"
+
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatdir=/var \
+		--disable-rpath \
+		--enable-debug
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+
+	mv "$pkgdir"/lib/* "$pkgdir"/usr/lib
+
+	rmdir "$pkgdir"/lib
+
+	mkdir -p "$pkgdir"/usr/bin
+
+	cat >>"$pkgdir"/usr/bin/ldd <<-EOF
+	#!/bin/sh
+	exec /usr/lib/libc.so --list "\$@"
+	EOF
+	chmod 755 "$pkgdir"/usr/bin/ldd
+}
+
+sha512sums="
+7bb7f7833923cd69c7a1a9b8a5f1784bfd5289663eb6061dcd43d583e45987df8a68a1be05d75cc1c88a3f5b610653d1a70f4a9cff4d8f7fd41ae73ee058c17c  musl-1.2.5.tar.gz
+49e9e4f1fba476d10ab99398974ad67587a8fd06ed1a109011ebcf5f00ca75ebbe0e08beac2d0bb550aa5d3a93fa3583b49ac98085b3893f795984c40b5ed6aa  statx-rdev-fix.patch
+97406dc180446745eef2d3a2a9d1045745dc663f82d69666e7d81bb97b96bb23ceea44ec77ac3267c1bef3ecc7fc65c790955ac203f091e8e01d06eb187dddca  vdso-not-usefull.patch
+"

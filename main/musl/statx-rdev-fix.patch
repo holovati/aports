@@ -1,0 +1,11 @@
+--- a/src/linux/statx.c	2025-09-06 13:35:34.000000000 +0000
++++ b/src/linux/statx.c	2025-09-06 18:52:35.000000000 +0000
+@@ -36,6 +36,8 @@ int statx(int dirfd, const char *restric
+ 	stx->stx_ctime.tv_sec = st.st_ctim.tv_sec;
+ 	stx->stx_ctime.tv_nsec = st.st_ctim.tv_nsec;
+ 	stx->stx_btime = (struct statx_timestamp){.tv_sec=0, .tv_nsec=0};
++	stx->stx_rdev_major = major(st.st_rdev);
++	stx->stx_rdev_minor = minor(st.st_rdev);
+ 	stx->stx_mask = STATX_BASIC_STATS;
+ 
+ 	return 0;
