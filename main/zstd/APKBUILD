@@ -1,0 +1,46 @@
+# Maintainer: Damir Holovati
+pkgname=zstd
+pkgver=1.5.7
+pkgrel=0
+pkgdesc="Zstandard - Fast real-time compression algorithm"
+url="https://facebook.github.io/zstd/"
+arch="all"
+license="BSD-3-Clause OR GPL-2.0-or-later"
+depends_dev="$pkgname=$pkgver-r$pkgrel"
+makedepends="grep"
+checkdepends="file"
+subpackages="
+	$pkgname-libs
+	$pkgname-static
+	$pkgname-dev
+	$pkgname-doc
+	"
+source="https://github.com/facebook/zstd/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+
+	# The install target is not available unless we are on a "Supported OS" list.
+	find . -name "Makefile" | \
+	xargs sed -i 's/ifneq (,$(filter Linux Darwin GNU\/kFreeBSD\([^)]*\))/ifneq (,$(filter Linux Darwin GNU\/kFreeBSD Emerixx\1)/g'
+}
+
+build() {
+	export CFLAGS="${CFLAGS/-Os/-O3} -pipe"
+	export CXXFLAGS="${CXXFLAGS/-Os/-O3} -pipe"
+	export CPPFLAGS="${CPPFLAGS/-Os/-O3} -pipe"
+	
+	make PREFIX="/usr"
+}
+
+check() {
+	return 0
+}
+
+package() {
+	make install PREFIX="/usr" DESTDIR="$pkgdir"
+}
+
+sha512sums="
+b4de208f179b68d4c6454139ca60d66ed3ef3893a560d6159a056640f83d3ee67cdf6ffb88971cdba35449dba4b597eaa8b4ae908127ef7fd58c89f40bf9a705  zstd-1.5.7.tar.gz
+"
