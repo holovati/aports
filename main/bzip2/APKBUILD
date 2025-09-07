@@ -1,7 +1,7 @@
 # Maintainer: Damir Holovati
 pkgname=bzip2
 pkgver=1.0.8
-pkgrel=6
+pkgrel=0
 pkgdesc="A high-quality data compression program"
 url="https://sourceware.org/bzip2/"
 arch="all"

@@ -1,0 +1,55 @@
+# Maintainer: Damir Holovati
+pkgname=xz
+pkgver=5.8.1
+pkgrel=0
+pkgdesc="Library and CLI tools for XZ and LZMA compressed files"
+url="https://tukaani.org/xz/"
+arch="all"
+license="GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later"
+depends_dev="$pkgname=$pkgver-r$pkgrel"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs"
+source="https://github.com/tukaani-project/xz/releases/download/v$pkgver/xz-$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+}
+
+build() {
+	sed -i '/# This must be glibc\/ELF\./,/version_type=linux/ s/gnu\*/gnu* | emerixx*/' configure
+
+	# compression utility
+	
+	CFLAGS="$CFLAGS -O3 -pipe" \
+	lt_cv_deplibs_check_method=pass_all \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-rpath \
+		--disable-werror \
+		--disable-nls \
+		--disable-doc
+
+	make
+}
+
+check() {
+	LD_LIBRARY_PATH="$(pwd)/src/liblzma/.libs" make check || {
+		cat tests/test-suite.log
+		return 1
+	}
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+151b2a47fdf00274c4fd71ceada8fb6c892bdac44070847ebf3259e602b97c95ee5ee88974e03d7aa821ab4f16d5c38e50dfb2baf660cf39c199878a666e19ad  xz-5.8.1.tar.gz
+"
