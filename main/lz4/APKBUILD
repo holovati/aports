@@ -1,0 +1,40 @@
+# Maintainer: Damir Holovati
+pkgname=lz4
+pkgver=1.10.0
+pkgrel=0
+pkgdesc="LZ4 is lossless compression algorithm with fast decoder @ multiple GB/s per core."
+url="https://github.com/lz4/lz4"
+arch="all"
+license="BSD-2-Clause AND GPL-2.0-or-later"
+checkdepends="diffutils"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs"
+source="https://github.com/lz4/lz4/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+}
+
+build() {
+	export CFLAGS="$CFLAGS -O2 -pipe"
+	export CPPFLAGS="$CPPFLAGS -O2 -pipe"
+	make PREFIX="/usr" POSIX_ENV=Yes
+}
+
+check() {
+	make check POSIX_ENV=Yes
+}
+
+package() {
+	make install PREFIX="/usr" DESTDIR="$pkgdir" POSIX_ENV=Yes
+
+	(
+		cd tests/
+		rm -f ./*.c COPYING Makefile .gitignore
+	)
+	mkdir -p "$pkgdir"/usr/share/$pkgname
+	cp -rf tests "$pkgdir"/usr/share/$pkgname/
+}
+
+sha512sums="
+8c4ceb217e6dc8e7e0beba99adc736aca8963867bcf9f970d621978ba11ce92855912f8b66138037a1d2ae171e8e17beb7be99281fea840106aa60373c455b28  lz4-1.10.0.tar.gz
+"
