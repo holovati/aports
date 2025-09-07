@@ -1,4 +1,4 @@
-# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer: Damir Holovati
 pkgname=bzip2
 pkgver=1.0.8
 pkgrel=6
