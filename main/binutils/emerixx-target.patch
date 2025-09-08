@@ -1,0 +1,410 @@
+diff --git a/bfd/config.bfd b/bfd/config.bfd
+index 4e5a838f..5bf9f9b4 100644
+--- a/bfd/config.bfd
++++ b/bfd/config.bfd
+@@ -715,6 +715,11 @@ case "${targ}" in
+     targ_selvecs="i386_elf32_vec iamcu_elf32_vec x86_64_elf32_vec i386_pei_vec x86_64_pe_vec x86_64_pei_vec"
+     want64=true
+     ;;
++  x86_64-*-emerixx-*)
++    targ_defvec=x86_64_elf64_vec
++    targ_selvecs="i386_elf32_vec iamcu_elf32_vec x86_64_elf32_vec i386_pei_vec x86_64_pe_vec x86_64_pei_vec"
++    want64=true
++    ;;  
+   x86_64-*-mingw* | x86_64-*-pe | x86_64-*-pep | x86_64-*-cygwin)
+     targ_defvec=x86_64_pe_vec
+     targ_selvecs="x86_64_pe_vec x86_64_pei_vec x86_64_pe_big_vec x86_64_elf64_vec i386_pe_vec i386_pei_vec i386_elf32_vec iamcu_elf32_vec pdb_vec"
+diff --git a/bfd/configure b/bfd/configure
+index ec09f5bc..64d6b162 100755
+--- a/bfd/configure
++++ b/bfd/configure
+@@ -6100,7 +6100,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10445,7 +10445,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/binutils/configure b/binutils/configure
+index 94be2250..b324f519 100755
+--- a/binutils/configure
++++ b/binutils/configure
+@@ -5997,7 +5997,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10373,7 +10373,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/config.guess b/config.guess
+index 48a68460..07fb2290 100755
+--- a/config.guess
++++ b/config.guess
+@@ -310,8 +310,8 @@ case $UNAME_MACHINE:$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_VERSION in
+     *:Sortix:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-sortix
+ 	;;
+-    *:Twizzler:*:*)
+-	GUESS=$UNAME_MACHINE-unknown-twizzler
++    *:Emerixx:*:*)
++	GUESS=$UNAME_MACHINE-unknown-emerixx-musl
+ 	;;
+     *:Redox:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-redox
+diff --git a/config.sub b/config.sub
+index 4aaae46f..d1202376 100755
+--- a/config.sub
++++ b/config.sub
+@@ -2109,6 +2109,7 @@ case $os in
+ 	| solaris* \
+ 	| solidbsd* \
+ 	| sortix* \
++	| emerixx* \
+ 	| storm-chaos* \
+ 	| sunos \
+ 	| sunos[34]* \
+@@ -2209,7 +2210,7 @@ esac
+ # (given a valid OS), if there is a kernel.
+ case $kernel-$os-$obj in
+ 	linux-gnu*- | linux-android*- | linux-dietlibc*- | linux-llvm*- \
+-		    | linux-mlibc*- | linux-musl*- | linux-newlib*- \
++		    | linux-mlibc*- | emerixx-musl*- | linux-newlib*- \
+ 		    | linux-relibc*- | linux-uclibc*- | linux-ohos*- )
+ 		;;
+ 	uclinux-uclibc*- | uclinux-gnu*- )
+diff --git a/config/target-posix b/config/target-posix
+index 2fba066c..252aff0e 100644
+--- a/config/target-posix
++++ b/config/target-posix
+@@ -1,5 +1,5 @@
+ case "${target}" in
+-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
++  *-*-linux* | *-*-emerixx* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+       ;;
+   *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
+       ;;
+diff --git a/configure b/configure
+index bbfb5979..c5c6257e 100755
+--- a/configure
++++ b/configure
+@@ -3754,7 +3754,7 @@ case "${target}" in
+   *-*-freebsd*)
+     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+     ;;
+-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
++  *-*-linux* | *-*-emerixx* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+     ;;
+   *-*-lynxos*)
+diff --git a/gas/configure b/gas/configure
+index 9c640c87..9563afb8 100755
+--- a/gas/configure
++++ b/gas/configure
+@@ -5693,7 +5693,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10069,7 +10069,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/gas/configure.tgt b/gas/configure.tgt
+index 7c81bffa..868b4f57 100644
+--- a/gas/configure.tgt
++++ b/gas/configure.tgt
+@@ -446,6 +446,7 @@ case ${generic_target} in
+   *-*-solaris*)				fmt=elf em=solaris ;;
+   *-*-aros*)				fmt=elf em=linux ;;
+   *-*-vxworks* | *-*-windiss)		fmt=elf em=vxworks ;;
++  *-*-emerixx*)                 fmt=elf em=gnu ;;
+ esac
+ 
+ case ${cpu_type} in
+diff --git a/gprof/configure b/gprof/configure
+index 36ac75e4..b43d5e8c 100755
+--- a/gprof/configure
++++ b/gprof/configure
+@@ -5571,7 +5571,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -9947,7 +9947,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/gprofng/configure b/gprofng/configure
+index 3fd5b61c..36e93610 100755
+--- a/gprofng/configure
++++ b/gprofng/configure
+@@ -7194,7 +7194,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -11541,7 +11541,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+@@ -15216,7 +15216,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/gprofng/libcollector/configure b/gprofng/libcollector/configure
+index afdf3966..d172a83b 100755
+--- a/gprofng/libcollector/configure
++++ b/gprofng/libcollector/configure
+@@ -7009,7 +7009,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -11386,7 +11386,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+@@ -15061,7 +15061,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/ld/configure b/ld/configure
+index 78b54b39..013f9d0a 100755
+--- a/ld/configure
++++ b/ld/configure
+@@ -6429,7 +6429,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10806,7 +10806,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+@@ -14481,7 +14481,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/ld/configure.tgt b/ld/configure.tgt
+index ea01ccf9..bc5947b2 100644
+--- a/ld/configure.tgt
++++ b/ld/configure.tgt
+@@ -1019,6 +1019,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
+ x86_64-*-redox*)	targ_emul=elf_x86_64
+ 			targ_extra_emuls=elf_i386
+ 			;;
++x86_64-*-emerixx*)      targ_emul=elf_x86_64
++			targ_extra_emuls="elf_x86_64 elf_i386"
++			;;
+ x86_64-*-solaris2*)	targ_emul=elf_x86_64_sol2
+ 			targ_extra_emuls="elf_x86_64 elf_i386_sol2 elf_i386_ldso elf_i386 elf_iamcu"
+ 			targ_extra_libpath=$targ_extra_emuls
+diff --git a/ld/emulparams/elf_x86_64.sh b/ld/emulparams/elf_x86_64.sh
+index 92449745..28df8fc1 100644
+--- a/ld/emulparams/elf_x86_64.sh
++++ b/ld/emulparams/elf_x86_64.sh
+@@ -45,7 +45,7 @@ fi
+ # Linux/Solaris modify the default library search path to first include
+ # a 64-bit specific directory.
+ case "$target" in
+-  x86_64*-linux*|i[3-7]86-*-linux-*)
++  x86_64-*-emerixx*|x86_64*-linux*|i[3-7]86-*-linux-*)
+     case "$EMULATION_NAME" in
+       *64*)
+ 	LIBPATH_SUFFIX=64
+diff --git a/ld/emultempl/elf.em b/ld/emultempl/elf.em
+index 431205fe..3d3942f6 100644
+--- a/ld/emultempl/elf.em
++++ b/ld/emultempl/elf.em
+@@ -119,7 +119,7 @@ if test x"$LDEMUL_AFTER_OPEN" != xgld"$EMULATION_NAME"_after_open; then
+   IS_LINUX_TARGET=false
+   IS_FREEBSD_TARGET=false
+   case ${target} in
+-    *-*-linux-* | *-*-k*bsd*-* | *-*-gnu*)
++    *-*-linux-* | *-*-k*bsd*-* | *-*-gnu* | *-*-emerixx*)
+       IS_LINUX_TARGET=true ;;
+     *-*-freebsd* | *-*-dragonfly*)
+       IS_FREEBSD_TARGET=true ;;
+diff --git a/libctf/configure b/libctf/configure
+index 7466d56a..da0f82de 100755
+--- a/libctf/configure
++++ b/libctf/configure
+@@ -8542,7 +8542,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -12888,7 +12888,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/libiberty/getopt1.c b/libiberty/getopt1.c
+index 6a3f9018..d10cdbe9 100644
+--- a/libiberty/getopt1.c
++++ b/libiberty/getopt1.c
+@@ -50,7 +50,7 @@
+ #define ELIDE_CODE
+ #endif
+ #endif
+-
++#define ELIDE_CODE
+ #ifndef ELIDE_CODE
+ 
+ 
+diff --git a/libsframe/configure b/libsframe/configure
+index 4727eff5..5c7b07a9 100755
+--- a/libsframe/configure
++++ b/libsframe/configure
+@@ -6509,7 +6509,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10855,7 +10855,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/opcodes/configure b/opcodes/configure
+index d878234c..f7f67254 100755
+--- a/opcodes/configure
++++ b/opcodes/configure
+@@ -5849,7 +5849,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10195,7 +10195,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff --git a/zlib/configure b/zlib/configure
+index cae55c5c..6a8014d2 100755
+--- a/zlib/configure
++++ b/zlib/configure
+@@ -5360,7 +5360,7 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be Linux ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | uclinuxfdpiceabi)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -10019,7 +10019,7 @@ linux*oldld* | linux*aout* | linux*coff*)
+ # project, but have not yet been accepted: they are GCC-local changes
+ # for the time being.  (See
+ # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
++linux* | k*bsd*-gnu | emerixx* | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no

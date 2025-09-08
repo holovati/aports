@@ -1,0 +1,51 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=binutils
+pkgver=2.45
+pkgrel=0
+pkgdesc="Tools necessary to build programs"
+url="https://www.gnu.org/software/binutils/"
+makedepends_build="bison flex texinfo"
+makedepends_host="zlib-dev"
+arch="all"
+license="GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause"
+subpackages="$pkgname-dev $pkgname-doc"
+source="https://mirrors.dotsrc.org/gnu/binutils/$pkgname-$pkgver.tar.xz
+	emerixx-target.patch
+	"
+options="!check"
+
+prepare() {
+	default_prepare
+}
+
+build() {
+	CFLAGS="$CFLAGS -O2 -pipe" \
+	CXXFLAGS="$CXXFLAGS -O2 -pipe" \
+	CPPFLAGS="$CPPFLAGS -pipe" \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix="/usr" \
+		--sysconfdir="/etc" \
+		--enable-ld=default \
+		--enable-plugins \
+		--enable-shared \
+		--disable-werror \
+		--disable-rpath \
+		--enable-64-bit-bfd \
+		--enable-new-dtags \
+		--with-system-zlib \
+		--enable-default-hash-style-gnu \
+		--disable-nls
+
+	make MAKEINFO=: POD2MAN=:
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+c7b10a7466d9fd398d7a0b3f2a43318432668d714f2ec70069a31bdc93c86d28e0fe83792195727167743707fbae45337c0873a0786416db53bbf22860c16ce7  binutils-2.45.tar.xz
+3d4308a118f7b7304c3879d955b316f448c8982eaedf3ad2eeb73c6a7ac292385f9e3fcfeed32ecc138cfd8f8864aa35ae33ee22bf26844688c5f39c0e151819  emerixx-target.patch
+"
