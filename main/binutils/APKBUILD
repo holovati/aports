@@ -38,7 +38,7 @@ build() {
 		--enable-default-hash-style-gnu \
 		--disable-nls
 
-	make MAKEINFO=: POD2MAN=:
+	make
 }
 
 package() {
