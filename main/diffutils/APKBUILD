@@ -1,0 +1,45 @@
+# Maintainer: Damir Holovati
+pkgname=diffutils
+pkgver=3.12
+pkgrel=0
+pkgdesc="Show differences among files"
+subpackages="$pkgname-doc"
+url="https://www.gnu.org/software/diffutils/"
+arch="all"
+license="GPL-3.0-or-later"
+checkdepends="perl"
+source="https://ftp.gnu.org/pub/gnu/diffutils/diffutils-$pkgver.tar.xz"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+	CPPFLAGS="$CPPFLAGS -pipe -D__linux__" \
+	CFLAGS="$CFLAGS -pipe" \
+	CXXFLAGS="$CXXFLAGS -pipe" \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls \
+		--disable-threads
+	make ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+}
+
+check() {
+	make check ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+}
+
+package() {
+	make install DESTDIR=$pkgdir ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+}
+
+sha512sums="
+10b17cf1dcdfa9ca0e5db91d62c4a079ebe9fd7eafa3aaebd4eb7e6206e4d753f348496622aa281e1bd7f7fcde65ce4a886dcc4acbb59332ef980f224197b4e4  diffutils-3.12.tar.xz
+"
