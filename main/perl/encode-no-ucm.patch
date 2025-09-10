@@ -1,7 +1,16 @@
 diff --git a/cpan/Encode/Byte/Makefile.PL b/cpan/Encode/Byte/Makefile.PL
-index 6824bbb..4adea6d 100644
+index 6824bbb..714930e 100644
 --- a/cpan/Encode/Byte/Makefile.PL
 +++ b/cpan/Encode/Byte/Makefile.PL
+@@ -1,7 +1,7 @@
+ use 5.7.2;
+ use strict;
+ use ExtUtils::MakeMaker;
+-use File::Spec::Functions;
++use File::Spec;
+ 
+ my $name = 'Byte';
+ my %tables = (
 @@ -44,15 +44,6 @@ my %not_here =
   qw(cp932.ucm cp936.ucm cp949.ucm cp950.ucm),  # CJK
   );

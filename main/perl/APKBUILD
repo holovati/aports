@@ -17,6 +17,7 @@ source="https://www.cpan.org/src/5.0/perl-$pkgver.tar.xz
 	musl-skip-dst-test.patch
 	musl-stack-size.patch
 	skip-test-due-to-busybox-ps.patch
+	encode-no-ucm.patch
 	config.sh
 	"
 
@@ -65,7 +66,7 @@ build() {
 	#sed -i "s/d_eaccess='define'/d_eaccess='undef'/g" config.sh
 	#sed -i "s/i_sysaccess='undef'/i_sysaccess='define'/g" config.sh
 
-	make
+	make PERL_CORE=1 PERL5LIB="./lib"
 }
 
 check() {
@@ -139,5 +140,6 @@ abae709290306a8fbc96b604b9b38fc09a46ae178f3e77944813f1b46c78e2e3654e5c3b3a6aca96
 cd5bc95a526b0803d80b7d201ad36b347cca04451aff124e0297e8514f9cbdc87c3ce37dadf41ccb72d0e77ac82d7831e165a8d4f21f36be8a9a60872a0d6f14  musl-skip-dst-test.patch
 c004d6612ec754e5947255a2e2d15b5581f187c32495aeeec9f4fa286919bd9f40c72b63db61e3f4004b09288af2063a6a14b67e5c289e9a8b23ebd7c216e16f  musl-stack-size.patch
 7d8d19d295ad740f4aa43d68cb86726c8781940c624bff825811b9874438e3621befa7f24774d98fa8667349a05047c48119cc080977b232e48964aabe5aa93a  skip-test-due-to-busybox-ps.patch
-691a6d2add51ef8c40d2d53c0ff26fcb0296dffc4ea34e8e614e0e662093bac6b6de8a3f4e3b6d6b1c2610e604efe7b631ef882df7096a5a3a6c625243d98aa6  config.sh
+99ac9d3dd5a01269b4575a01bccaca3227ad2cd63ef2e075dfc820ad923ce6f4a41187b7cec9f92dc5adc1dcf56d198bec7962e0ac6f74c43529c93e3433fc15  encode-no-ucm.patch
+e84a06df0b16242ed2edcb9f13a0238494764f0695b492c6ab7e289e26607c00f701e7cbd18a75a1a51277aa5b160ae9a856219a7249f135aa8dca9a3b77cb44  config.sh
 "
