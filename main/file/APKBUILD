@@ -1,0 +1,54 @@
+# Maintainer: Damir Holovati
+pkgname=file
+pkgver=5.46
+pkgrel=0
+pkgdesc="File type identification utility"
+url="https://www.darwinsys.com/file/"
+arch="all"
+license="BSD-2-Clause"
+subpackages="libmagic-static $pkgname-dev $pkgname-doc libmagic"
+source="https://astron.com/pub/file/file-$pkgver.tar.gz
+	file-$pkgver-pr-579-net147-fix-stack-overrun.patch
+"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+	
+	CFLAGS="-pipe" \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--datadir=/usr/share \
+		--enable-static \
+		--enable-shared
+	
+	make ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+}
+
+check() {
+	make check ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+}
+
+package() {
+	make DESTDIR="$pkgdir" install ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+}
+
+libmagic() {
+	pkgdesc="File type identification library"
+
+	amove \
+		usr/lib/libmagic.so.* \
+		usr/share/misc/magic.mgc
+}
+
+sha512sums="
+a6cb7325c49fd4af159b7555bdd38149e48a5097207acbe5e36deb5b7493ad6ea94d703da6e0edece5bb32959581741f4213707e5cb0528cd46d75a97a5242dc  file-5.46.tar.gz
+bebada4d58c4b937f3c8a55e842402f3af334c2767652c8d1e1b1c2cc73f0b3125bdb4cf97265a4ec1f00d51a13d66b534ce2faa2103e463e6461e55736daf4d  file-5.46-pr-579-net147-fix-stack-overrun.patch
+"
