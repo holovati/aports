@@ -1,7 +1,7 @@
 # Maintainer: Damir Holovati
 pkgname=bison
 pkgver=3.8.2
-pkgrel=2
+pkgrel=0
 pkgdesc="The GNU general-purpose parser generator"
 arch="all"
 license="GPL-3.0-or-later"
