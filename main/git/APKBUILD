@@ -1,0 +1,102 @@
+# Maintainer: Damir Holovati
+
+pkgname=git
+pkgver=2.51.0
+pkgrel=0
+pkgdesc="Distributed version control system"
+url="https://www.git-scm.com/"
+arch="all"
+license="GPL-2.0-only"
+makedepends="
+	curl-dev
+	expat-dev
+	file
+	openssl-dev>3
+	perl-dev
+	xmlto
+	zlib-dev
+	"
+# note that order matters
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-prompt::noarch
+	$pkgname-diff-highlight:diff_highlight:noarch
+	"
+
+source="https://www.kernel.org/pub/software/scm/git/git-$pkgver.tar.xz
+	fix-t4219-with-sticky-bit.patch
+	"
+
+prepare() {
+	default_prepare
+	update_configure
+	
+	./configure \
+		--prefix=/usr \
+		--with-gitconfig=/etc/gitconfig \
+		--with-gitattributes=/etc/gitattributes \
+		--disable-pthreads
+
+
+	cat >> config.mak <<-EOF
+		NO_GETTEXT=YesPlease
+		NO_SVN_TESTS=YesPlease
+		NO_TCLTK=YesPlease
+		NO_REGEX=YesPlease
+		NO_SYS_POLL_H=1
+		ICONV_OMITS_BOM=No
+		LIBC_CONTAINS_LIBINTL=YesPlease
+		FREAD_READS_DIRECTORIES=UnforunatelyYes
+		CSPRGN_METHOD=getrandom
+		CC=${CC:-cc}
+		CXX=${CC:-c++}
+		CFLAGS=$CFLAGS -pipe
+		LDFLAGS=$LDFLAGS
+		PYTHON_PATH=/usr/bin/python3
+	EOF
+}
+
+build() {
+	make DESTDIR="$pkgdir"
+
+	make -C contrib/subtree prefix=/usr DESTDIR="$pkgdir"
+	
+	make -C contrib/diff-highlight prefix=/usr DESTDIR="$pkgdir"
+}
+
+check() {
+	make -C t prefix=/usr DESTDIR="$pkgdir"
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+
+	make -C contrib/subtree install DESTDIR="$pkgdir"
+
+	mkdir -p "$pkgdir"/var/git
+
+	install -Dm755 contrib/diff-highlight/diff-highlight -t "$pkgdir"/usr/bin/
+
+	install -Dm644 contrib/completion/git-completion.bash "$pkgdir"/usr/share/bash-completion/completions/git
+
+	install -Dm644 contrib/completion/git-prompt.sh "$pkgdir"/usr/share/git-core/git-prompt.sh
+}
+
+prompt() {
+	pkgdesc="bash and zsh prompt integration for Git"
+	depends="git=$pkgver-r$pkgrel"
+
+	amove usr/share/git-core/git-prompt.sh
+}
+
+diff_highlight() {
+	pkgdesc="diff highlight for git"
+	depends="git=$pkgver-r$pkgrel perl"
+
+	amove usr/bin/diff-highlight
+}
+
+sha512sums="
+2b8c59589266c0c9e58a9f4fda4a970a8a492e2e0ecbafc414fcfacac4a04251f0115b3676f4599a415b53906f1dea312b18a42e9bde455286abd62ec327beaf  git-2.51.0.tar.xz
+be5d568fc5b8b84c9afb97b31e471e41f32ccfe188eba0588ea0ef98b2d96c2ce4b2c1a3d70e88205aa4f6667f850b3f32c13bbb149ecddbf670344c162a4e25  fix-t4219-with-sticky-bit.patch
+"
