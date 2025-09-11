@@ -19,9 +19,9 @@ prepare() {
 }
 
 build() {
-	CFLAGS="$CFLAGS -O2 -pipe" \
-	CXXFLAGS="$CXXFLAGS -O2 -pipe" \
-	CPPFLAGS="$CPPFLAGS -pipe" \
+	CFLAGS="$CFLAGS -pipe" \
+	CXXFLAGS="$CXXFLAGS -pipe" \
+	CPPFLAGS="$CPPFLAGS" \
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
