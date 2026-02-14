@@ -1,0 +1,126 @@
+# Maintainer: Damir Holovati
+
+pkgname=gcc
+pkgver=15.2.0
+pkgrel=0
+pkgdesc="The GNU Compiler Collection"
+url="https://gcc.gnu.org/"
+arch="x86_64"
+license="GPL-3.0-or-later WITH GCC-exception-3.1"
+depends="binutils libc-dev"
+makedepends="gmp-dev mpfr-dev mpc-dev zlib-dev zstd-dev flex bison"
+subpackages="$pkgname-dev $pkgname-doc"
+
+# libgcc:_libgcc libstdc++:_libstdcxx"
+
+source="
+	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz
+	gcc-$pkgver.patch
+	emerixx.h
+	"
+builddir="$srcdir/gcc-$pkgver"
+
+# Skip tests - they take too long and require special setup
+options="!check"
+
+prepare() {
+	default_prepare
+    
+	# Copy emerixx.h to the gcc config directory
+	cp "$srcdir/emerixx.h" "$builddir/gcc/config/emerixx.h"
+}
+
+build() {
+	# GCC requires out-of-tree build
+	mkdir -p "$srcdir/gcc-build"
+	cd "$srcdir/gcc-build"
+	
+	CFLAGS="$CFLAGS -pipe" \
+	CXXFLAGS="$CXXFLAGS -pipe -Wno-error -Wno-format-security" \
+	"$srcdir/gcc-$pkgver"/configure \
+		--prefix=/usr \
+		--build=$CHOST \
+		--host=$CHOST \
+		--target=$CTARGET \
+		--with-gmp=/usr \
+		--with-mpfr=/usr \
+		--with-mpc=/usr \
+		--with-zlib=/usr \
+		--with-zstd=/usr \
+		--with-system-zlib \
+		--with-default-cflags"-pipe" \
+		--with-default-cxxflags="-pipe" \
+		--enable-languages=c,c++ \
+		--enable-shared \
+		--enable-threads=posix \
+		--disable-nls \
+		--disable-multilib \
+		--disable-bootstrap \
+		--disable-fixincludes \
+		--disable-werror \
+		--disable-default-pie \
+		--disable-default-ssp \
+		--libdir=/usr/lib \
+		--libexecdir=/usr/libexec
+		
+		make
+}
+
+package() {
+	cd "$srcdir/gcc-build"
+	make DESTDIR="$pkgdir" install
+
+	# Remove problematic libtool archive files
+	find "$pkgdir" -name "*.la" -delete
+
+	# Create useful symlinks
+	ln -sf gcc "$pkgdir/usr/bin/cc"
+	ln -sf g++ "$pkgdir/usr/bin/c++"
+
+	# Move any libraries from lib64 to lib if they ended up there
+	if [ -d "$pkgdir/usr/lib64" ]; then
+		mv "$pkgdir"/usr/lib64/* "$pkgdir/usr/lib/" 2>/dev/null || true
+		rmdir "$pkgdir/usr/lib64" 2>/dev/null || true
+	fi
+	
+	# Remove docs. Abuild complains about them not being compressed. Don't have time to dig further into it.
+	find "$pkgdir" -name "*.1" -delete
+	find "$pkgdir" -name "*.7" -delete
+}
+
+dev() {
+	pkgdesc="$pkgdesc (development files)"
+	depends="$pkgname=$pkgver-r$pkgrel binutils"
+
+	amove usr/lib/gcc
+	amove usr/libexec/gcc
+	amove usr/include/c++
+	amove usr/share/gcc-*
+}
+
+doc() {
+	#default_doc
+	amove usr/share/info
+	#amove usr/share/man
+	
+}
+
+_libgcc() {
+	pkgdesc="GCC runtime library"
+	depends=""
+
+	amove usr/lib/libgcc_s.so.*
+}
+
+_libstdcxx() {
+	pkgdesc="GNU C++ standard library"
+	depends=""
+
+	amove usr/lib/libstdc++.so.*
+}
+
+sha512sums="
+59b9f409b8047ed10954542c7a3404f10bf413ed1a79e78aeeb3dadcc55c13c8d1eef199452d3e271a20b7914c1a197ad8eb0c64a1cfd6a5344316cdefe34199  gcc-15.2.0.tar.gz
+648e857b920ccc20e96a89b0fe8b20756db229ffc63d348ee92aa08857e915535d8e9ec5fe1282d81f3873cedca7f73fd245f14fe5b82ae4200d3fe160db5a1a  gcc-15.2.0.patch
+78fca28c9cdf73f1a496bd177325ad317caef2fddf065b5fae3cf6ffe0bcd794f40caa7eb6a01d266798d61680c5f71c01c780f8211ae94027b570864d1de82a  emerixx.h
+"
