@@ -1,0 +1,61 @@
+# Maintainer: Damir Holovati
+pkgname=coreutils
+pkgver=9.9
+pkgrel=0
+pkgdesc="The basic file, shell and text manipulation utilities"
+url="https://www.gnu.org/software/coreutils/"
+arch="all"
+license="GPL-3.0-or-later"
+makedepends="
+	openssl-dev
+	perl
+	"
+subpackages="$pkgname-doc"
+
+install="$pkgname.post-deinstall"
+
+source="https://ftp.gnu.org/gnu/coreutils/coreutils-$pkgver.tar.xz
+	gnulib-tests.patch
+"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+	FORCE_UNSAFE_CONFIGURE=1 \
+	./configure \
+		    --build=$CBUILD \
+		    --host=$CHOST \
+		    --prefix=/usr \
+		    --sysconfdir=/etc \
+		    --mandir=/usr/share/man \
+		    --infodir=/usr/share/info \
+		    --disable-nls \
+		    --disable-xattr \
+		    --without-selinux \
+		    --disable-libcap \
+		    --disable-acl \
+		    --disable-threads \
+		    --enable-no-install-program=stty \
+		    --with-openssl
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+}
+
+check() {
+	make check
+}
+
+package() {
+	# we put this separately
+
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+e7b0e59f7732d2c098ea4934014f470248bd5c4764210e9200a698010a8e3b95bbb26e543f0cd73ed5a4b8e1f8cda932c73f39954d68175e4deaa47526610c65  coreutils-9.9.tar.xz
+157e501e660283e453f5b9ffe7d068dfee2f42bc1eb6facf056b9115dc47305043f97545b9663c3e532f6d868b745625d30150de2b788a6e25e070964708a86d  gnulib-tests.patch
+"
