@@ -1,0 +1,54 @@
+# Maintainer Damir Holovati
+
+pkgname=gzip
+pkgver=1.14
+pkgrel=2
+
+pkgdesc="Popular data compression program"
+
+# subpackages="$pkgname-doc"
+
+url="https://www.gnu.org/software/gzip/"
+arch="all"
+license="GPL-3.0-or-later"
+depends="less"
+checkdepends="diffutils grep perl"
+
+source="https://ftp.gnu.org/gnu/gzip/gzip-$pkgver.tar.xz"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info
+
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+}
+
+check() {
+	make check
+}
+
+package() {
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR=$pkgdir install
+
+	rm -rf "$pkgdir"/usr/share/man || true
+	rm -rf "$pkgdir"/usr/share/info || true
+
+	# http://bugs.alpinelinux.org/issues/4011
+	ln -sf /bin/gunzip "$pkgdir"/usr/bin/uncompress
+}
+
+sha512sums="
+82aef53188b3e69b51b7ddab5b8c44a11a5b73c0039b22a315a0c7d244694feab0146748add4265901eb1b4c0cee8a9eb69594995f098830d964091af97079c5  gzip-1.14.tar.xz
+"
