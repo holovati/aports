@@ -1,0 +1,54 @@
+diff --git a/ifconfig/system.c b/ifconfig/system.c
+index 1d69bf2..68d7c51 100644
+--- a/ifconfig/system.c
++++ b/ifconfig/system.c
+@@ -18,7 +18,7 @@
+ 
+ #include <config.h>
+ 
+-#if defined __linux__
++#if defined __linux__ || defined __emerixx__ 
+ # include "system/linux.c"
+ #elif defined __sun
+ # include "system/solaris.c"
+diff --git a/ifconfig/system.h b/ifconfig/system.h
+index e977330..1bfd79e 100644
+--- a/ifconfig/system.h
++++ b/ifconfig/system.h
+@@ -87,7 +87,7 @@ int system_configure (int sfd, struct ifreq *ifr,
+ 
+ extern struct if_nameindex *(*system_if_nameindex) (void);
+ 
+-# if defined __linux__
++# if defined __linux__ || defined __emerixx__
+ #  include "system/linux.h"
+ # elif defined __sun
+ #  include "system/solaris.h"
+diff --git a/ifconfig/system/linux.c b/ifconfig/system/linux.c
+index b204ee4..4f0bff2 100644
+--- a/ifconfig/system/linux.c
++++ b/ifconfig/system/linux.c
+@@ -51,6 +51,10 @@
+ #include "../ifconfig.h"
+ 
+ 
++#ifndef PATH_PROCNET_DEV
++# define PATH_PROCNET_DEV "/proc/net/dev"
++#endif
++
+ /* ARPHRD stuff.  */
+ 
+ static void
+diff --git a/telnet/telnet.c b/telnet/telnet.c
+index 1efa50a..29876cd 100644
+--- a/telnet/telnet.c
++++ b/telnet/telnet.c
+@@ -71,7 +71,7 @@
+ #include "types.h"
+ #include "general.h"
+ 
+-#ifdef HAVE_TERMCAP_TGETENT
++#if 1
+ # include <termcap.h>
+ #elif defined HAVE_CURSES_TGETENT
+ # include <curses.h>

@@ -1,0 +1,55 @@
+# Maintainer Damir Holovati
+
+pkgname=inetutils
+
+pkgver=2.6
+pkgrel=0
+pkgdesc="Telnet client from GNU network utilities"
+url="https://www.gnu.org/software/inetutils"
+arch="all"
+license="GPL-3.0-or-later"
+depends="ncurses"
+options="suid"
+makedepends="ncurses-dev"
+
+source="https://ftp.gnu.org/gnu/inetutils/$pkgname-$pkgver.tar.xz
+	emerixx.patch
+	"
+builddir="$srcdir"/$pkgname-$pkgver
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--libexec=/usr/sbin \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-threads
+
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+}
+
+check() {
+	make check
+}
+
+package() {
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true  DESTDIR="$pkgdir" install
+	rm -rfv "$pkgdir"/usr/share/man
+}
+
+sha512sums="
+a85b0be4d49f89d34765a1206a6d94c123df3777a5d2ee4e08d11c872ac9816ab589b0cf6ef0b916d6c732da3bdb9bfe6f43925b513d065806e08b30cd1e98a5  inetutils-2.6.tar.xz
+7f6baa17860f059115494e117540e2df775a3de9045cc12b8de14acdb22e20602ab83658c42ab8baea5fcf1db8cf43f0a94629a084bfd09670a9c4d432b8ec23  emerixx.patch
+"
