@@ -1,0 +1,58 @@
+
+# Maintainer Damir Holovati
+
+pkgname=grep
+pkgver=3.12
+pkgrel=0
+pkgdesc="Searches input files for lines containing a match to a specified pattern"
+url="https://www.gnu.org/software/grep/grep.html"
+arch="all"
+license="GPL-3.0-or-later"
+makedepends="pcre2-dev autoconf automake"
+checkdepends="coreutils bash diffutils"
+# subpackages="$pkgname-doc"
+
+source="https://mirrors.kernel.org/gnu/grep/grep-$pkgver.tar.xz
+	gnulib.patch"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+}
+
+build() {
+
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--bindir=/bin \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--disable-nls \
+		--disable-rpath \
+		--disable-threads
+		
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+}
+
+check() {
+	make check || {
+		cat tests/test-suite.log
+	}
+}
+
+package() {
+	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+
+	rm -rf "$pkgdir"/usr/share/man || true
+	rm -rf "$pkgdir"/usr/share/info || true
+}
+
+sha512sums="
+c54b4db5a8b9afe098c088decd94977746305284d716666a60bac82b4edc0fae4acf828970b5b6fc7d58ecd549f638e17e6958f33a71fedcc7d7415b9228b161  grep-3.12.tar.xz
+d7485789d7067e7d498797cdc779c3ace49bdb224af18885ee485d197607ff6ab1b32b4762e63dc9c98d3daa1c256a8b13b8ac6783b8a66ebc525edd3fb1caad  gnulib.patch
+"
