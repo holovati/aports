@@ -1,0 +1,37 @@
+# Maintainer: Damir Holovati
+
+pkgname=ninja
+pkgver=1.13.2
+pkgrel=1
+pkgdesc="Small build system with a focus on speed"
+url="https://ninja-build.org/"
+arch="x86_64"
+license="Apache-2.0"
+makedepends="
+	python3
+	"
+checkdepends="
+	gtest-dev
+	"
+
+source="
+	$pkgname-$pkgver.tar.gz::https://github.com/ninja-build/ninja/archive/refs/tags/v$pkgver.tar.gz
+	"
+builddir="$srcdir/ninja-$pkgver"
+
+build() {
+	python3 configure.py --verbose --bootstrap	
+}
+
+check() {
+	./build/ninja_test
+}
+
+package() {
+	  mkdir -p "$pkgdir"/usr/bin
+	  cp -v "$builddir"/ninja "$pkgdir"/usr/bin/ninja
+}
+
+sha512sums="
+c0b401b4db91a2eea01a474ee979b2c6f1daa97b4c8d1f856871ce5f6d567c4b26d6246bc57e2a5f914329302abcd9c00ab0d4394a25f2ad502b6b00a07903d2  ninja-1.13.2.tar.gz
+"
