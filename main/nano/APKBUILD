@@ -1,0 +1,74 @@
+# Maintainer Damir Holovati
+
+pkgname=nano
+pkgver=8.7.1
+pkgrel=0
+pkgdesc="Enhanced clone of the Pico text editor"
+url="https://www.nano-editor.org/"
+
+arch="all"
+
+license="GPL-3.0-or-later"
+
+makedepends="ncurses-dev"
+
+subpackages="$pkgname-syntax::noarch"
+
+# subpackages="$pkgname-doc $pkgname-syntax::noarch"
+
+source="https://www.nano-editor.org/dist/v${pkgver%%.*}/nano-$pkgver.tar.xz"
+
+prepare() {
+	default_prepare
+	update_config_sub
+	update_config_guess
+	update_configure
+
+	touch aclocal.m4 configure Makefile.in
+	find . -name Makefile.in -exec touch {} +
+	find . -name "*.h.in" -exec touch {} +
+}
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-libmagic \
+		--disable-nls \
+		--disable-threads
+	
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	install -Dm644 doc/sample.nanorc \
+		"$pkgdir"/etc/nanorc
+
+	rm -rf "$pkgdir"/usr/share/man || true
+	rm -rf "$pkgdir"/usr/share/info || true
+
+	# Proper syntax highlighting for APKBUILDs
+	sed -i "/syntax/s/\"$/\" \"APKBUILD&/" \
+		"$pkgdir"/usr/share/nano/sh.nanorc
+}
+
+syntax() {
+	pkgdesc="Syntax highlighting definitions for $pkgname"
+	depends="$pkgname=$pkgver-r$pkgrel"
+
+	amove usr/share/nano
+}
+
+sha512sums="
+13ad1bfc7cbc43687d097b35f481d73021c3ef09c51753ac9e388661f3afe2b1f87c47f62cb51f19818f1f3abf9d2ee80424c44888c0bb3223112dd9b18a0a44  nano-8.7.1.tar.xz
+"
