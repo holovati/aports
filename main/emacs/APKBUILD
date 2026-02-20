@@ -1,0 +1,92 @@
+
+# Maintainer Damir Holovati
+
+pkgname=emacs
+pkgver=30.2
+pkgrel=2
+_pkgdesc="Extensible, customizable, self-documenting real-time display editor"
+pkgdesc="$_pkgdesc (common files)"
+url="https://www.gnu.org/software/emacs/emacs.html"
+arch="all"
+license="GPL-3.0-or-later"
+
+makedepends="
+	gawk
+	gmp-dev
+	ncurses-dev
+	texinfo
+	"
+subpackages="
+	$pkgname-doc
+	"
+source="https://ftp.gnu.org/gnu/emacs/emacs-$pkgver.tar.xz
+	no-git-repo.patch
+	"
+options="!check"
+
+prepare() {
+	  default_prepare
+	  emerixx_prepare
+	  sed -i 's/\*-\*-linux\* )/*-*-linux* | *-*-emerixx* )/g' configure
+}
+
+build() {
+
+	./configure \
+		--prefix=/usr \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--without-x \
+		--without-x-toolkit \
+		--without-toolkit-scroll-bars \
+		--without-xpm \
+		--without-jpeg \
+		--without-tiff \
+		--without-gif \
+		--without-png \
+		--without-rsvg \
+		--without-xml2 \
+		--without-imagemagick \
+		--without-xft \
+		--without-libotf \
+		--without-m17n-flt \
+		--without-xaw3d \
+		--without-sound \
+		--without-pop \
+		--without-kerberos \
+		--without-kerberos5 \
+		--without-hesiod \
+		--without-dbus \
+		--without-gconf \
+		--without-gsettings \
+		--without-selinux \
+		--without-gnutls \
+		--without-gpm \
+		--without-sqlite3 \
+		--without-cairo \
+		--without-lcms2 \
+		--without-webp \
+		--without-harfbuzz \
+		--without-tree-sitter \
+		--without-threads \
+		--disable-acl \
+		--without-file-notification \
+		--without-compress-install \
+		--disable-threads
+
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+doc() {
+	default_doc
+	pkgdesc="$_pkgdesc (documentation)"
+}
+
+sha512sums="
+313432d11e95c74f8cd35c5b1da442e6223f5d40f9173c55883c0339ecbfb97a0bedf79177ef8902afd3e33c078a233777bed01f5caffa1e7524f17d58bfc9a2  emacs-30.2.tar.xz
+a11288460bb07436b684e48dba0142e35ab93f76cabd236b34bce99809c4c578b2f0526b592e1624f45e01a4cca71e55293e150a36ec5b746fc837691bc291a1  no-git-repo.patch
+"
