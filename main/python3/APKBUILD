@@ -1,0 +1,88 @@
+
+# Maintainer Damir Holovati
+
+pkgname=python3
+# the python3-tkinter's pkgver needs to be synchronized with this.
+pkgver=3.13.5
+_basever="${pkgver%.*}"
+pkgrel=0
+pkgdesc="High-level scripting language"
+url="https://www.python.org/"
+arch="all"
+license="PSF-2.0"
+
+depends="libssl3>=3.3.0"
+
+makedepends="
+	bzip2-dev
+	ncurses-dev
+	openssl-dev
+	readline-dev
+	xz-dev
+	zlib-dev
+	"
+source="https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz
+	musl-find_library.patch
+	add-emerixx-configure.patch
+	"
+
+builddir="$srcdir/Python-$pkgver"
+
+# was briefly present, and is in 3.16
+provides="pythonispython3=$pkgver-r$pkgrel"
+
+prepare() {
+	default_prepare
+	update_config_guess
+	update_config_sub
+	sed -i 's/GNU\*)/Emerixx*)/g' configure
+}
+
+build() {
+
+	export CCSHARED="-fPIC"
+
+	LIBREADLINE_CFLAGS="-I/usr/include" \
+	LIBREADLINE_LIBS="-L/usr/lib -lreadline" \
+	OPENSSL_CFLAGS="-I/usr/include" \
+	OPENSSL_LIBS="-L/usr/lib -lssl -lcrypto" \
+	ac_cv_file__dev_ptmx=yes \
+	ac_cv_file__dev_ptc=no \
+	ac_cv_have_long_long_format=yes \
+    	ac_cv_func_sem_clockwait=no \
+    	ac_cv_func_close_range=no \
+    	ac_cv_func_closefrom=no \
+    	ac_cv_func_fdwalk=no \
+    	ac_cv_func_posix_spawn_file_actions_addclosefrom_np=no \
+    	ac_cv_func_rtpSpawn=no \
+    	ac_cv_func_plock=no \
+    	ac_cv_have_lchflags=no \
+    	ac_cv_have_chflags=no \
+    	ac_cv_func_fork1=no \
+	ac_cv_func_sched_getaffinity=no \
+	ac_cv_func_epoll=no \
+	ac_cv_func_epoll_create=no \
+	ac_cv_func_epoll_create1=no \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--disable-ipv6 \
+		--enable-shared \
+		--without-lto \
+		--disable-test-modules
+	make
+}
+
+package() {
+	PYTHON_FOR_BUILD="_PYTHON_CPU_COUNT=1" make DESTDIR="$pkgdir" install COMPILEALL_OPTS="-j 1"	
+
+	rm -rf "$pkgdir"/usr/share/man || true
+	rm -rf "$pkgdir"/usr/share/info || true
+}
+
+sha512sums="
+2a058072e87b614b204bd1321b2bfa9c4b6614dbd5ded98dc0ee51c0d6b81504f902b7c003ad14295b371a37918f6975dc37d5a9c836dd9c30f8b086e4759193  Python-3.13.5.tar.xz
+ab8eaa2858d5109049b1f9f553198d40e0ef8d78211ad6455f7b491af525bffb16738fed60fc84e960c4889568d25753b9e4a1494834fea48291b33f07000ec2  musl-find_library.patch
+69f914d79eba22d0806f6f5f83087873a8e3659d8670fc619d2196242e6ce97e044235d4507e8c916606e97721f700c53b5a7b49a1e049c8208ba0cd8c796292  add-emerixx-configure.patch
+"
