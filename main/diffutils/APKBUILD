@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=diffutils
 pkgver=3.12
 pkgrel=0
@@ -9,13 +9,6 @@ arch="all"
 license="GPL-3.0-or-later"
 checkdepends="perl"
 source="https://ftp.gnu.org/pub/gnu/diffutils/diffutils-$pkgver.tar.xz"
-
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 	CPPFLAGS="$CPPFLAGS -pipe -D__linux__" \
@@ -29,15 +22,15 @@ build() {
 		--infodir=/usr/share/info \
 		--disable-nls \
 		--disable-threads
-	make ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+	make
 }
 
 check() {
-	make check ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+	make check
 }
 
 package() {
-	make install DESTDIR=$pkgdir ACLOCAL=: AUTOHEADER=: AUTOMAKE=: HELP2MAN=:
+	make install DESTDIR=$pkgdir
 }
 
 sha512sums="

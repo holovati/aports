@@ -1,0 +1,55 @@
+--- a/functions.sh.in
++++ b/functions.sh.in
+@@ -6,29 +6,29 @@
+ 
+ arch_to_triplet() {
+ 	case "$1" in
+-	aarch64)	echo "aarch64-alpine-linux-musl" ;;
+-	aarch64_be)	echo "aarch64_be-alpine-linux-musl" ;;
+-	armel)		echo "armv5-alpine-linux-musleabi" ;;
+-	armhf)		echo "armv6-alpine-linux-musleabihf" ;;
+-	armv7)		echo "armv7-alpine-linux-musleabihf" ;;
+-	loongarch32)	echo "loongarch32-alpine-linux-musl" ;;
+-	loongarchx32)	echo "loongarchx32-alpine-linux-musl" ;;
+-	loongarch64)	echo "loongarch64-alpine-linux-musl" ;;
+-	mips)           echo "mips-alpine-linux-musl" ;;
+-	mips64)         echo "mips64-alpine-linux-musl" ;;
+-	mipsel)         echo "mipsel-alpine-linux-musl" ;;
+-	mips64el)       echo "mips64el-alpine-linux-musl" ;;
+-	ppc)		echo "powerpc-alpine-linux-musl" ;;
+-	ppc64)		echo "powerpc64-alpine-linux-musl" ;;
+-	ppc64le)	echo "powerpc64le-alpine-linux-musl" ;;
+-	riscv32)	echo "riscv32-alpine-linux-musl" ;;
+-	riscv64)	echo "riscv64-alpine-linux-musl" ;;
+-	s390x)		echo "s390x-alpine-linux-musl" ;;
+-	sh2eb)		echo "sh2eb-alpine-linux-muslfdpic" ;;
+-	sh3)		echo "sh3-alpine-linux-musl" ;;
+-	sh4)		echo "sh4-alpine-linux-musl" ;;
+-	x86)		echo "i586-alpine-linux-musl" ;;
+-	x86_64)		echo "x86_64-alpine-linux-musl" ;;
++	aarch64)	echo "aarch64-unknown-emerixx-musl" ;;
++	aarch64_be)	echo "aarch64_be-unknown-emerixx-musl" ;;
++	armel)		echo "armv5-unknown-emerixx-musleabi" ;;
++	armhf)		echo "armv6-unknown-emerixx-musleabihf" ;;
++	armv7)		echo "armv7-unknown-emerixx-musleabihf" ;;
++	loongarch32)	echo "loongarch32-unknown-emerixx-musl" ;;
++	loongarchx32)	echo "loongarchx32-unknown-emerixx-musl" ;;
++	loongarch64)	echo "loongarch64-unknown-emerixx-musl" ;;
++	mips)           echo "mips-unknown-emerixx-musl" ;;
++	mips64)         echo "mips64-unknown-emerixx-musl" ;;
++	mipsel)         echo "mipsel-unknown-emerixx-musl" ;;
++	mips64el)       echo "mips64el-unknown-emerixx-musl" ;;
++	ppc)		echo "powerpc-unknown-emerixx-musl" ;;
++	ppc64)		echo "powerpc64-unknown-emerixx-musl" ;;
++	ppc64le)	echo "powerpc64le-unknown-emerixx-musl" ;;
++	riscv32)	echo "riscv32-unknown-emerixx-musl" ;;
++	riscv64)	echo "riscv64-unknown-emerixx-musl" ;;
++	s390x)		echo "s390x-unknown-emerixx-musl" ;;
++	sh2eb)		echo "sh2eb-unknown-emerixx-muslfdpic" ;;
++	sh3)		echo "sh3-unknown-emerixx-musl" ;;
++	sh4)		echo "sh4-unknown-emerixx-musl" ;;
++	x86)		echo "i586-unknown-emerixx-musl" ;;
++	x86_64)		echo "x86_64-unknown-emerixx-musl" ;;
+ 	*)		echo "unknown" ;;
+ 	esac
+ }

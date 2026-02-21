@@ -1,5 +1,6 @@
-# Contributor: Damir Holovati
-# Maintainer: Damir Holovati
+
+# Maintainer Damir Holovati
+
 pkgname=musl
 pkgver=1.2.5
 pkgrel=0
@@ -17,11 +18,6 @@ source="
 	statx-rdev-fix.patch
 	vdso-not-usefull.patch
 	"
-
-prepare() {
-	default_prepare
-}
-
 build() {
 
 	export CFLAGS="${CFLAGS/-0* /}"

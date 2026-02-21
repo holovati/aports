@@ -15,10 +15,9 @@ makedepends="
 	readline-dev
 	texinfo
 	"
-# subpackages="$pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://ftp.gnu.org/gnu/bc/bc-$pkgver.tar.gz"
-
 
 build() {
 	./configure \
@@ -39,9 +38,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
 }
 
 sha512sums="

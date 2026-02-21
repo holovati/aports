@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=mpc1
 pkgver=1.3.1
@@ -14,12 +14,6 @@ source="https://mirrors.dotsrc.org/gnu/mpc/mpc-$pkgver.tar.gz"
 
 builddir="$srcdir"/mpc-$pkgver
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 	CFLAGS="$CFLAGS -pipe" \

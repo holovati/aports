@@ -10,17 +10,10 @@ arch="all"
 license="GPL-3.0-or-later"
 makedepends="pcre2-dev autoconf automake"
 checkdepends="coreutils bash diffutils"
-# subpackages="$pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://mirrors.kernel.org/gnu/grep/grep-$pkgver.tar.xz
 	gnulib.patch"
-
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 
@@ -28,7 +21,6 @@ build() {
 		--build=$CBUILD \
 		--host=$CHOST \
 		--prefix=/usr \
-		--bindir=/bin \
 		--sysconfdir=/etc \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
@@ -36,7 +28,7 @@ build() {
 		--disable-rpath \
 		--disable-threads
 		
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+	make
 }
 
 check() {
@@ -46,10 +38,8 @@ check() {
 }
 
 package() {
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
 }
 
 sha512sums="

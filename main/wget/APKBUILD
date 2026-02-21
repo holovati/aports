@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=wget
 pkgver=1.25.0
 pkgrel=0
@@ -16,13 +16,6 @@ checkdepends="perl-http-daemon"
 subpackages="$pkgname-doc"
 source="https://mirror.dotsrc.org/gnu/wget/wget-$pkgver.tar.gz"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	CFLAGS="$CFLAGS -pipe" \
 	CPPFLAGS="$CPPFLAGS -D__linux__" \
@@ -37,7 +30,7 @@ build() {
 		--disable-rpath \
 		--disable-nls \
 		--disable-threads
-	make ACLOCAL=: AUTOMAKE=:
+	make
 }
 
 check() {
@@ -45,7 +38,7 @@ check() {
 }
 
 package() {
-	make DESTDIR="$pkgdir" install ACLOCAL=: AUTOMAKE=:
+	make DESTDIR="$pkgdir" install
 }
 
 sha512sums="

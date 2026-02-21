@@ -14,6 +14,7 @@ makedepends_host="ncurses-dev"
 
 subpackages="
 	$pkgname-dev
+	$pkgname-doc
 	libhistory
 "
 
@@ -44,13 +45,6 @@ done
 
 builddir="$srcdir/$pkgname-$_myver"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	./configure \
 		--build=$CBUILD \
@@ -62,14 +56,14 @@ build() {
 		--enable-shared \
 		--with-curses
 
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+	make
 }
 
 package() {
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
+#	rm -rf "$pkgdir"/usr/share/man || true
+#	rm -rf "$pkgdir"/usr/share/info || true
 
 	# verify that it is not underlinked as upstream designed it
 #	if ! readelf -d "$pkgdir"/usr/lib/libreadline.so | grep -q 'NEEDED.*ncurses'; then
@@ -83,7 +77,6 @@ package() {
 
 libhistory() {
 	pkgdesc="GNU History Library"
-
 	amove usr/lib/libhistory.so.*
 }
 

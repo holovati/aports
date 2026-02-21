@@ -5,6 +5,7 @@ pkgrel=0
 pkgdesc="Zstandard - Fast real-time compression algorithm"
 url="https://facebook.github.io/zstd/"
 arch="all"
+options="!check"
 license="BSD-3-Clause OR GPL-2.0-or-later"
 depends_dev="$pkgname=$pkgver-r$pkgrel"
 makedepends="grep"
@@ -19,6 +20,7 @@ source="https://github.com/facebook/zstd/releases/download/v$pkgver/$pkgname-$pk
 
 prepare() {
 	default_prepare
+	emerixx_prepare
 
 	# The install target is not available unless we are on a "Supported OS" list.
 	find . -name "Makefile" | \

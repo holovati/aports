@@ -1,0 +1,28 @@
+--- a/lib/config.sub
++++ b/lib/config.sub
+@@ -4,7 +4,7 @@
+ 
+ # shellcheck disable=SC2006,SC2268,SC2162 # see below for rationale
+ 
+-timestamp='2024-05-27'
++timestamp='2026-02-21'
+ 
+ # This file is free software; you can redistribute it and/or modify it
+ # under the terms of the GNU General Public License as published by
+@@ -2124,6 +2124,7 @@
+ 	| tpf* \
+ 	| tvos* \
+ 	| twizzler* \
++	| emerixx* \
+ 	| uclinux* \
+ 	| udi* \
+ 	| udk* \
+@@ -2210,7 +2211,7 @@
+ case $kernel-$os-$obj in
+ 	linux-gnu*- | linux-android*- | linux-dietlibc*- | linux-llvm*- \
+ 		    | linux-mlibc*- | linux-musl*- | linux-newlib*- \
+-		    | linux-relibc*- | linux-uclibc*- | linux-ohos*- )
++		    | linux-relibc*- | linux-uclibc*- | linux-ohos*- | emerixx-musl*- )
+ 		;;
+ 	uclinux-uclibc*- | uclinux-gnu*- )
+ 		;;

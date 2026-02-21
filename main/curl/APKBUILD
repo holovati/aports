@@ -27,13 +27,6 @@ source="https://curl.se/download/curl-$pkgver.tar.xz"
 
 options="net" # Required for running tests
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	CFLAGS="$CFLAGS -pipe" \
 	./configure \
@@ -65,7 +58,7 @@ build() {
 
 check() {
 	make -C tests
-	make -j1 -C tests nonflaky-test
+	make -C tests nonflaky-test
 }
 
 package() {

@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=ninja
 pkgver=1.13.2
@@ -18,6 +18,10 @@ source="
 	$pkgname-$pkgver.tar.gz::https://github.com/ninja-build/ninja/archive/refs/tags/v$pkgver.tar.gz
 	"
 builddir="$srcdir/ninja-$pkgver"
+
+prepare() {
+	default_prepare
+}
 
 build() {
 	python3 configure.py --verbose --bootstrap	

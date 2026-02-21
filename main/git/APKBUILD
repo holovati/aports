@@ -9,7 +9,6 @@ arch="all"
 license="GPL-2.0-only"
 makedepends="
 	curl-dev
-	expat-dev
 	file
 	openssl-dev>3
 	perl-dev
@@ -27,10 +26,8 @@ source="https://www.kernel.org/pub/software/scm/git/git-$pkgver.tar.xz
 	fix-t4219-with-sticky-bit.patch
 	"
 
-prepare() {
-	default_prepare
-	update_configure
-	
+build() {
+
 	./configure \
 		--prefix=/usr \
 		--with-gitconfig=/etc/gitconfig \
@@ -54,9 +51,8 @@ prepare() {
 		LDFLAGS=$LDFLAGS
 		PYTHON_PATH=/usr/bin/python3
 	EOF
-}
 
-build() {
+
 	make DESTDIR="$pkgdir"
 
 	make -C contrib/subtree prefix=/usr DESTDIR="$pkgdir"

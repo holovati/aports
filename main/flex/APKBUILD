@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=flex
 pkgver=2.6.4
 pkgrel=0
@@ -12,12 +12,6 @@ makedepends="$depends_dev bison help2man"
 subpackages="$pkgname-doc $pkgname-libs $pkgname-dev"
 source="https://github.com/westes/flex/releases/download/v$pkgver/flex-$pkgver.tar.gz"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 
@@ -34,15 +28,15 @@ build() {
 		--disable-nls \
 		ac_cv_func_malloc_0_nonnull=yes \
 		ac_cv_func_realloc_0_nonnull=yes
-	make AUTOMAKE=:
+	make
 }
 
 check() {
-	make check AUTOMAKE=:
+	make check
 }
 
 package() {
-	make install DESTDIR="$pkgdir" AUTOMAKE=:
+	make install DESTDIR="$pkgdir"
 	ln -s flex "$pkgdir"/usr/bin/lex
 }
 

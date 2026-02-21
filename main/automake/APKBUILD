@@ -1,0 +1,46 @@
+
+# Maintainer Damir Holovati
+
+pkgname=automake
+pkgver=1.18.1
+pkgrel=1
+pkgdesc="GNU tool for automatically creating Makefiles"
+url="https://www.gnu.org/software/automake"
+arch="noarch"
+license="GPL-2.0-or-later"
+depends="perl"
+makedepends="autoconf"
+subpackages="$pkgname-doc"
+source="https://ftp.gnu.org/gnu/automake/automake-$pkgver.tar.xz
+	add-emerixx-config-sub.patch
+	add-emerixx-config-guess.patch
+	"
+
+# many tests have bashisms
+options="!check"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var
+		
+	make ACLOCAL=: AUTOMAKE=:
+}
+
+check() {
+	make check
+}
+
+package() {
+	make ACLOCAL=: AUTOMAKE=: DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+8baa16831416a953a743f4e3c0f55cea5ebefe0f5a7a0e390581981d4461d02dc9038415124e974b2ec390c40daaa241802cd7d42c6fafb793f87cf355db2a61  automake-1.18.1.tar.xz
+23c5a1189d5b0bb4216ba2efb5bddbebb317d15fdf1af44db3e39bd726e57a8fbb42a70e4999a8a058789f3c24100151cb998ba4bfcdb7ca2fbd784407894213  add-emerixx-config-sub.patch
+f571415e1b9625f92be76ea0edb855501deecb32377527e140f603cd01ecb578be58d68ebfd642cc266380bbeb714cfd1fd995486edaa247145f0f39b9290c97  add-emerixx-config-guess.patch
+"

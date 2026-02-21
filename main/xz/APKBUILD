@@ -10,15 +10,7 @@ depends_dev="$pkgname=$pkgver-r$pkgrel"
 subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs"
 source="https://github.com/tukaani-project/xz/releases/download/v$pkgver/xz-$pkgver.tar.gz"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-}
-
 build() {
-	sed -i '/# This must be glibc\/ELF\./,/version_type=linux/ s/gnu\*/gnu* | emerixx*/' configure
-
 	# compression utility
 	
 	CFLAGS="$CFLAGS -O3 -pipe" \

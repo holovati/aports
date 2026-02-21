@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=file
 pkgver=5.46
 pkgrel=0
@@ -11,13 +11,6 @@ source="https://astron.com/pub/file/file-$pkgver.tar.gz
 	file-$pkgver-pr-579-net147-fix-stack-overrun.patch
 "
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	
 	CFLAGS="-pipe" \
@@ -29,15 +22,15 @@ build() {
 		--enable-static \
 		--enable-shared
 	
-	make ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+	make
 }
 
 check() {
-	make check ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+	make check
 }
 
 package() {
-	make DESTDIR="$pkgdir" install ACLOCAL=: AUTOMAKE=: AUTOHEADER=:
+	make DESTDIR="$pkgdir" install
 }
 
 libmagic() {

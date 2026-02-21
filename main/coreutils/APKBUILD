@@ -18,13 +18,6 @@ source="https://ftp.gnu.org/gnu/coreutils/coreutils-$pkgver.tar.xz
 	gnulib-tests.patch
 "
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	FORCE_UNSAFE_CONFIGURE=1 \
 	./configure \
@@ -42,7 +35,7 @@ build() {
 		    --disable-threads \
 		    --enable-no-install-program=stty \
 		    --with-openssl
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+	make
 }
 
 check() {
@@ -52,7 +45,7 @@ check() {
 package() {
 	# we put this separately
 
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 }
 
 sha512sums="

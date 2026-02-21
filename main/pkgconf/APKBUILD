@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=pkgconf
 pkgver=2.5.1
 pkgrel=0
@@ -8,16 +8,8 @@ arch="all"
 license="ISC"
 checkdepends="kyua atf"
 subpackages="$pkgname-doc $pkgname-dev"
-source="https://distfiles.dereferenced.org/pkgconf/pkgconf-$pkgver.tar.xz
-	"
-
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
+source="https://distfiles.dereferenced.org/pkgconf/pkgconf-$pkgver.tar.xz"
+	
 build() {
 	./configure \
 		--build=$CBUILD \

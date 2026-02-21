@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=openssl
 pkgver=3.5.2
 _abiver=${pkgver%.*.*}

@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=ca-certificates
 pkgver=20240702
 pkgrel=0

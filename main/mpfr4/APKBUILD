@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=mpfr4
 pkgver=4.2.2
@@ -36,14 +36,6 @@ builddir="$srcdir/mpfr-$_pkgver"
 
 provides="mpfr=$pkgver-r$pkgrel"
 replaces="mpfr"
-
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 
 build() {
 	CFLAGS="$CFLAGS -pipe" \

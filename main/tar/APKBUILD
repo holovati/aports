@@ -14,13 +14,6 @@ source="https://ftp.gnu.org/gnu/tar/tar-$pkgver.tar.xz
 	ignore-apk-tools-checksums.patch
 	"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	FORCE_UNSAFE_CONFIGURE=1 \
 	gl_cv_func_gettimeofday_clobber=no \
@@ -36,7 +29,7 @@ build() {
 		--without-selinux \
 		--without-posix-acls
 
-		make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+		make
 }
 
 check() {
@@ -47,7 +40,7 @@ check() {
 }
 
 package() {
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 
 	rm -rf "$pkgdir"/usr/share/man || true
 	rm -rf "$pkgdir"/usr/share/info || true

@@ -39,7 +39,6 @@ prepare() {
 }
 
 build() {
-
 	export CCSHARED="-fPIC"
 
 	LIBREADLINE_CFLAGS="-I/usr/include" \

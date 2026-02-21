@@ -71,9 +71,8 @@ build() {
 		--without-threads \
 		--disable-acl \
 		--without-file-notification \
-		--without-compress-install \
-		--disable-threads
-
+		--without-compress-install
+		
 	make
 }
 

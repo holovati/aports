@@ -7,7 +7,7 @@ url="https://www.gnu.org/software/gawk/gawk.html"
 arch="all"
 license="GPL-3.0-or-later"
 checkdepends="coreutils diffutils"
-# subpackages="$pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://ftp.gnu.org/gnu/gawk/gawk-$pkgver.tar.xz
 	echild-strerror.patch
@@ -15,9 +15,7 @@ source="https://ftp.gnu.org/gnu/gawk/gawk-$pkgver.tar.xz
 
 prepare() {
 	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
+	emerixx_prepare
 
 	# TODO: https://lists.gnu.org/archive/html/bug-gawk/2021-02/msg00005.html
 	# sed -i test/Makefile.in -e "/clos1way6/d"
@@ -38,7 +36,7 @@ build() {
 		--without-libsigsegv \
 		--disable-threads
 		
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+	make
 }
 
 check() {
@@ -46,10 +44,7 @@ check() {
 }
 
 package() {
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
-
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
+	make DESTDIR="$pkgdir" install
 }
 
 sha512sums="

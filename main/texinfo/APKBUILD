@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=texinfo
 pkgver=7.2
 pkgrel=0
@@ -12,11 +12,7 @@ subpackages="$pkgname-doc"
 source="https://ftp.gnu.org/gnu/texinfo/texinfo-$pkgver.tar.xz"
 options="!check" # Test dependencies are not packaged
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-
+build() {
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -26,9 +22,7 @@ prepare() {
 		--localstatedir=/var \
 		--disable-nls \
 		--disable-threads
-}
 
-build() {
 	make AUTOMAKE=: AUTOCONF=: AUTOHEADER=: HELP2MAN=:
 }
 

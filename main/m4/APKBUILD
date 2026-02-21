@@ -12,12 +12,6 @@ subpackages="$pkgname-doc"
 source="https://ftp.gnu.org/gnu/m4/m4-$pkgver.tar.gz
 	format-security.patch
 	"
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 	CPPFLAGS="-D__linux__" \
@@ -30,16 +24,16 @@ build() {
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
 		--disable-rpath
-	make ACLOCAL=: AUTOMAKE=: AUTOHEADER=: HELP2MAN=:
+	make
 }
 
 check() {
 	# SUBDIRS="checks": Run m4 tests only without gnulib tests.
-	make SUBDIRS="checks" check ACLOCAL=: AUTOMAKE=: AUTOHEADER=: HELP2MAN=:
+	make SUBDIRS="checks" check
 }
 
 package() {
-	make DESTDIR="$pkgdir" install ACLOCAL=: AUTOMAKE=: AUTOHEADER=: HELP2MAN=:
+	make DESTDIR="$pkgdir" install
 }
 
 sha512sums="

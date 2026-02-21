@@ -12,6 +12,12 @@ checkdepends="
 	dejagnu
 	diffutils
 	"
+
+
+subpackages="
+	$pkgname-doc
+	"
+
 # subpackages="
 #	$pkgname-doc
 #	$pkgname-locate:_locate
@@ -22,14 +28,6 @@ source="https://ftp.gnu.org/pub/gnu/findutils/findutils-$pkgver.tar.xz
 	test-parse-datetime.patch
 	test-sigusr.patch
 	"
-
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 
 	./configure \
@@ -44,7 +42,7 @@ build() {
 		--disable-nls \
 		--disable-threads
 		
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true
+	make
 }
 
 check() {
@@ -52,10 +50,10 @@ check() {
 }
 
 package() {
-	make ACLOCAL=true AUTOMAKE=true AUTOHEADER=true DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 	
-	rm -rf "$pkgdir"/usr/share/man
-	rm -rf "$pkgdir"/usr/share/info
+#	rm -rf "$pkgdir"/usr/share/man
+#	rm -rf "$pkgdir"/usr/share/info
 
 #	rm -rf "$pkgdir"/usr/lib
 #	mv "$pkgdir"/usr/share/man/man1/locate.1 "$builddir"

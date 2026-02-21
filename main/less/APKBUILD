@@ -18,11 +18,15 @@ options="!check"
 
 makedepends="ncurses-dev"
 
-# subpackages="$pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://www.greenwoodsoftware.com/less/less-${pkgver/_beta/-beta}.tar.gz"
 
 builddir="$srcdir/less-${pkgver%_beta}"
+
+prepare() {
+	  default_prepare
+}
 
 build() {
 	./configure \
@@ -39,8 +43,8 @@ build() {
 package() {
 	make DESTDIR="$pkgdir" install
 
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
+	#rm -rf "$pkgdir"/usr/share/man || true
+	#rm -rf "$pkgdir"/usr/share/info || true
 }
 
 sha512sums="

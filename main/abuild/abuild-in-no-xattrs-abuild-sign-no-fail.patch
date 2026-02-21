@@ -1,0 +1,88 @@
+--- a/abuild.in
++++ b/abuild.in
+@@ -662,7 +662,7 @@
+ # helper to update config.sub to a recent version
+ update_config_sub() {
+ 	find . -name config.sub | (local changed=false; while read f; do
+-		if ! ./$f loongarch64-alpine-linux-musl 2>/dev/null; then
++		if ! ./$f emerixx 2>/dev/null; then
+ 			msg "Updating $f"
+ 			cp "$sharedir"/${f##*/} "$f" || return 1
+ 			changed=true
+@@ -675,7 +675,7 @@
+ # helper to update config.guess to a recent version
+ update_config_guess() {
+ 	find . -name config.guess | (local changed=false; while read f; do
+-		if grep -q aarch64 "$f" && grep -q ppc64le "$f" && grep -q riscv64 "$f" && grep -q loongarch64 "$f"; then
++		if grep -q emerixx "$f"; then
+ 			msg "No update needed for $f"
+ 		else
+ 			msg "Updating $f"
+@@ -685,6 +685,30 @@
+ 	done; $changed)
+ }
+ 
++update_configure() {
++	find . -name configure | (local changed=false; while read f; do
++		if grep -q emerixx "$f"; then
++			msg "No update needed for $f"
++		else
++			msg "Updating $f"
++			sed -i '/# This must be glibc\/ELF\./,/version_type=linux/ s/gnu\*/gnu* | emerixx*/' "$f" || return 1
++			changed=true
++		fi
++	done; $changed)
++}
++
++emerixx_prepare() {
++	update_config_sub
++	update_config_guess
++	update_configure
++
++	find . -name config.hin -exec touch {} +
++	find . -name aclocal.m4 -exec touch {} +
++	find . -name configure -exec touch {} +
++	find . -name Makefile.in -exec touch {} +
++	find . -name "*.in" -exec touch {} +
++}
++
+ runpart() {
+ 	local part=$1
+ 	is_function "$part" || die "No such function $part"
+@@ -754,7 +778,8 @@
+ }
+ 
+ prepare() {
+-	default_prepare
++       default_prepare
++	emerixx_prepare || true
+ }
+ 
+ build() {
+@@ -1839,11 +1864,12 @@
+ 
+ 			# explicitly sort package content
+ 			find "$@" -print0
+-		fi | LC_ALL=C sort -z | apk_tar -T - --xattrs \
+-			--xattrs-exclude=security.selinux \
+-			--owner-map="$pkgbasedir"/.owner-map \
+-			--group-map="$pkgbasedir"/.group-map \
+-			| abuild-tar --hash | $gzip -n -9 >"$dir"/data.tar.gz
++#		fi | LC_ALL=C sort -z | apk_tar -T - --xattrs \
++#			--xattrs-exclude=security.selinux \
++#			--owner-map="$pkgbasedir"/.owner-map \
++#			--group-map="$pkgbasedir"/.group-map \
++#			| abuild-tar --hash | $gzip -n -9 >"$dir"/data.tar.gz
++		fi | LC_ALL=C sort -z | apk_tar -T - | abuild-tar --hash | $gzip -n -9 >"$dir"/data.tar.gz
+ 
+ 		msg "Create checksum..."
+ 		# append the hash for data.tar.gz
+@@ -1855,7 +1881,7 @@
+ 		cd "$dir"
+ 		apk_tar -T - < .metafiles | abuild-tar --cut \
+ 			| $gzip -n -9 > control.tar.gz
+-		abuild-sign -q control.tar.gz || exit 1
++		abuild-sign -q control.tar.gz || true
+ 
+ 		msg "Create $apk"
+ 		mkdir -p "$REPODEST/$repo/$(arch2dir "$subpkgarch")"

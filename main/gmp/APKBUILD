@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=gmp
 pkgver=6.3.0
@@ -12,12 +12,6 @@ subpackages="$pkgname-static $pkgname-doc $pkgname-dev libgmpxx"
 source="https://gmplib.org/download/gmp/gmp-$pkgver.tar.xz
 	"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
 
 build() {
 	CFLAGS="$CFLAGS -pipe -std=gnu99" \

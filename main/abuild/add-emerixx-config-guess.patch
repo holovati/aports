@@ -1,0 +1,21 @@
+--- a/config.guess
++++ b/config.guess
+@@ -4,7 +4,7 @@
+ 
+ # shellcheck disable=SC2006,SC2268 # see below for rationale
+ 
+-timestamp='2021-06-03'
++timestamp='2026-02-21'
+ 
+ # This file is free software; you can redistribute it and/or modify it
+ # under the terms of the GNU General Public License as published by
+@@ -307,6 +307,9 @@
+     *:Twizzler:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-twizzler
+ 	;;
++    *:Emerixx:*:*)
++	GUESS=$UNAME_MACHINE-unknown-emerixx
++	;;
+     *:Redox:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-redox
+ 	;;

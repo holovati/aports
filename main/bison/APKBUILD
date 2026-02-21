@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=bison
 pkgver=3.8.2
 pkgrel=0
@@ -19,13 +19,6 @@ source="https://mirrors.dotsrc.org/gnu/bison/bison-$pkgver.tar.xz
 	"
 subpackages="$pkgname-doc"
 
-prepare() {
-	default_prepare
-	update_config_sub
-	update_config_guess
-	update_configure
-}
-
 build() {
 	# work around temporary failure for armhf
 	CFLAGS="${CFLAGS//-Os/-O2} -pipe" \
@@ -40,7 +33,7 @@ build() {
 		--disable-nls \
 		--disable-threads \
 		--disable-rpath
-	make
+	make AUTOHEADER=:
 }
 
 check() {
@@ -48,7 +41,7 @@ check() {
 }
 
 package() {
-	make DESTDIR="$pkgdir" install AUTOHEADER=:
+	make AUTOHEADER=: DESTDIR="$pkgdir" install
 	rm -rf "$pkgdir"/usr/lib/charset.alias
 	rmdir -p "$pkgdir"/usr/lib 2>/dev/null || true
 }

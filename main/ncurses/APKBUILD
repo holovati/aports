@@ -64,8 +64,7 @@ _basic_terms="
 
 prepare() {
 	default_prepare
-	update_config_sub
-	update_config_guess
+	emerixx_prepare
 	
 	# We won't be able to build shared libraries unless we add emerixx to the supoorted os test
 	sed -i 's/k\*bsd\*-gnu/emerixx*|k*bsd*-gnu/g' configure

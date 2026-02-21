@@ -8,6 +8,7 @@
 *.xz
 *.part
 *.tar
+*~
 src
 pkg
 pkg-*
