@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=zstd
 pkgver=1.5.7
 pkgrel=0
@@ -20,7 +20,6 @@ source="https://github.com/facebook/zstd/releases/download/v$pkgver/$pkgname-$pk
 
 prepare() {
 	default_prepare
-	emerixx_prepare
 
 	# The install target is not available unless we are on a "Supported OS" list.
 	find . -name "Makefile" | \

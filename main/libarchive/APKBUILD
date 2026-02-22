@@ -1,0 +1,43 @@
+# Maintainer Damir Holovati
+pkgname=libarchive
+pkgver=3.8.5
+pkgrel=0
+pkgdesc="library that can create and read several streaming archive formats"
+url="https://libarchive.org/"
+arch="all"
+license="BSD-2-Clause AND BSD-3-Clause AND Public-Domain"
+makedepends="
+	bsd-compat-headers
+	bzip2-dev
+	lz4-dev
+	openssl-dev
+	xz-dev
+	zlib-dev
+	zstd-dev
+	"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-tools"
+source="https://libarchive.org/downloads/libarchive-$pkgver.tar.xz"
+options="!check"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--without-xml2
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+tools() {
+	pkgdesc="libarchive tools bsdtar and bsdcpio"
+
+	amove usr/bin
+}
+
+sha512sums="
+b050ca8488143503bdec38ffcab7a5010af61f1b93c1207a3fa006d72d643b84aa8c1ab267e890eb39966ccaedd6e18db8fe5b02f2789bbd1b318a3c4cf138f3  libarchive-3.8.5.tar.xz
+"
