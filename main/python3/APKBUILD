@@ -11,6 +11,11 @@ url="https://www.python.org/"
 arch="all"
 license="PSF-2.0"
 
+subpackages="
+	$pkgname-dev
+	$pkgname-doc
+	"
+
 depends="libssl3>=3.3.0"
 
 makedepends="
@@ -76,12 +81,22 @@ build() {
 package() {
 	PYTHON_FOR_BUILD="_PYTHON_CPU_COUNT=1" make DESTDIR="$pkgdir" install COMPILEALL_OPTS="-j 1"	
 
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
+	#"$pkgdir"/usr/share/man
+	#"$pkgdir"/usr/share/info
 }
+
+dev() {
+	default_dev
+
+	# pyconfig.h is needed runtime so we move it back
+	mkdir -p "$pkgdir"/usr/include/python$_basever
+	mv "$subpkgdir"/usr/include/python$_basever/pyconfig.h \
+		"$pkgdir"/usr/include/python$_basever/
+}
+
 
 sha512sums="
 2a058072e87b614b204bd1321b2bfa9c4b6614dbd5ded98dc0ee51c0d6b81504f902b7c003ad14295b371a37918f6975dc37d5a9c836dd9c30f8b086e4759193  Python-3.13.5.tar.xz
 ab8eaa2858d5109049b1f9f553198d40e0ef8d78211ad6455f7b491af525bffb16738fed60fc84e960c4889568d25753b9e4a1494834fea48291b33f07000ec2  musl-find_library.patch
-69f914d79eba22d0806f6f5f83087873a8e3659d8670fc619d2196242e6ce97e044235d4507e8c916606e97721f700c53b5a7b49a1e049c8208ba0cd8c796292  add-emerixx-configure.patch
+5dff54772ab6e4b90c0fbe59ec3582b7921bc9b3951aade2263a8904092ffa2d99690078afcbbfbc8fd2014c9cb3b2382b1805c5c63e979495de64b62e4736e8  add-emerixx-configure.patch
 "

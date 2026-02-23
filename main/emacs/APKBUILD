@@ -16,9 +16,6 @@ makedepends="
 	ncurses-dev
 	texinfo
 	"
-subpackages="
-	$pkgname-doc
-	"
 source="https://ftp.gnu.org/gnu/emacs/emacs-$pkgver.tar.xz
 	no-git-repo.patch
 	"
@@ -70,7 +67,6 @@ build() {
 		--without-tree-sitter \
 		--without-threads \
 		--disable-acl \
-		--without-file-notification \
 		--without-compress-install
 		
 	make
@@ -78,11 +74,9 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
 
-doc() {
-	default_doc
-	pkgdesc="$_pkgdesc (documentation)"
+	rm -rf "$pkgdir"/usr/lib/systemd || true 
+	rm -rf "$pkgdir"/usr/share/man || true 
 }
 
 sha512sums="

@@ -15,7 +15,7 @@
  	aix*) MACHDEP="aix";;
  	linux-android*) MACHDEP="android";;
 -	linux*) MACHDEP="linux";;
-+	linux*|emerixx*) MACHDEP="linux";;
++	linux*|emerixx*) MACHDEP="emerixx";;
  	cygwin*) MACHDEP="cygwin";;
  	darwin*) MACHDEP="darwin";;
  	'')	MACHDEP="unknown";;

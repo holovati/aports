@@ -9,11 +9,16 @@ arch="all"
 license="Apache-2.0"
 provider_priority=100  # highest
 options="!check"
+
 makedepends_build="perl"
+
 makedepends="$makedepends_host $makedepends_build"
+
 subpackages="
 	$pkgname-libs-static
 	$pkgname-dev
+	libcrypto$_abiver:_libcrypto
+	libssl$_abiver:_libssl
 	"
 source="https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz
 	man-section.patch
@@ -24,23 +29,12 @@ build() {
 
 	perl ./Configure \
 		--prefix=/usr \
-		--libdir=lib \
 		--openssldir=/etc/ssl \
 		hurd-generic64 \
-		enable-ktls \
 		shared \
-		no-zlib \
-		no-async \
-		no-comp \
-		no-idea \
-		no-mdc2 \
-		no-rc5 \
-		no-ec2m \
-		no-ssl3 \
-		no-seed \
 		no-tests \
 		no-docs \
-		no-weak-ssl-ciphers \
+		no-threads \
 		$CPPFLAGS \
 		$CFLAGS -pipe \
 		$LDFLAGS
@@ -88,7 +82,7 @@ misc() {
 _libcrypto() {
 	pkgdesc="Crypto library from openssl"
 
-	amove etc
+	amove etc || true
 	amove usr/lib/libcrypto*
 	amove usr/lib/engines-$_abiver
 	amove usr/lib/ossl-modules
