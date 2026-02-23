@@ -39,7 +39,7 @@ build() {
 	CXXFLAGS="$CXXFLAGS -pipe -Wno-error -Wno-format-security" \
 	"$srcdir/gcc-$pkgver"/configure \
 		--prefix=/usr \
-		--build=$CHOST \
+		--build=$CBUILD \
 		--host=$CHOST \
 		--target=$CTARGET \
 		--with-gmp=/usr \
@@ -48,7 +48,7 @@ build() {
 		--with-zlib=/usr \
 		--with-zstd=/usr \
 		--with-system-zlib \
-		--with-default-cflags"-pipe" \
+		--with-default-cflags="-pipe" \
 		--with-default-cxxflags="-pipe" \
 		--enable-languages=c,c++ \
 		--enable-shared \
