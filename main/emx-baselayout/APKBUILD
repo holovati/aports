@@ -1,0 +1,291 @@
+# Maintainer Damir Holovati
+pkgname=emx-baselayout
+pkgver=1.0
+pkgrel=0
+pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
+arch="noarch"
+license="MIT"
+options="!check !fhs keepdirs"
+
+builddir="$srcdir/build"
+
+build() {
+        # Create essential device files that are needed for the system to function properly.
+        # These are proper device files with correct major/minor numbers
+        echo "Creating essential device files..."
+        devicedir="$builddir/dev"
+        mkdir -p "$devicedir"
+
+        # Standard character devices
+        mknod "$devicedir/console" c 0 0
+        mknod "$devicedir/null" c 2 2
+        mknod "$devicedir/zero" c 2 12
+        mknod "$devicedir/tty" c 17 0
+        mknod "$devicedir/ptmx" c 18 0
+
+        # Framebuffer device
+        mknod "$devicedir/fb0" c 23 0
+
+        # FUSE device
+        mknod "$devicedir/fuse" c 10 229
+
+        # Block devices (storage)
+        mknod "$devicedir/sda" b 13 0
+        mknod "$devicedir/sda1" b 13 1
+        mknod "$devicedir/sda2" b 13 2
+
+        # Input devices directory and mouse
+        mkdir -p "$devicedir/input"
+        mknod "$devicedir/input/mice" c 20 0
+
+        # PTY devices
+        mkdir -p "$devicedir/pts"
+        for i in $(seq 0 16); do
+            mknod "$devicedir/pts/$i" c 19 $i
+        done
+        mknod "$devicedir/pts/ptmx" c 18 0
+
+
+
+        # Create a basic /etc/fstab placeholder
+        cat > "$builddir/etc/fstab" << 'EOF'
+# /etc/fstab: static file system information
+#
+# <file system> <mount point> <type> <options> <dump> <pass>
+proc            /proc         proc    defaults                0 0
+sysfs           /sys          sysfs   defaults                0 0
+devtmpfs        /dev          devtmpfs defaults              0 0
+devpts          /dev/pts      devpts  gid=5,mode=620          0 0
+tmpfs           /dev/shm      tmpfs   defaults                0 0
+tmpfs           /run          tmpfs   defaults                0 0
+tmpfs           /tmp          tmpfs   defaults,nodev,nosuid   0 0
+EOF
+
+        # Create a basic /etc/passwd placeholder
+        cat > "$builddir/etc/passwd" << 'EOF'
+root:x:0:0:root:/root:/bin/sh
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/mail:/sbin/nologin
+news:x:9:13:news:/usr/lib/news:/sbin/nologin
+uucp:x:10:14:uucp:/var/spool/uucppublic:/sbin/nologin
+cron:x:16:16:cron:/var/spool/cron:/sbin/nologin
+ftp:x:21:21::/var/lib/ftp:/sbin/nologin
+sshd:x:22:22:sshd:/dev/null:/sbin/nologin
+games:x:35:35:games:/usr/games:/sbin/nologin
+ntp:x:123:123:NTP:/var/empty:/sbin/nologin
+guest:x:405:100:guest:/dev/null:/sbin/nologin
+nobody:x:65534:65534:nobody:/:/sbin/nologin
+EOF
+
+        # Create a basic /etc/group placeholder
+        cat > "$builddir/etc/group" << 'EOF'
+root:x:0:root
+bin:x:1:root,bin,daemon
+daemon:x:2:root,bin,daemon
+sys:x:3:root,bin
+adm:x:4:root,daemon
+tty:x:5:
+disk:x:6:root
+lp:x:7:lp
+kmem:x:9:
+wheel:x:10:root
+floppy:x:11:root
+mail:x:12:mail
+news:x:13:news
+uucp:x:14:uucp
+cron:x:16:cron
+audio:x:18:
+cdrom:x:19:
+dialout:x:20:root
+ftp:x:21:
+sshd:x:22:
+input:x:23:
+tape:x:26:root
+video:x:27:root
+netdev:x:28:
+kvm:x:34:kvm
+games:x:35:
+shadow:x:42:
+www-data:x:82:
+users:x:100:games
+ntp:x:123:
+abuild:x:300:
+utmp:x:406:
+ping:x:999:
+nogroup:x:65533:
+nobody:x:65534:
+EOF
+
+        # Create /etc/shells placeholder
+        cat > "$builddir/etc/shells" << 'EOF'
+# /etc/shells: valid login shells
+/bin/sh
+/bin/bash
+EOF
+
+        # Create basic hostname file
+        echo "emerixx" > "$builddir/etc/hostname"
+
+        # Create basic hosts file
+        cat > "$builddir/etc/hosts" << 'EOF'
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   emerixx
+EOF
+
+        # Create resolv.conf with Google DNS servers
+        cat > "$builddir/etc/resolv.conf" << 'EOF'
+# /etc/resolv.conf: DNS resolver configuration
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+EOF
+
+        # Create system-wide shell profile with color aliases
+        cat > "$builddir/etc/profile" << 'EOF'
+# /etc/profile: system-wide environment and startup programs
+
+# Set PATH for all users
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH
+
+# Set common environment variables
+export EDITOR=nano
+export PAGER=less
+export LANG=C.UTF-8
+
+# use nicer PS1 for bash
+if [ -n "$BASH_VERSION" -o "$BB_ASH_VERSION" ]; then
+	PS1='\h:\w\$ '
+
+# Enable colorized output for common commands
+alias ls='ls --color=auto'
+alias ll='ls -l --color=auto'
+alias la='ls -la --color=auto'
+alias grep='grep --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias diff='diff --color=auto'
+alias abuild='abuild -c'
+
+# Source user profile if it exists (but avoid circular reference for root)
+if [ -f "$HOME/.profile" ] && [ "$HOME" != "/root" ]; then
+    . "$HOME/.profile"
+fi
+EOF
+
+        # Create skel directory structure for new users
+        mkdir -p "$builddir/etc/skel"
+        mkdir -p "$builddir/etc/skel/.config"
+
+        # Create default .profile template for users
+        cat > "$builddir/etc/skel/.profile" << 'EOF'
+# ~/.profile: executed by the command interpreter for login shells
+
+# Set personal PATH
+PATH="$HOME/bin:$PATH"
+export PATH
+
+# Personal environment variables can be set here
+# export EDITOR=emacs
+# export BROWSER=firefox
+
+# Personal aliases can be set here
+# alias mycommand='command with options'
+EOF
+
+}
+
+package() {
+        mkdir -p "$pkgdir"
+	    cd "$pkgdir"
+
+        # Create the essential Unix filesystem hierarchy
+        # Following the Filesystem Hierarchy Standard (FHS) with merged /usr
+        mkdir -p etc
+        mkdir -p home
+        mkdir -p root
+        mkdir -p tmp
+        mkdir -p var
+        mkdir -p var/log
+        mkdir -p var/lib
+        mkdir -p var/run
+        mkdir -p var/tmp
+        mkdir -p opt
+        mkdir -p mnt
+        mkdir -p media
+        mkdir -p srv
+        mkdir -p sys
+        mkdir -p proc
+        mkdir -p dev
+        mkdir -p dev/pts
+        mkdir -p dev/shm
+        mkdir -p run
+
+        # Create usr hierarchy first (the real directories)
+        mkdir -p usr
+        mkdir -p usr/bin
+        mkdir -p usr/sbin
+        mkdir -p usr/lib
+        mkdir -p usr/include
+        mkdir -p usr/share
+        mkdir -p usr/share/man
+        mkdir -p usr/share/info
+        mkdir -p usr/share/doc
+        mkdir -p usr/local
+        mkdir -p usr/local/bin
+        mkdir -p usr/local/sbin
+        mkdir -p usr/local/lib
+        mkdir -p usr/local/include
+        mkdir -p usr/local/share
+
+        # Create essential compatibility symlinks for merged /usr
+        # /bin -> /usr/bin
+        ln -sf /usr/bin bin
+        # /lib -> /usr/lib
+        ln -sf /usr/lib lib
+        # /sbin -> /usr/sbin
+        ln -sf /usr/sbin sbin
+
+        # Create manual page directories
+        for section in 1 2 3 4 5 6 7 8; do
+            mkdir -p usr/share/man/man"$section"
+        done
+
+        # Set proper permissions for directories
+        # Note: /bin, /lib, and /sbin are now symlinks, so we only set perms on real directories
+        chmod 755 {etc,home,opt,mnt,media,srv}
+        chmod 755 usr/{bin,sbin,lib,include,share,local}
+        chmod 755 usr/share/{man,info,doc}
+        chmod 755 usr/local/{bin,sbin,lib,include,share}
+
+        # /tmp should be world-writable with sticky bit
+        chmod 1777 tmp
+        chmod 1777 var/tmp
+
+        # /root should be accessible only to root
+        chmod 700 root
+
+
+        # Ensure target dirs exist
+        install -d "$pkgdir/etc" "$pkgdir/etc/skel" "$pkgdir/etc/skel/.config"
+
+        # Core /etc files generated earlier
+        install -m 644 "$builddir/etc/fstab"       "$pkgdir/etc/fstab"
+        install -m 644 "$builddir/etc/passwd"      "$pkgdir/etc/passwd"
+        install -m 644 "$builddir/etc/group"       "$pkgdir/etc/group"
+        install -m 644 "$builddir/etc/shells"      "$pkgdir/etc/shells"
+        install -m 644 "$builddir/etc/hostname"    "$pkgdir/etc/hostname"
+        install -m 644 "$builddir/etc/hosts"       "$pkgdir/etc/hosts"
+        install -m 644 "$builddir/etc/resolv.conf" "$pkgdir/etc/resolv.conf"
+        install -m 644 "$builddir/etc/profile"     "$pkgdir/etc/profile"
+
+        # Skeleton files
+        install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"
+
+        cp -a "$devicedir"/. "$pkgdir/dev"/
+}

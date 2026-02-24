@@ -1,0 +1,14 @@
+# Maintainer Damir Holovati
+pkgname=emx-base
+pkgver=1.0
+pkgrel=0
+pkgdesc="Meta package for EMX base system"
+url="https://www.github.com/holovati/emx"
+arch="noarch"
+license="MIT"
+
+depends="emx-baselayout"
+
+package() {
+    mkdir -p "$pkgdir"
+}
