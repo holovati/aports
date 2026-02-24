@@ -10,7 +10,9 @@ license="GPL-3.0-or-later WITH GCC-exception-3.1"
 depends="binutils libc-dev"
 makedepends="gmp-dev mpfr-dev mpc-dev zlib-dev zstd-dev flex bison"
 
-subpackages="$pkgname-dev $pkgname-doc libgcc:_libgcc libstdc++:_libstdcxx"
+subpackages="$pkgname-doc"
+
+depends="$binutils gmp mpfr mpc zlib zsdt"
 
 source="
 	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz
@@ -30,11 +32,14 @@ prepare() {
 	cp "$srcdir/emerixx.h" "$builddir/gcc/config/emerixx.h"
 }
 
+builddir="$srcdir"/gcc-build
+
 build() {
 	# GCC requires out-of-tree build
-	mkdir -p "$srcdir/gcc-build"
-	cd "$srcdir/gcc-build"
-	
+	mkdir -p "$builddir"
+
+	pushd "$builddir"
+
 	CFLAGS="$CFLAGS -pipe" \
 	CXXFLAGS="$CXXFLAGS -pipe -Wno-error -Wno-format-security" \
 	"$srcdir/gcc-$pkgver"/configure \
@@ -68,31 +73,11 @@ build() {
 		--libexecdir=/usr/libexec
 		
 		make
+	popd
 }
 
 package() {
-	cd "$srcdir/gcc-build"
 	make DESTDIR="$pkgdir" install
-
-	# Create useful symlinks
-	ln -sf gcc "$pkgdir/usr/bin/cc"
-	ln -sf g++ "$pkgdir/usr/bin/c++"
-
-	# Move any libraries from lib64 to lib if they ended up there
-	if [ -d "$pkgdir/usr/lib64" ]; then
-		mv "$pkgdir"/usr/lib64/* "$pkgdir/usr/lib/" 2>/dev/null || true
-		rmdir "$pkgdir/usr/lib64" 2>/dev/null || true
-	fi
-}
-
-dev() {
-	pkgdesc="$pkgdesc (development files)"
-	depends="$pkgname=$pkgver-r$pkgrel binutils"
-
-	amove usr/lib/gcc
-	amove usr/libexec/gcc
-	amove usr/include/c++
-	amove usr/share/gcc-*
 }
 
 doc() {
@@ -100,20 +85,6 @@ doc() {
 	default_doc || true
 	amove usr/share/info || true
 	amove usr/share/man || true
-}
-
-_libgcc() {
-	pkgdesc="GCC runtime library"
-	depends=""
-
-	amove usr/lib/libgcc_s.so.*
-}
-
-_libstdcxx() {
-	pkgdesc="GNU C++ standard library"
-	depends=""
-
-	amove usr/lib/libstdc++.so.*
 }
 
 sha512sums="
