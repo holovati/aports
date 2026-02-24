@@ -136,7 +136,7 @@ index 40b50dc96..b00be2719 100644
  # non-glibc systems
  case ${target} in
 -*-linux-musl*)
-++*-linux-musl*|*-emerixx-musl*)
++*-linux-musl*|*-emerixx-musl*)
  	tmake_file="${tmake_file} t-musl"
  	;;
  *-linux-uclibc*)
