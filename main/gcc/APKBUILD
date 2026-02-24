@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=gcc
 pkgver=15.2.0
@@ -9,15 +9,15 @@ arch="x86_64"
 license="GPL-3.0-or-later WITH GCC-exception-3.1"
 depends="binutils libc-dev"
 makedepends="gmp-dev mpfr-dev mpc-dev zlib-dev zstd-dev flex bison"
-subpackages="$pkgname-dev $pkgname-doc"
 
-# libgcc:_libgcc libstdc++:_libstdcxx"
+subpackages="$pkgname-dev $pkgname-doc libgcc:_libgcc libstdc++:_libstdcxx"
 
 source="
 	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz
 	gcc-$pkgver.patch
 	emerixx.h
 	"
+	
 builddir="$srcdir/gcc-$pkgver"
 
 # Skip tests - they take too long and require special setup
@@ -50,9 +50,13 @@ build() {
 		--with-system-zlib \
 		--with-default-cflags="-pipe" \
 		--with-default-cxxflags="-pipe" \
+		--with-as=/usr/bin/as \
+		--with-gnu-as \
+		--with-ld=/usr/bin/ld \
+		--with-gnu-ld \
 		--enable-languages=c,c++ \
 		--enable-shared \
-		--enable-threads=single \
+		--enable-threads=posix \
 		--disable-nls \
 		--disable-multilib \
 		--disable-bootstrap \
@@ -70,9 +74,6 @@ package() {
 	cd "$srcdir/gcc-build"
 	make DESTDIR="$pkgdir" install
 
-	# Remove problematic libtool archive files
-	find "$pkgdir" -name "*.la" -delete
-
 	# Create useful symlinks
 	ln -sf gcc "$pkgdir/usr/bin/cc"
 	ln -sf g++ "$pkgdir/usr/bin/c++"
@@ -82,10 +83,6 @@ package() {
 		mv "$pkgdir"/usr/lib64/* "$pkgdir/usr/lib/" 2>/dev/null || true
 		rmdir "$pkgdir/usr/lib64" 2>/dev/null || true
 	fi
-	
-	# Remove docs. Abuild complains about them not being compressed. Don't have time to dig further into it.
-	find "$pkgdir" -name "*.1" -delete
-	find "$pkgdir" -name "*.7" -delete
 }
 
 dev() {
@@ -99,10 +96,10 @@ dev() {
 }
 
 doc() {
-	#default_doc
-	amove usr/share/info
-	#amove usr/share/man
-	
+      # Have no idea why this goes wrong and no time to debug it.
+	default_doc || true
+	amove usr/share/info || true
+	amove usr/share/man || true
 }
 
 _libgcc() {
@@ -121,6 +118,6 @@ _libstdcxx() {
 
 sha512sums="
 59b9f409b8047ed10954542c7a3404f10bf413ed1a79e78aeeb3dadcc55c13c8d1eef199452d3e271a20b7914c1a197ad8eb0c64a1cfd6a5344316cdefe34199  gcc-15.2.0.tar.gz
-648e857b920ccc20e96a89b0fe8b20756db229ffc63d348ee92aa08857e915535d8e9ec5fe1282d81f3873cedca7f73fd245f14fe5b82ae4200d3fe160db5a1a  gcc-15.2.0.patch
+ddf2db9ce22da39282d135bd2dc1ec953c2344a17cc738c3ab3c27eaa1fd3a0f0fc6b7a73b77cdcda318c09e5eabaf4b65e5e7a0c6409377e5bdb805a3dc77ac  gcc-15.2.0.patch
 78fca28c9cdf73f1a496bd177325ad317caef2fddf065b5fae3cf6ffe0bcd794f40caa7eb6a01d266798d61680c5f71c01c780f8211ae94027b570864d1de82a  emerixx.h
 "
