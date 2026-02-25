@@ -15,7 +15,7 @@ makedepends_build="libtool autoconf automake scanelf"
 makedepends_host="readline-dev"
 provides="lua"
 provider_priority=500
-subpackages="$pkgname-dev $pkgname-doc $pkgname-libs"
+subpackages="$pkgname-dev $pkgname-doc"
 source="https://www.lua.org/ftp/$_pkgname-$pkgver.tar.gz
 	lua-5.5-make.patch
 	lua-5.5-module_paths.patch
@@ -99,27 +99,6 @@ package() {
 	# other distros name it lua-5.5 or lua55. pick the former as a compat name..
 	ln -sv lua5.5.pc "$pkgdir"/usr/lib/pkgconfig/lua-5.5-c++.pc
 	ln -sv lua5.5.pc "$pkgdir"/usr/lib/pkgconfig/lua-5.5.pc
-}
-
-dev() {
-	default_dev
-
-	mkdir -p "$subpkgdir"/usr/$pkgname "$subpkgdir"/usr/lib/$pkgname
-	ln -s ../include/$pkgname "$subpkgdir"/usr/$pkgname/include
-	ln -s ../lib/$pkgname "$subpkgdir"/usr/$pkgname/lib
-	mv "$pkgdir"/usr/lib/$pkgname/liblua.so "$subpkgdir"/usr/lib/$pkgname/
-}
-
-libs() {
-	pkgdesc="Lua dynamic library runtime"
-	replaces="lua"
-
-	mkdir -p "$subpkgdir"/usr
-
-	# It was like this before and nothing worked.
-	# mv -R "$pkgdir"/usr/lib "$subpkgdir"/usr
-	
-	cp -R "$pkgdir"/usr/lib "$subpkgdir"/usr/ || true
 }
 
 sha512sums="
