@@ -5,9 +5,9 @@ pkgrel=0
 pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
 arch="noarch"
 license="MIT"
-options="!check !fhs keepdirs"
+options="!check !fhs keepdirs !usrmerge"
 
-builddir="$srcdir/build"
+builddir="$srcdir/$pkgname"
 
 build() {
         # Create essential device files that are needed for the system to function properly.
@@ -45,7 +45,7 @@ build() {
         done
         mknod "$devicedir/pts/ptmx" c 18 0
 
-
+	mkdir -p "$builddir"/etc
 
         # Create a basic /etc/fstab placeholder
         cat > "$builddir/etc/fstab" << 'EOF'
@@ -202,7 +202,8 @@ EOF
 
 package() {
         mkdir -p "$pkgdir"
-	    cd "$pkgdir"
+
+	cd "$pkgdir"
 
         # Create the essential Unix filesystem hierarchy
         # Following the Filesystem Hierarchy Standard (FHS) with merged /usr
@@ -221,9 +222,9 @@ package() {
         mkdir -p srv
         mkdir -p sys
         mkdir -p proc
-        mkdir -p dev
-        mkdir -p dev/pts
-        mkdir -p dev/shm
+        #mkdir -p dev
+        #mkdir -p dev/pts
+        #mkdir -p dev/shm
         mkdir -p run
 
         # Create usr hierarchy first (the real directories)
@@ -243,18 +244,23 @@ package() {
         mkdir -p usr/local/include
         mkdir -p usr/local/share
 
-        # Create essential compatibility symlinks for merged /usr
-        # /bin -> /usr/bin
-        ln -sf /usr/bin bin
-        # /lib -> /usr/lib
-        ln -sf /usr/lib lib
-        # /sbin -> /usr/sbin
-        ln -sf /usr/sbin sbin
-
         # Create manual page directories
         for section in 1 2 3 4 5 6 7 8; do
             mkdir -p usr/share/man/man"$section"
         done
+
+
+        # Create essential compatibility symlinks for merged /usr
+
+	# /bin -> /usr/bin
+       	#ln -s /usr/bin bin
+
+	# /lib -> /usr/lib
+        #ln -sf /usr/lib lib
+	
+        # /sbin -> /usr/sbin
+        #ln -sf /usr/sbin sbin
+
 
         # Set proper permissions for directories
         # Note: /bin, /lib, and /sbin are now symlinks, so we only set perms on real directories
@@ -270,7 +276,6 @@ package() {
         # /root should be accessible only to root
         chmod 700 root
 
-
         # Ensure target dirs exist
         install -d "$pkgdir/etc" "$pkgdir/etc/skel" "$pkgdir/etc/skel/.config"
 
@@ -285,7 +290,7 @@ package() {
         install -m 644 "$builddir/etc/profile"     "$pkgdir/etc/profile"
 
         # Skeleton files
-        install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"
-
-        cp -a "$devicedir"/. "$pkgdir/dev"/
+        install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"	
+	
+        mv "$builddir"/dev dev
 }
