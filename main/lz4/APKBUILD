@@ -7,7 +7,7 @@ url="https://github.com/lz4/lz4"
 arch="all"
 license="BSD-2-Clause AND GPL-2.0-or-later"
 checkdepends="diffutils"
-subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs"
+subpackages="$$pkgname-dev $pkgname-doc"
 source="https://github.com/lz4/lz4/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
 
 build() {
