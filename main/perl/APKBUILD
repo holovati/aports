@@ -95,6 +95,9 @@ doc() {
 	local file; find "$pkgdir" -name "*.pod" | while read -r file; do
 		amove "${file#"$pkgdir"}"
 	done
+
+	unlink "$pkgdir"/usr/share/man/man1/perlbug.1
+
 	default_doc
 }
 
