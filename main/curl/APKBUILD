@@ -21,7 +21,7 @@ makedepends_host="$depends_dev"
 
 makedepends_build="groff perl"
 
-subpackages="$pkgname-static $pkgname-doc $pkgname-dev libcurl"
+subpackages="$pkgname-static $pkgname-doc"
 
 source="https://curl.se/download/curl-$pkgver.tar.xz"
 
@@ -53,7 +53,6 @@ build() {
 		--without-brotli \
 		--without-libssh2 # https://bugs.alpinelinux.org/issues/10222
 	make
-
 }
 
 check() {
@@ -70,17 +69,6 @@ package() {
 	install -m644 "../../curlrc" "$pkgdir/etc/curlrc"
 
 	make install DESTDIR="$pkgdir"	
-}
-
-libcurl() {
-	pkgdesc="The multiprotocol file transfer library"
-	amove usr/lib
-}
-
-dev() {
-	default_dev
-	# Used by trurl
-	install -Dm755 -t "$subpkgdir"/usr/bin "$builddir"/scripts/cd2nroff
 }
 
 sha512sums="
