@@ -6,7 +6,9 @@ pkgdesc="File type identification utility"
 url="https://www.darwinsys.com/file/"
 arch="all"
 license="BSD-2-Clause"
-subpackages="libmagic-static $pkgname-dev $pkgname-doc libmagic"
+
+subpackages="libmagic-static $pkgname-doc"
+
 source="https://astron.com/pub/file/file-$pkgver.tar.gz
 	file-$pkgver-pr-579-net147-fix-stack-overrun.patch
 "
@@ -31,14 +33,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
-
-libmagic() {
-	pkgdesc="File type identification library"
-
-	amove \
-		usr/lib/libmagic.so.* \
-		usr/share/misc/magic.mgc
 }
 
 sha512sums="

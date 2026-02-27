@@ -251,15 +251,14 @@ package() {
 
 
         # Create essential compatibility symlinks for merged /usr
-
 	# /bin -> /usr/bin
-       	#ln -s /usr/bin bin
+       	ln -s /usr/bin bin
 
 	# /lib -> /usr/lib
-        #ln -sf /usr/lib lib
+        ln -sf /usr/lib lib
 	
         # /sbin -> /usr/sbin
-        #ln -sf /usr/sbin sbin
+        ln -sf /usr/sbin sbin
 
 
         # Set proper permissions for directories

@@ -41,9 +41,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
 }
 
 sha512sums="

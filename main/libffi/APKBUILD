@@ -9,7 +9,7 @@ license="MIT"
 # depends_dev="linux-headers"
 makedepends_build="texinfo"
 checkdepends="dejagnu"
-subpackages="$pkgname-dev $pkgname-doc"
+subpackages="$pkgname-static $pkgname-doc"
 source="https://github.com/libffi/libffi/releases/download/v$pkgver/libffi-$pkgver.tar.gz"
 
 build() {

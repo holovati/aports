@@ -78,13 +78,9 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
 
-doc() {
-      # Have no idea why this goes wrong and no time to debug it.
-	default_doc || true
-	amove usr/share/info || true
-	amove usr/share/man || true
+	ln -sf gcc "$pkgdir"/usr/bin/cc
+	ln -sf g++ "$pkgdir"/usr/bin/c++
 }
 
 sha512sums="
