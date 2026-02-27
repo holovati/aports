@@ -23,27 +23,26 @@ source="
 # Skip tests - they take too long and require special setup
 options="!check"
 
+builddir="$srcdir"/gcc-"$pkgver"
+
 prepare() {
-	# Copy emerixx.h to the gcc config directory
-	
-	cp "$srcdir"/emerixx.h "$srcdir"/gcc-"$pkgver"/gcc/config/emerixx.h
-	
 	default_prepare
+
+	# Copy emerixx.h to the gcc config directory	
+	cp "$srcdir"/emerixx.h "$builddir"/gcc/config/emerixx.h
 }
 
-builddir="$srcdir"/gcc-build
+objdir="$srcdir"/gcc-build
 
 build() {
-
-	
 	# GCC requires out-of-tree build
-	mkdir -p "$builddir"
+	mkdir -p "$objdir"
 
-	pushd "$builddir"
+	pushd "$objdir"
 
 	CFLAGS="$CFLAGS -pipe" \
 	CXXFLAGS="$CXXFLAGS -pipe -Wno-error -Wno-format-security" \
-	"$srcdir/gcc-$pkgver"/configure \
+	"$builddir"/configure \
 		--prefix=/usr \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -78,6 +77,8 @@ build() {
 }
 
 package() {
+	cd "$objdir"
+	
 	make DESTDIR="$pkgdir" install
 
 	ln -sf gcc "$pkgdir"/usr/bin/cc
