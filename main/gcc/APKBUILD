@@ -12,29 +12,30 @@ makedepends="gmp-dev mpfr-dev mpc-dev zlib-dev zstd-dev flex bison"
 
 subpackages="$pkgname-doc"
 
-depends="$binutils gmp mpfr mpc zlib zsdt"
+depends="binutils gmp mpfr mpc zlib zsdt"
 
 source="
 	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz
 	gcc-$pkgver.patch
 	emerixx.h
 	"
-	
-builddir="$srcdir/gcc-$pkgver"
 
 # Skip tests - they take too long and require special setup
 options="!check"
 
 prepare() {
-	default_prepare
-    
 	# Copy emerixx.h to the gcc config directory
-	cp "$srcdir/emerixx.h" "$builddir/gcc/config/emerixx.h"
+	
+	cp "$srcdir"/emerixx.h "$srcdir"/gcc-"$pkgver"/gcc/config/emerixx.h
+	
+	default_prepare
 }
 
 builddir="$srcdir"/gcc-build
 
 build() {
+
+	
 	# GCC requires out-of-tree build
 	mkdir -p "$builddir"
 
