@@ -1,6 +1,6 @@
 # Maintainer Damir Holovati
 
-pkgname=mpfr4
+pkgname=mpfr
 pkgver=4.2.2
 pkgrel=0
 # strip p value, the patches are separate and are on https://www.mpfr.org/mpfr-current/
@@ -13,15 +13,10 @@ makedepends_build="texinfo"
 makedepends_host="gmp-dev"
 makedepends="$makedepends_build $makedepends_host"
 
-# mpfr is special because we cannot break ABI without first rebuild gcc.
-# so we need be able to have multiple version of mpfr installed in parallel
-# we also need be able to calculate bulid order from global scope, otherwise
-# it is not possible to calculate build order til after package is built.
-# Therfore we call -dev package mpfr-dev instead of mpfr4-dev with a
-# provides=mpfr-dev
-subpackages="$pkgname-doc mpfr-dev"
+subpackages="$pkgname-doc $pkgname-dev"
 
 source="https://www.mpfr.org/mpfr-$_pkgver/mpfr-$_pkgver.tar.xz"
+
 # generate url's to patches
 _i=1
 while [ "$pkgver" != "$_pkgver" ] && [ $_i -le ${pkgver##*_p} ]; do
@@ -33,9 +28,6 @@ while [ "$pkgver" != "$_pkgver" ] && [ $_i -le ${pkgver##*_p} ]; do
 done
 
 builddir="$srcdir/mpfr-$_pkgver"
-
-provides="mpfr=$pkgver-r$pkgrel"
-replaces="mpfr"
 
 build() {
 	CFLAGS="$CFLAGS -pipe" \

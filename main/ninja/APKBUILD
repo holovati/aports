@@ -14,8 +14,8 @@ checkdepends="
 	gtest-dev
 	"
 
-source="
-	$pkgname-$pkgver.tar.gz::https://github.com/ninja-build/ninja/archive/refs/tags/v$pkgver.tar.gz
+source="$pkgname-$pkgver.tar.gz::https://github.com/ninja-build/ninja/archive/refs/tags/v$pkgver.tar.gz
+	add-emerixx-platform.patch
 	"
 builddir="$srcdir/ninja-$pkgver"
 
@@ -38,4 +38,5 @@ package() {
 
 sha512sums="
 c0b401b4db91a2eea01a474ee979b2c6f1daa97b4c8d1f856871ce5f6d567c4b26d6246bc57e2a5f914329302abcd9c00ab0d4394a25f2ad502b6b00a07903d2  ninja-1.13.2.tar.gz
+07e0ff567273dbcb00b0556807b54149ace565efb97d5726303b1ec9050db6e1482949252630928b76e526f39cf6f9593e9cbfbc6c23092efc5072855ed8c07d  add-emerixx-platform.patch
 "

@@ -1,0 +1,28 @@
+diff -Nurp a/configure.py b/configure.py
+--- a/configure.py
++++ b/configure.py
+@@ -65,12 +65,14 @@ class Platform(object):
+             self._platform = 'os400'
+         elif self._platform.startswith('dragonfly'):
+             self._platform = 'dragonfly'
++        elif self._platform.startswith('emerixx'):
++            self._platform = 'emerixx'
+ 
+     @staticmethod
+     def known_platforms() -> List[str]:
+       return ['linux', 'darwin', 'freebsd', 'openbsd', 'solaris', 'sunos5',
+               'mingw', 'msvc', 'gnukfreebsd', 'bitrig', 'netbsd', 'aix',
+-              'dragonfly']
++              'dragonfly', 'emerixx']
+ 
+     def platform(self) -> str:
+         return self._platform  # type: ignore # Incompatible return value type
+@@ -108,7 +110,7 @@ class Platform(object):
+ 
+     def supports_ppoll(self) -> bool:
+         return self._platform in ('freebsd', 'linux', 'openbsd', 'bitrig',
+-                                  'dragonfly')
++                                  'dragonfly', 'emerixx')
+ 
+     def supports_ninja_browse(self) -> bool:
+         return (not self.is_windows()
