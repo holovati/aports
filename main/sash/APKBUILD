@@ -1,0 +1,30 @@
+# Maintainer Damir Holovati
+pkgname=sash
+pkgver=3.8
+pkgrel=0
+pkgdesc="A stand-alone shell with many built-in commands"
+url="https://members.tip.net.au/~dbell"
+arch="all"
+license="MIT"
+subpackages="$pkgname-doc"
+
+options="!check"
+
+source="https://members.tip.net.au/~dbell/programs/sash-$pkgver.tar.gz
+	disable-linux-features.patch"
+
+build() {	
+	make
+}
+
+package() {
+	install -dm755 "$pkgdir"/usr/sbin
+	install -dm755 "$pkgdir"/usr/share/man/man1
+	
+	make DESTDIR="$pkgdir" BINDIR=usr/sbin MANDIR=usr/share/man install
+}
+
+sha512sums="
+e544721dbb5d13d2184531a2caa4b90fb29fc360e2b80f64adb2433cbe4e5588171f3567bde03b520fbe7cbd0f3007e0e9c9c41cb16570709b03cedc2dfbe291  sash-3.8.tar.gz
+a9e764f319a99bdc2b26bfa368acb7bd10b4f39f23cb4eacb759a0396dd0f6fd2dd010fda041cd3e91a0ce358be28186bb0ef54499dcb1b59ad94fee1a5f5612  disable-linux-features.patch
+"
