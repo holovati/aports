@@ -8,7 +8,7 @@ arch="all"
 license="GPL-3.0-or-later"
 
 # makedepends_host="acl-dev"
-# subpackages="$pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://ftp.gnu.org/gnu/tar/tar-$pkgver.tar.xz
 	ignore-apk-tools-checksums.patch

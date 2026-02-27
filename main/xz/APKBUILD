@@ -7,7 +7,7 @@ url="https://tukaani.org/xz/"
 arch="all"
 license="GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later"
 depends_dev="$pkgname=$pkgver-r$pkgrel"
-subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs"
+subpackages="$pkgname-static $pkgname-dev  $pkgname-doc"
 source="https://github.com/tukaani-project/xz/releases/download/v$pkgver/xz-$pkgver.tar.gz"
 
 build() {
