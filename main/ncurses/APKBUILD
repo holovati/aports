@@ -113,6 +113,22 @@ package() {
 		ln -s ncurses.pc usr/lib/pkgconfig/${lib}.pc
 	done
 	ln -s libncursesw.so usr/lib/libcursesw.so
+
+	# Install basic terms in /etc/terminfo
+	local i; for i in $_basic_terms; do
+		local termfiles=$(find usr/share/terminfo/ -name "$i" 2>/dev/null) || true
+
+		[ -z "$termfiles" ] && continue
+
+		for termfile in $termfiles; do
+			local basedir=$(basename "$(dirname "$termfile")")
+			install -d etc/terminfo/$basedir
+			mv "$termfile" etc/terminfo/$basedir/
+			ln -s "../../../../etc/terminfo/$basedir/${termfile##*/}" \
+				"usr/share/terminfo/$basedir/${termfile##*/}"
+		done
+	done
+
 }
 
 terminfo() {
@@ -157,6 +173,13 @@ libpanelw() {
 	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
 
 	amove usr/lib/libpanelw.so.*
+}
+
+base() {
+	pkgdesc="Descriptions of common terminals"
+	depends=""
+
+	amove etc/terminfo
 }
 
 sha512sums="
