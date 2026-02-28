@@ -47,6 +47,7 @@ source="https://gitlab.alpinelinux.org/alpine/abuild/-/archive/$pkgver/abuild-$p
 	abuild-in-no-xattrs-abuild-sign-no-fail.patch
 	add-emerixx-config-sub.patch
 	add-emerixx-config-guess.patch
+	remove-default-security-cflags.patch
 	"
 	
 builddir="$srcdir"/abuild-$pkgver
@@ -122,4 +123,5 @@ cfd35e2ff55c3d24ffe1ed6d5427bc3a9d33f83b340e001d84d57e9ed8de66a1fc6600d634f914a2
 b282a76ad8c6d2899897df48fc5266a57a07a1233182c1f84ce40c75b6f8a3f2dfe4e45e5fa8fb5f00023ce85c05a2371a9912a5149693f8b84c703892738896  abuild-in-no-xattrs-abuild-sign-no-fail.patch
 12ddd05de3c939fd1ffb1d856a759eac94b91a63554514b3b521e8aef7a2269aec0cc144a71939c319cd1b68d15e85b4529244339a395de1a3fae31f02a0155e  add-emerixx-config-sub.patch
 ac2fdfbf50bc730451b4202c7d4b5d00df9777d7a439bd3277e4f819fb82345ce470c0d8c495ea8d4e8ea8405b0feaea640f67dff9f0239651ae824390cfde6b  add-emerixx-config-guess.patch
+8f8c7c8a87802cf6e628ccd70d9bbb39bd66c4a6f71b13feb08785d2152ddcec83ede1815260dd848c4a07e8f969ac3d0679d7358dbf32dc7ece4cc8dbe80255  remove-default-security-cflags.patch
 "

@@ -1,0 +1,14 @@
+--- a/default.conf
++++ b/default.conf
+@@ -1,7 +1,7 @@
+-export CFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+-export CXXFLAGS="-Os -fstack-clash-protection -Wformat -Werror=format-security"
+-export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_ASSERTIONS=1 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST"
+-export LDFLAGS="-Wl,--as-needed,-O1,--sort-common"
++export CFLAGS="-O2 -Wformat -Werror=format-security"
++export CXXFLAGS="-O2 -Wformat -Werror=format-security"
++export CXXFLAGS="$CXXFLAGS"
++export LDFLAGS="-Wl,--as-needed,-O0,--sort-common"
+ export GOFLAGS="-buildmode=pie -modcacherw -trimpath -buildvcs=false"
+ # Do note that these should work with at least GDC and LDC
+ export DFLAGS="-Os"
