@@ -12,7 +12,7 @@ makedepends="gmp-dev mpfr-dev mpc-dev zlib-dev zstd-dev flex bison"
 
 subpackages="$pkgname-doc"
 
-depends="binutils gmp mpfr mpc zlib zsdt"
+depends="binutils gmp mpfr mpc zlib zstd"
 
 source="
 	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz

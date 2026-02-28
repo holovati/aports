@@ -7,7 +7,7 @@ url="https://www.github.com/holovati/emx"
 arch="noarch"
 license="MIT"
 
-depends="emx-baselayout"
+depends="emx-baselayout apk-tools sash coreutils bash libreadline libhistory emerixx-utils inetutils ca-certificates nano"
 
 package() {
     mkdir -p "$pkgdir"

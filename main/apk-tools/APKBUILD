@@ -21,7 +21,7 @@ subpackages="$pkgname-dev $pkgname-static $pkgname-bash-completion $pkgname-zsh-
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/17199
 
 depends="
-	musl>=1.2.3_git20230424
+	musl>=1.2.5
 	libcrypto3>=3.5
 	libapk=$pkgver-r$pkgrel
 	"
@@ -41,7 +41,7 @@ if [ -z "$BOOTSTRAP" ]; then
 	makedepends_host="$makedepends_host lua$_lua-dev python3-dev"
 
 	# ca-certificates-bundle needed for https certificate validation
-	depends="$depends ca-certificates-bundle"
+	depends="$depends ca-certificates"
 fi
 source="https://gitlab.alpinelinux.org/alpine/apk-tools/-/archive/v$pkgver/apk-tools-v$pkgver.tar.gz
 	repo-hash-sha1.patch

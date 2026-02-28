@@ -12,14 +12,11 @@ license="GPL-2.0-only"
 
 depends="
 	apk-tools>=3.0.0_rc4
-	cmd:getcap
-	fakeroot
-	musl-utils
+	musl
 	lzip
 	openssl>3
 	patch
 	pkgconf
-	scanelf
 	tar
 	"
 makedepends_build="pkgconfig scdoc"
@@ -70,6 +67,9 @@ package() {
 	# We don't have them and will not anytime soon.
  	ln -s /usr/bin/bash "$pkgdir"/usr/bin/ash
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/getcap	
+ 	ln -s /usr/bin/true "$pkgdir"/usr/bin/fakeroot
+ 	ln -s /usr/bin/true "$pkgdir"/usr/bin/scanelf
+
 
 	install -m 644 abuild.conf "$pkgdir"/etc/abuild.conf
 
@@ -80,15 +80,17 @@ package() {
 
 cpan() {
 	pkgdesc="Script to generate perl APKBUILD from CPAN"
-	depends="perl perl-libwww perl-json perl-module-build perl-module-build-tiny
-		perl-lwp-protocol-https"
+	#depends="perl perl-libwww perl-json perl-module-build perl-module-build-tiny
+	#	perl-lwp-protocol-https"
+
+	depends="perl"
 
 	amove usr/bin/apkbuild-cpan
 }
 
 gems() {
 	pkgdesc="APKBUILD dependency resolver for RubyGems"
-	depends="ruby ruby-augeas"
+	# depends="ruby ruby-augeas"
 
 	amove usr/bin/apkbuild-gem-resolver
 }
@@ -103,7 +105,10 @@ pypi() {
 
 _rootbld() {
 	pkgdesc="Build packages in chroot"
-	depends="abuild bubblewrap cmd:envsubst"
+	# depends="abuild bubblewrap cmd:envsubst"
+
+	depends="abuild"
+	
 	mkdir -p "$subpkgdir"
 }
 
