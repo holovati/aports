@@ -10,41 +10,6 @@ options="!check !fhs keepdirs !usrmerge"
 builddir="$srcdir/$pkgname"
 
 build() {
-        # Create essential device files that are needed for the system to function properly.
-        # These are proper device files with correct major/minor numbers
-        echo "Creating essential device files..."
-        devicedir="$builddir/dev"
-        mkdir -p "$devicedir"
-
-        # Standard character devices
-        mknod "$devicedir/console" c 0 0
-        mknod "$devicedir/null" c 2 2
-        mknod "$devicedir/zero" c 2 12
-        mknod "$devicedir/tty" c 17 0
-        mknod "$devicedir/ptmx" c 18 0
-
-        # Framebuffer device
-        mknod "$devicedir/fb0" c 23 0
-
-        # FUSE device
-        mknod "$devicedir/fuse" c 10 229
-
-        # Block devices (storage)
-        mknod "$devicedir/sda" b 13 0
-        mknod "$devicedir/sda1" b 13 1
-        mknod "$devicedir/sda2" b 13 2
-
-        # Input devices directory and mouse
-        mkdir -p "$devicedir/input"
-        mknod "$devicedir/input/mice" c 20 0
-
-        # PTY devices
-        mkdir -p "$devicedir/pts"
-        for i in $(seq 0 16); do
-            mknod "$devicedir/pts/$i" c 19 $i
-        done
-        mknod "$devicedir/pts/ptmx" c 18 0
-
 	mkdir -p "$builddir"/etc
 
         # Create a basic /etc/fstab placeholder
@@ -252,13 +217,13 @@ package() {
 
         # Create essential compatibility symlinks for merged /usr
 	# /bin -> /usr/bin
-       	ln -s /usr/bin bin
+       	# ln -s /usr/bin bin
 
 	# /lib -> /usr/lib
-        ln -sf /usr/lib lib
+        # ln -sf /usr/lib lib
 	
         # /sbin -> /usr/sbin
-        ln -sf /usr/sbin sbin
+        # ln -sf /usr/sbin sbin
 
 
         # Set proper permissions for directories
@@ -290,6 +255,4 @@ package() {
 
         # Skeleton files
         install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"	
-	
-        mv "$builddir"/dev dev
 }
