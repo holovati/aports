@@ -26,6 +26,7 @@ subpackages="
 #	libhistory
 #	"
 
+provides="libreadline"
 
 source="https://ftp.gnu.org/gnu/readline/readline-$_myver.tar.gz
 	fix-ncurses-underlinking.patch
