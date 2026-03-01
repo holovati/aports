@@ -1,46 +1,29 @@
 # Maintainer Damir Holovati
 
 pkgname=readline
-pkgver=8.3.3
-pkgrel=1
-_myver=${pkgver%.*}
+pkgver=8.3
+pkgrel=0
 pkgdesc="GNU readline library"
 url="https://tiswww.cwru.edu/php/chet/readline/rltop.html"
 arch="all"
 options="!check"
 license="GPL-3.0-or-later"
-makedepends_host="ncurses-dev"
-# makedepends_build="chrpath"
 
-subpackages="
-	$pkgname-dev
-	$pkgname-doc
-	libhistory
-"
+# Keep only doc split
+subpackages="$pkgname-doc"
 
-#subpackages="
-#	$pkgname-dbg
-#	$pkgname-static
-#	$pkgname-dev
-#	$pkgname-doc
-#	libhistory
-#	"
+source="https://ftp.gnu.org/gnu/readline/readline-$pkgver.tar.gz
+		fix-ncurses-underlinking.patch
+		fix-shobj-conf-missing-emerixx.patch
+		inputrc"
 
-provides="libreadline"
-
-source="https://ftp.gnu.org/gnu/readline/readline-$_myver.tar.gz
-	fix-ncurses-underlinking.patch
-	fix-shobj-conf-missing-emerixx.patch
-	inputrc
-	"
 patch_args="-p0" # patchlevel used by upstream patches
 
 _i=1
 while [ $_i -le ${pkgver##*.} ]; do
 	_patch=$(printf "%03d" $_i)
-	_name=$pkgname${_myver//./}-$_patch
-	source="$source
-		$_name.patch::https://ftp.gnu.org/gnu/readline/readline-$_myver-patches/$_name"
+	_name=$pkgname${pkgver//./}-$_patch
+	source="$source $_name.patch::https://ftp.gnu.org/gnu/readline/readline-$pkgver-patches/$_name"
 	_i=$((_i+1))
 done
 
@@ -62,23 +45,6 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-#	rm -rf "$pkgdir"/usr/share/man || true
-#	rm -rf "$pkgdir"/usr/share/info || true
-
-	# verify that it is not underlinked as upstream designed it
-#	if ! readelf -d "$pkgdir"/usr/lib/libreadline.so | grep -q 'NEEDED.*ncurses'; then
-#		error "readline needs to be linked against ncurses"
-#		return 1
-#	fi
-	rmdir "$pkgdir"/usr/bin
-	install -Dm644 "$srcdir"/inputrc "$pkgdir"/etc/inputrc
-#	chrpath -d "$pkgdir"/usr/lib/*.so.*
-}
-
-libhistory() {
-	pkgdesc="GNU History Library"
-	amove usr/lib/libhistory.so.*
 }
 
 sha512sums="
