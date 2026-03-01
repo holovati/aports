@@ -94,7 +94,9 @@ package() {
 		"$pkgdir"/var/cache/apk
 
 	install -Dm644 "$srcdir"/_apk "$pkgdir"/usr/share/zsh/site-functions/_apk
-}
+	
+	mv "$pkgdir"/lib/* "$pkgdir"/usr/lib
+}x
 
 libapk() {
 	provides="libapk2=$pkgver-r$pkgrel"

@@ -11,4 +11,13 @@ depends="emx-baselayout emx-devnodes apk-tools sash coreutils bash readline libh
 
 package() {
     mkdir -p "$pkgdir"
+
+	# /bin -> /usr/bin
+    ln -sf /usr/bin bin
+
+	# /lib -> /usr/lib
+    ln -sf /usr/lib lib
+	
+    # /sbin -> /usr/sbin
+    ln -sf /usr/sbin sbin
 }
