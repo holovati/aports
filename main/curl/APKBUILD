@@ -62,7 +62,7 @@ check() {
 
 package() {
 	# depends on exactly the same build of libcurl
-	depends="libcurl=$pkgver-r$pkgrel"
+	depends="curl
 	
 	mkdir -pv "$pkgdir/etc" || true
 

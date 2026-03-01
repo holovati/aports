@@ -97,8 +97,9 @@ gems() {
 
 pypi() {
 	pkgdesc="Script to generate python3 APKBUILD from PYPI"
-	depends="perl perl-libwww perl-json perl-module-build-tiny perl-lwp-protocol-https
-	perl-ipc-system-simple"
+	#depends="perl perl-libwww perl-json perl-module-build-tiny perl-lwp-protocol-https
+	#perl-ipc-system-simple"
+	depends="perl"
 
 	amove usr/bin/apkbuild-pypi
 }

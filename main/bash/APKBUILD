@@ -28,6 +28,8 @@ install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
 
 subpackages="$pkgname-doc"
 
+provides="/bin/sh"
+
 source="$pkgname-$_myver-1.tar.gz::https://ftp.gnu.org/gnu/bash/bash-$_myver.tar.gz
 	bashrc
 	bash-noinfo.patch
@@ -96,12 +98,8 @@ package() {
 
 	make DESTDIR="$pkgdir" install
 
-	# rm -rf "$pkgdir"/usr/share || true
-
 	install -Dm644  "$srcdir"/bashrc "$pkgdir"/etc/bash/bashrc
 	install -Dm644  "$srcdir"/profile-bashrc.sh "$pkgdir"/etc/profile.d/00-bashrc.sh
-
-	rm -rf "$pkgdir"/usr/share/locale
 
 	if [ ! -e "$pkgdir"/usr/bin/sh ]; then
 	   ln -sf bash "$pkgdir"/usr/bin/sh
