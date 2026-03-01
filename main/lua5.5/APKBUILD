@@ -57,8 +57,7 @@ build() {
 
 	cd src
 
-	make V=${pkgver%.*} CC="$CC" \
-		CFLAGS="$CFLAGS -DLUA_USE_LINUX -DLUA_READLINELIB=/usr/lib/libreadline.so" \
+	make posix V=${pkgver%.*} CC="$CC" MYLIBS="-lreadline" \
 		SYSLDFLAGS="$LDFLAGS" \
 		RPATH="/usr/lib" \
 		alpine_all
