@@ -9,7 +9,7 @@ license="ISC"
 replaces="pkgconfig"
 provides="pkgconfig=1"
 checkdepends="kyua atf"
-subpackages="$pkgname-doc $pkgname-dev"
+subpackages="$pkgname-doc"
 source="https://distfiles.dereferenced.org/pkgconf/pkgconf-$pkgver.tar.xz"
 	
 build() {
@@ -32,17 +32,6 @@ check() {
 package() {
 	make DESTDIR="$pkgdir" install
 	ln -s pkgconf "$pkgdir"/usr/bin/pkg-config
-}
-
-dev() {
-	default_dev
-
-	# Move pkg-config back to main package (default_dev implicitly moves
-	# files /usr/bin/*-config to -dev).
-	mv "$subpkgdir"/usr/bin/pkg-config "$pkgdir"/usr/bin/
-
-	mkdir -p "$pkgdir"/usr/share/aclocal/
-	mv "$subpkgdir"/usr/share/aclocal/pkg.m4 "$pkgdir"/usr/share/aclocal/
 }
 
 sha512sums="

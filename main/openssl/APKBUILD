@@ -1,32 +1,24 @@
 # Maintainer Damir Holovati
 pkgname=openssl
 pkgver=3.5.2
-_abiver=${pkgver%.*.*}
 pkgrel=0
 pkgdesc="Toolkit for Transport Layer Security (TLS)"
 url="https://www.openssl.org/"
 arch="all"
 license="Apache-2.0"
-provider_priority=100  # highest
+
 options="!check"
 
 makedepends_build="perl"
 
 makedepends="$makedepends_host $makedepends_build"
 
-subpackages="
-	$pkgname-libs-static
-	$pkgname-dev
-	libcrypto$_abiver:_libcrypto
-	libssl$_abiver:_libssl
-	"
 source="https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz
 	man-section.patch
 	"
 builddir="$srcdir/openssl-$pkgver"
 
 build() {
-
 	perl ./Configure \
 		--prefix=/usr \
 		--openssldir=/etc/ssl \
@@ -45,54 +37,11 @@ build() {
 	make
 }
 
-# We can't build them yet, runs the kernel out of memory
-#check() {
-#	# AFALG tests have a sporadic test failure, just delete the broken
-#	# test for now.
-#	rm -f test/recipes/30-test_afalg.t
-#
-#	make test
-#}
-
 package() {
-	depends="libssl$_abiver=$pkgver-r$pkgrel libcrypto$_abiver=$pkgver-r$pkgrel"
-	provides="openssl3=$pkgver-r$pkgrel"
-	replaces="openssl3"
-
-	make DESTDIR="$pkgdir" install_sw
+	make DESTDIR="$pkgdir"
 	
 	#remove the script c_rehash
 	rm "$pkgdir"/usr/bin/c_rehash
-}
-
-dev() {
-	provides="openssl3-dev=$pkgver-r$pkgrel"
-	replaces="openssl3-dev"
-
-	default_dev
-}
-
-misc() {
-	depends="$pkgname=$pkgver-r$pkgrel perl"
-	pkgdesc="Various perl scripts from $pkgname"
-
-	amove etc/ssl/misc
-}
-
-_libcrypto() {
-	pkgdesc="Crypto library from openssl"
-
-	amove etc || true
-	amove usr/lib/libcrypto*
-	amove usr/lib/engines-$_abiver
-	amove usr/lib/ossl-modules
-}
-
-_libssl() {
-	pkgdesc="SSL shared libraries"
-	depends="libcrypto$_abiver=$pkgver-r$pkgrel"
-
-	amove usr/lib/libssl*
 }
 
 sha512sums="

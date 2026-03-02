@@ -12,6 +12,8 @@ license="GPL-3.0-or-later"
 # Keep only doc split
 subpackages="$pkgname-doc"
 
+depends="ncurses"
+
 source="https://ftp.gnu.org/gnu/readline/readline-$pkgver.tar.gz
 		fix-ncurses-underlinking.patch
 		fix-shobj-conf-missing-emerixx.patch
@@ -27,7 +29,7 @@ while [ $_i -le ${pkgver##*.} ]; do
 	_i=$((_i+1))
 done
 
-builddir="$srcdir/$pkgname-$_myver"
+builddir="$srcdir/$pkgname-$pkgver"
 
 build() {
 	./configure \
@@ -45,6 +47,8 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
+	ln -sf libreadline.so."$pkgver" "$pkgdir"/usr/lib/libreadline.so
+	ln -sf libhistory.so."$pkgver"  "$pkgdir"/usr/lib/libhistory.so
 }
 
 sha512sums="

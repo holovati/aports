@@ -10,13 +10,11 @@ arch="all"
 
 license="GPL-3.0-or-later"
 
-makedepends="ncurses-dev"
-
-subpackages="$pkgname-syntax::noarch"
-
-# subpackages="$pkgname-doc $pkgname-syntax::noarch"
+depends="ncurses"
 
 source="https://www.nano-editor.org/dist/v${pkgver%%.*}/nano-$pkgver.tar.xz"
+
+subpackages="$pkgname-doc"
 
 build() {
 	./configure \
@@ -29,8 +27,7 @@ build() {
 		--localstatedir=/var \
 		--disable-libmagic \
 		--disable-nls \
-		--disable-threads
-	
+		--disable-threads	
 	make
 }
 
@@ -40,22 +37,11 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-	install -Dm644 doc/sample.nanorc \
-		"$pkgdir"/etc/nanorc
 
-	rm -rf "$pkgdir"/usr/share/man || true
-	rm -rf "$pkgdir"/usr/share/info || true
+	install -Dm644 doc/sample.nanorc "$pkgdir"/etc/nanorc
 
 	# Proper syntax highlighting for APKBUILDs
-	sed -i "/syntax/s/\"$/\" \"APKBUILD&/" \
-		"$pkgdir"/usr/share/nano/sh.nanorc
-}
-
-syntax() {
-	pkgdesc="Syntax highlighting definitions for $pkgname"
-	depends="$pkgname=$pkgver-r$pkgrel"
-
-	amove usr/share/nano
+	sed -i "/syntax/s/\"$/\" \"APKBUILD&/" "$pkgdir"/usr/share/nano/sh.nanorc
 }
 
 sha512sums="

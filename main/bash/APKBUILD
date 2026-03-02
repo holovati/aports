@@ -2,15 +2,9 @@
 
 pkgname=bash
 
-pkgver=5.3.9
+pkgver=5.3
 
-_patchlevel=${pkgver##*.}
-
-_myver=${pkgver%.*}
-
-_patchbase=${_myver/./}
-
-pkgrel=1
+pkgrel=0
 
 pkgdesc="The GNU Bourne Again shell"
 
@@ -20,42 +14,28 @@ arch="all"
 
 license="GPL-3.0-or-later"
 
-makedepends_build="bison flex"
-
-makedepends_host="readline-dev>8 ncurses-dev musl-libintl"
-
 install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
 
 subpackages="$pkgname-doc"
 
+depends="readline ncurses"
+
 provides="/bin/sh"
 
-source="$pkgname-$_myver-1.tar.gz::https://ftp.gnu.org/gnu/bash/bash-$_myver.tar.gz
+source="https://ftp.gnu.org/gnu/bash/bash-$pkgver.tar.gz
 	bashrc
 	bash-noinfo.patch
 	profile-bashrc.sh
 	"
-# generate url's to patches. note: no forks allowed!
-_i=1
-_pad=00
-while [ $_i -le $_patchlevel ]; do
-	[ $_i -ge 10 ] && _pad="0"
-	[ $_i -ge 100 ] && _pad=
-	source="$source https://ftp.gnu.org/gnu/bash/bash-$_myver-patches/bash$_patchbase-$_pad$_i"
-	_i=$(( _i + 1))
+for i in `seq 9`; do
+    source="$source https://ftp.gnu.org/gnu/bash/bash-$pkgver-patches/bash${pkgver//./}-00$i" ;
 done
 
-builddir="$srcdir/$pkgname-$_myver"
+builddir="$srcdir/$pkgname-$pkgver"
 
 export CFLAGS="$CFLAGS -DSYS_BASHRC='\"/etc/bash/bashrc\"'"
 
 prepare() {
-	# NOTE: This section is for applying the vendor patches, which are required to fix
-	# security holes.  `default_prepare` does *not* apply vendor patches in the format
-	# shipped with bash.  We also need to make sure vendor patches are applied before
-	# our own.
-	# If you disagree, please request an experimental rebuild with bash as /bin/sh,
-	# before removing this section.
 	for p in $source; do
 		case $p in
 		*/bash[0-9][0-9]-[0-9]*)
@@ -105,9 +85,8 @@ package() {
 	   ln -sf bash "$pkgdir"/usr/bin/sh
 	fi
 }
-
 sha512sums="
-426702c8b0fb9e0c9956259973ce5b657890fd47f4f807a64febf20077bb48d0b91474ed6e843d2ef277186b46c5fffa79b808da9b48d4ec027d5e2de1b28ed8  bash-5.3-1.tar.gz
+426702c8b0fb9e0c9956259973ce5b657890fd47f4f807a64febf20077bb48d0b91474ed6e843d2ef277186b46c5fffa79b808da9b48d4ec027d5e2de1b28ed8  bash-5.3.tar.gz
 a9ff38b7a11c7a4935726dddcdde320a0d9616f50bae390f149e23d47bdf07a4c6e09ade2eea2dd9fa8dc449f3d1992a327e19cd57af1b8aad77b39d681c7dff  bashrc
 9d8845491d0fe335bdd8e9a2bd98bda54bfed2ae3c35b2196c6d5a38bdf96c4d97572ba7d6b19ab605ef4e8f001f64cf3312f87dedebb9e37a95ad2c44e33cdb  bash-noinfo.patch
 9b44e2fc4a37fb97bdd75f1563a7b472c3f1260f2da5542f8f063b7647cf751006e70c683c573d0eea4c4bd64863b90997472f5fbc3f9c1ee775cd662b6eab31  profile-bashrc.sh

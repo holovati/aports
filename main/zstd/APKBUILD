@@ -10,12 +10,7 @@ license="BSD-3-Clause OR GPL-2.0-or-later"
 depends_dev="$pkgname=$pkgver-r$pkgrel"
 makedepends="grep"
 checkdepends="file"
-subpackages="
-	$pkgname-libs
-	$pkgname-static
-	$pkgname-dev
-	$pkgname-doc
-	"
+subpackages="$pkgname-doc"
 source="https://github.com/facebook/zstd/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
 
 prepare() {

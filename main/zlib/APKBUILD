@@ -6,7 +6,7 @@ pkgdesc="A compression/decompression library"
 url="https://zlib.net"
 arch="all"
 license="Zlib"
-subpackages="$pkgname-static $pkgname-dev $pkgname-doc"
+subpackages="$pkgname-doc"
 source="https://zlib.net/fossils/zlib-$pkgver.tar.gz"
 
 build() {

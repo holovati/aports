@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=ncurses
 pkgver=6.5_p20250816
 _pkgver=${pkgver/_p/-}
@@ -8,60 +8,12 @@ url="https://invisible-island.net/ncurses/"
 arch="all"
 options="!check" # "tests" are actual demo programs, not a test suite.
 license="X11"
-makedepends_build="ncurses"
-subpackages="
-	$pkgname-static
-	$pkgname-dev
-	$pkgname-doc
-	$pkgname-terminfo-base:base:noarch
-	$pkgname-terminfo:terminfo:noarch
-	libformw
-	libmenuw
-	libncurses++:pp
-	libncursesw
-	libpanelw
-	"
+subpackages="$pkgname-doc $pkgname-static"
+
 source="https://invisible-mirror.net/archives/ncurses/current/ncurses-$_pkgver.tgz
 	cleanup-pkgconfig-ldflags.patch
 	"
 builddir="$srcdir/$pkgname-$_pkgver"
-
-# Terminfo definitions to be included in ncurses-terminfo-base.
-_basic_terms="
-	alacritty
-	ansi
-	console
-	dumb
-	gnome
-	gnome-256color
-	konsole
-	konsole-256color
-	konsole-linux
-	linux
-	putty
-	putty-256color
-	rxvt
-	rxvt-256color
-	screen
-	screen-256color
-	st-*
-	sun
-	terminator
-	terminology*
-	tmux
-	tmux-256color
-	vt100
-	vt102
-	vt200
-	vt220
-	vt52
-	vte
-	vte-256color
-	xterm
-	xterm-256color
-	xterm-color
-	xterm-xfree86
-	"
 
 prepare() {
 	default_prepare
@@ -91,96 +43,17 @@ build() {
 		--enable-pc-files \
 		--enable-symlinks \
 		--with-shared \
-		--enable-widec
+		--enable-widec \
+		--enable-ext-colors \
+		--enable-ext-mouse \
+		--with-termlib \
+		--with-ticlib
+		
 	make
 }
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-	cd "$pkgdir"
-
-	# force link against *w.so
-	local lib; for lib in ncurses ncurses++ form panel menu; do
-		ln -s ${lib}w.pc usr/lib/pkgconfig/$lib.pc
-		ln -s lib${lib}w.a usr/lib/lib$lib.a
-		ln -s lib${lib}w.so usr/lib/lib$lib.so
-	done
-
-	# link curses, tic, tinfo -> ncurses
-	for lib in curses tic tinfo; do
-		ln -s libncurses.a usr/lib/lib${lib}.a
-		ln -s libncurses.so usr/lib/lib${lib}.so
-		ln -s ncurses.pc usr/lib/pkgconfig/${lib}.pc
-	done
-	ln -s libncursesw.so usr/lib/libcursesw.so
-
-	# Install basic terms in /etc/terminfo
-	local i; for i in $_basic_terms; do
-		local termfiles=$(find usr/share/terminfo/ -name "$i" 2>/dev/null) || true
-
-		[ -z "$termfiles" ] && continue
-
-		for termfile in $termfiles; do
-			local basedir=$(basename "$(dirname "$termfile")")
-			install -d etc/terminfo/$basedir
-			mv "$termfile" etc/terminfo/$basedir/
-			ln -s "../../../../etc/terminfo/$basedir/${termfile##*/}" \
-				"usr/share/terminfo/$basedir/${termfile##*/}"
-		done
-	done
-
-}
-
-terminfo() {
-	pkgdesc="$pkgdesc (other terminfo files)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/share/terminfo
-	# also move symlink
-	amove usr/lib/terminfo
-}
-
-libmenuw() {
-	pkgdesc="$pkgdesc ($subpkgname)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/lib/libmenuw.so.*
-}
-
-libformw() {
-	pkgdesc="$pkgdesc ($subpkgname)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/lib/libformw.so.*
-}
-
-pp() {
-	pkgdesc="$pkgdesc ($subpkgname)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/lib/libncurses++w.so.*
-}
-
-libncursesw() {
-	pkgdesc="$pkgdesc ($subpkgname)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/lib/libncursesw.so.*
-}
-
-libpanelw() {
-	pkgdesc="$pkgdesc ($subpkgname)"
-	depends="$pkgname-terminfo-base=$pkgver-r$pkgrel"
-
-	amove usr/lib/libpanelw.so.*
-}
-
-base() {
-	pkgdesc="Descriptions of common terminals"
-	depends=""
-
-	amove etc/terminfo
 }
 
 sha512sums="

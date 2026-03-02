@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=coreutils
 pkgver=9.9
 pkgrel=0
@@ -6,17 +6,15 @@ pkgdesc="The basic file, shell and text manipulation utilities"
 url="https://www.gnu.org/software/coreutils/"
 arch="all"
 license="GPL-3.0-or-later"
-makedepends="
-	openssl-dev
-	perl
-	"
+
+makedepends="perl"
+
 subpackages="$pkgname-doc"
 
 install="$pkgname.post-deinstall"
 
 source="https://ftp.gnu.org/gnu/coreutils/coreutils-$pkgver.tar.xz
-	gnulib-tests.patch
-"
+	gnulib-tests.patch"
 
 build() {
 	FORCE_UNSAFE_CONFIGURE=1 \
@@ -33,8 +31,7 @@ build() {
 		    --disable-libcap \
 		    --disable-acl \
 		    --disable-threads \
-		    --enable-no-install-program=stty \
-		    --with-openssl
+		    --enable-no-install-program=stty
 	make
 }
 
@@ -43,8 +40,6 @@ check() {
 }
 
 package() {
-	# we put this separately
-
 	make DESTDIR="$pkgdir" install
 }
 

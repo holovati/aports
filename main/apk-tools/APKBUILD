@@ -21,20 +21,16 @@ subpackages="$pkgname-dev $pkgname-static $pkgname-bash-completion $pkgname-zsh-
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/17199
 
 depends="
-	musl>=1.2.5
-	libcrypto3>=3.5
+	musl
+	openssl
 	libapk=$pkgver-r$pkgrel
 	"
 _lua="5.5"
 
 makedepends_build="meson openssl-dev>=3.5 lua$_lua lua$_lua-lzlib scdoc"
 
-makedepends_host="
-	openssl-dev
-	openssl-libs-static
-	zlib-dev
-	zlib-static
-	"
+makedepends_host="openssl zlib"
+
 checkdepends="cmocka-dev"
 if [ -z "$BOOTSTRAP" ]; then
 	subpackages="$subpackages lua$_lua-apk:luaapk py3-apk:pyapk"

@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=curl
 pkgver=8.15.0
@@ -9,12 +9,8 @@ arch="all"
 license="curl"
 depends="ca-certificates"
 
-depends_dev="
-	ca-certificates
-	openssl-dev>3
-	zlib-dev
-	zstd-dev
-	"
+depends_dev="ca-certificates openssl zlib zstd"
+
 checkdepends="nghttp2 python3"
 
 makedepends_host="$depends_dev"
