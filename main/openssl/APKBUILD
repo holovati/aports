@@ -38,7 +38,7 @@ build() {
 }
 
 package() {
-	make DESTDIR="$pkgdir"
+	make DESTDIR="$pkgdir" install
 	
 	#remove the script c_rehash
 	rm "$pkgdir"/usr/bin/c_rehash
