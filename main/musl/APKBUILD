@@ -9,9 +9,6 @@ url="https://musl.libc.org/"
 arch="all"
 license="MIT"
 options="!check"
-subpackages="
-	$pkgname-dev
-	"
 
 source="
 	https://musl.libc.org/releases/musl-$pkgver.tar.gz
