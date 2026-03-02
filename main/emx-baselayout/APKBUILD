@@ -123,10 +123,6 @@ export EDITOR=nano
 export PAGER=less
 export LANG=C.UTF-8
 
-# use nicer PS1 for bash
-if [ -n "$BASH_VERSION" -o "$BB_ASH_VERSION" ]; then
-	PS1='\h:\w\$ '
-
 # Enable colorized output for common commands
 alias ls='ls --color=auto'
 alias ll='ls -l --color=auto'
