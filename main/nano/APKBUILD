@@ -42,6 +42,8 @@ package() {
 
 	# Proper syntax highlighting for APKBUILDs
 	sed -i "/syntax/s/\"$/\" \"APKBUILD&/" "$pkgdir"/usr/share/nano/sh.nanorc
+
+	echo "include /usr/share/nano/*.nanorc" >> "$pkgdir"/etc/nanorc
 }
 
 sha512sums="

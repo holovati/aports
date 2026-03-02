@@ -23,6 +23,7 @@ subpackages="$pkgname-dev $pkgname-static $pkgname-bash-completion $pkgname-zsh-
 depends="
 	musl
 	openssl
+	zlib
 	libapk=$pkgver-r$pkgrel
 	"
 _lua="5.5"
@@ -33,7 +34,7 @@ makedepends_host="openssl zlib"
 
 checkdepends="cmocka-dev"
 if [ -z "$BOOTSTRAP" ]; then
-	subpackages="$subpackages lua$_lua-apk:luaapk py3-apk:pyapk"
+	subpackages="$subpackages lua$_lua-apk:luaapk"
 	makedepends_host="$makedepends_host lua$_lua-dev python3-dev"
 
 	# ca-certificates-bundle needed for https certificate validation
@@ -48,7 +49,6 @@ builddir="$srcdir/apk-tools-v$pkgver"
 provides="apk-tools3=$pkgver-r$pkgrel"
 
 replaces="apk-tools3"
-
 
 build() {
 	export VERSION=$pkgver-r$pkgrel
