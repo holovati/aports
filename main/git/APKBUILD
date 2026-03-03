@@ -1,26 +1,17 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 
 pkgname=git
-pkgver=2.51.0
+pkgver=2.53.0
 pkgrel=0
 pkgdesc="Distributed version control system"
 url="https://www.git-scm.com/"
 arch="all"
 license="GPL-2.0-only"
-makedepends="
-	curl-dev
-	file
-	openssl-dev>3
-	perl-dev
-	xmlto
-	zlib-dev
-	"
-# note that order matters
-subpackages="
-	$pkgname-bash-completion
-	$pkgname-prompt::noarch
-	$pkgname-diff-highlight:diff_highlight:noarch
-	"
+
+makedepends="curl file openssl perl zlib"
+
+depends="$makedepends"
+
 
 source="https://www.kernel.org/pub/software/scm/git/git-$pkgver.tar.xz
 	fix-t4219-with-sticky-bit.patch
@@ -78,21 +69,7 @@ package() {
 	install -Dm644 contrib/completion/git-prompt.sh "$pkgdir"/usr/share/git-core/git-prompt.sh
 }
 
-prompt() {
-	pkgdesc="bash and zsh prompt integration for Git"
-	depends="git=$pkgver-r$pkgrel"
-
-	amove usr/share/git-core/git-prompt.sh
-}
-
-diff_highlight() {
-	pkgdesc="diff highlight for git"
-	depends="git=$pkgver-r$pkgrel perl"
-
-	amove usr/bin/diff-highlight
-}
-
 sha512sums="
-2b8c59589266c0c9e58a9f4fda4a970a8a492e2e0ecbafc414fcfacac4a04251f0115b3676f4599a415b53906f1dea312b18a42e9bde455286abd62ec327beaf  git-2.51.0.tar.xz
+f9c0c0f527e10fe3eb524e368b1a24088bfd41097d8cac7854dae7ff21ab8ab2a1716384be53ea6174023ca5a2af3eeddca1d9feb57e447713f82e061df55c8d  git-2.53.0.tar.xz
 be5d568fc5b8b84c9afb97b31e471e41f32ccfe188eba0588ea0ef98b2d96c2ce4b2c1a3d70e88205aa4f6667f850b3f32c13bbb149ecddbf670344c162a4e25  fix-t4219-with-sticky-bit.patch
 "

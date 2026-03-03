@@ -13,6 +13,8 @@ source="https://astron.com/pub/file/file-$pkgver.tar.gz
 	file-$pkgver-pr-579-net147-fix-stack-overrun.patch
 "
 
+depends="zlib zstd xz bzip2"
+
 build() {
 	
 	CFLAGS="-pipe" \

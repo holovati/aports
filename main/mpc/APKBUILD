@@ -7,9 +7,13 @@ pkgdesc="Multiprecision C library"
 url="http://www.multiprecision.org/"
 arch="all"
 license="LGPL-3.0-or-later"
-makedepends_host="gmp-dev mpfr-dev>=4.1.0-r0"
+makedepends_host="gmp mpfr"
 makedepends="$makedepends_host"
-subpackages="$pkgname-dev $pkgname-doc"
+
+depends="gmp mpfr"
+
+subpackages="$pkgname-doc"
+
 source="https://mirrors.dotsrc.org/gnu/mpc/mpc-$pkgver.tar.gz"
 
 builddir="$srcdir"/mpc-$pkgver
@@ -26,7 +30,6 @@ build() {
 		--infodir=/usr/share/info \
 		--enable-shared \
 		--disable-rpath
-
 	make
 }
 

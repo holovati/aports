@@ -6,8 +6,8 @@ pkgdesc="The GNU general-purpose parser generator"
 arch="all"
 license="GPL-3.0-or-later"
 url="https://www.gnu.org/software/bison/bison.html"
-makedepends="perl"
-depends="m4"
+makedepends="perl autoconf"
+depends="m4 readline"
 checkdepends="bison flex"
 
 if [ -n "$BOOTSTRAP" ] || [ -n "$APORTS_BOOTSTRAP" ]; then
@@ -33,7 +33,7 @@ build() {
 		--disable-nls \
 		--disable-threads \
 		--disable-rpath
-	make AUTOHEADER=:
+	make
 }
 
 check() {
@@ -41,7 +41,7 @@ check() {
 }
 
 package() {
-	make AUTOHEADER=: DESTDIR="$pkgdir" install
+	make DESTDIR="$pkgdir" install
 	rm -rf "$pkgdir"/usr/lib/charset.alias
 	rmdir -p "$pkgdir"/usr/lib 2>/dev/null || true
 }

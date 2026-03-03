@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=lzip
 pkgver=1.25
-pkgrel=1
+pkgrel=0
 pkgdesc="Lzip is a lossless data compressor"
 url="https://www.nongnu.org/lzip/"
 arch="all"

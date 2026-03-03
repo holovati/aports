@@ -6,9 +6,12 @@ pkgdesc="Larry Wall's Practical Extraction and Report Language"
 url="https://www.perl.org/"
 arch="all"
 license="Artistic-1.0-Perl OR GPL-1.0-or-later"
-depends_dev="perl-utils=$pkgver-r$pkgrel"
-makedepends_host="bzip2-dev zlib-dev"
-subpackages="$pkgname-doc $pkgname-dev $pkgname-utils::noarch"
+
+makedepends_host="bzip2 zlib"
+
+depends="bzip2 zlib less"
+
+subpackages="$pkgname-doc"
 
 source="https://www.cpan.org/src/5.0/perl-$pkgver.tar.xz
 	digest-sha-cflags.patch
@@ -24,10 +27,6 @@ source="https://www.cpan.org/src/5.0/perl-$pkgver.tar.xz
 # creates empty usr/local/{lib,share} for local sitedirs
 options="!fhs"
 
-# in perl core, removed from main/perl-scalar-list-utils
-provides="
-	perl-scalar-list-utils=$pkgver-r$pkgrel
-	"
 prepare() {
 	# most sources are readonly but we patch some
 	chmod +w "$builddir"/*.c
@@ -99,40 +98,6 @@ doc() {
 	unlink "$pkgdir"/usr/share/man/man1/perlbug.1
 
 	default_doc
-}
-
-dev() {
-	amove usr/bin/h2xs \
-		usr/bin/perlivp \
-		usr/bin/enc2xs \
-		usr/bin/xsubpp
-
-	default_dev
-}
-
-utils() {
-	pkgdesc="$pkgdesc (misc utilities)"
-	depends="$pkgname=$pkgver-r$pkgrel"
-
-	amove \
-		usr/bin/corelist \
-		usr/bin/cpan \
-		usr/bin/encguess \
-		usr/bin/libnetcfg \
-		usr/bin/h2ph \
-		usr/bin/instmodsh \
-		usr/bin/json_pp \
-		usr/bin/perlbug \
-		usr/bin/perlthanks \
-		usr/bin/piconv \
-		usr/bin/pl2pm \
-		usr/bin/prove \
-		usr/bin/ptar \
-		usr/bin/ptardiff \
-		usr/bin/ptargrep \
-		usr/bin/shasum \
-		usr/bin/splain \
-		usr/bin/zipdetails
 }
 
 sha512sums="
