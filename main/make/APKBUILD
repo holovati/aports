@@ -25,6 +25,7 @@ build() {
 		--infodir=/usr/share/info \
 		--disable-nls \
 		--without-guile \
+		--disable-job-server
 		
 	make
 }
@@ -35,8 +36,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-#	rm -rf "$pkgdir"/usr/share/man || true
-#	rm -rf "$pkgdir"/usr/share/info || true
 	ln -sfv make "$pkgdir"/usr/bin/gmake
 }
 

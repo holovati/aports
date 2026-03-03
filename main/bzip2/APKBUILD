@@ -6,7 +6,9 @@ pkgdesc="A high-quality data compression program"
 url="https://sourceware.org/bzip2/"
 arch="all"
 license="bzip2-1.0.6"
-subpackages="$pkgname-static $pkgname-dev $pkgname-doc libbz2"
+
+subpackages="$pkgname-static $pkgname-doc"
+
 source="https://sourceware.org/pub/bzip2/bzip2-$pkgver.tar.gz
 	bzip2-1.0.4-makefile-CFLAGS.patch
 	bzip2-1.0.4-man-links.patch
@@ -49,12 +51,6 @@ package() {
 	mkdir -p "$pkgdir"/usr/lib/pkgconfig/
 	sed "s|@VERSION@|$pkgver|" "$srcdir"/bzip2.pc.in \
 		> "$pkgdir"/usr/lib/pkgconfig/bzip2.pc
-}
-
-libbz2() {
-	pkgdesc="Shared library for bz2"
-	mkdir -p "$subpkgdir"/usr/lib
-	mv "$pkgdir"/usr/lib/*.so.* "$subpkgdir"/usr/lib/
 }
 
 sha512sums="

@@ -7,13 +7,17 @@ url="https://www.gnu.org/software/wget/wget.html"
 arch="all"
 license="GPL-3.0-or-later WITH OpenSSL-Exception"
 makedepends="
-	openssl-dev
+	openssl
 	pcre2-dev
 	perl
-	zlib-dev
+	zlib
 	"
 checkdepends="perl-http-daemon"
+
+depends="zlib openssl"
+
 subpackages="$pkgname-doc"
+
 source="https://mirror.dotsrc.org/gnu/wget/wget-$pkgver.tar.gz"
 
 build() {
@@ -27,6 +31,7 @@ build() {
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--with-ssl=openssl \
+		--with-zlib \
 		--disable-rpath \
 		--disable-nls \
 		--disable-threads

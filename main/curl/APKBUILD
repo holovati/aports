@@ -7,7 +7,7 @@ pkgdesc="URL retrival utility and library"
 url="https://curl.se/"
 arch="all"
 license="curl"
-depends="ca-certificates"
+depends="ca-certificates zlib zstd"
 
 depends_dev="ca-certificates openssl zlib zstd"
 
@@ -37,6 +37,7 @@ build() {
 		--with-openssl \
 		--with-ca-bundle=/etc/ssl/certs/ca-bundle.crt \
 		--with-ca-path=/etc/ssl/certs \
+		--disable-threaded-resolver \
 		--disable-ldap \
 		--disable-ldaps \
 		--disable-rtsp \

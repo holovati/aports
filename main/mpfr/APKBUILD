@@ -9,11 +9,16 @@ pkgdesc="multiple-precision floating-point library"
 url="https://www.mpfr.org/"
 arch="all"
 license="LGPL-3.0-or-later"
+
 makedepends_build="texinfo"
-makedepends_host="gmp-dev"
+
+makedepends_host="gmp"
+
+depends="gmp"
+
 makedepends="$makedepends_build $makedepends_host"
 
-subpackages="$pkgname-doc $pkgname-dev"
+subpackages="$pkgname-doc"
 
 source="https://www.mpfr.org/mpfr-$_pkgver/mpfr-$_pkgver.tar.xz"
 

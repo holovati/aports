@@ -4,17 +4,21 @@ pkgver=5.8.1
 pkgrel=0
 pkgdesc="Library and CLI tools for XZ and LZMA compressed files"
 url="https://tukaani.org/xz/"
+
 arch="all"
+
 license="GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later"
+
 depends_dev="$pkgname=$pkgver-r$pkgrel"
-subpackages="$pkgname-static $pkgname-dev  $pkgname-doc"
+
+subpackages="$pkgname-static $pkgname-doc"
+
 source="https://github.com/tukaani-project/xz/releases/download/v$pkgver/xz-$pkgver.tar.gz"
 
 build() {
 	# compression utility
 	
 	CFLAGS="$CFLAGS -O3 -pipe" \
-	lt_cv_deplibs_check_method=pass_all \
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \

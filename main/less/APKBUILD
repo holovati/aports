@@ -16,17 +16,15 @@ license="GPL-3.0-or-later OR BSD-2-Clause"
 
 options="!check"
 
-makedepends="ncurses-dev"
+makedepends="ncurses"
 
 subpackages="$pkgname-doc"
+
+depends="ncurses"
 
 source="https://www.greenwoodsoftware.com/less/less-${pkgver/_beta/-beta}.tar.gz"
 
 builddir="$srcdir/less-${pkgver%_beta}"
-
-prepare() {
-	  default_prepare
-}
 
 build() {
 	./configure \
@@ -42,9 +40,6 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-	#rm -rf "$pkgdir"/usr/share/man || true
-	#rm -rf "$pkgdir"/usr/share/info || true
 }
 
 sha512sums="

@@ -1,19 +1,27 @@
 # Maintainer Damir Holovati
 pkgname=sed
 pkgver=4.9
-pkgrel=2
+pkgrel=0
+
 pkgdesc="GNU stream editor"
+
 url="https://www.gnu.org/software/sed"
+
 arch="all"
+
 license="GPL-3.0-or-later"
+
 install="$pkgname.post-deinstall"
+
 makedepends="perl"
+
 checkdepends="diffutils coreutils"
+
 subpackages="$pkgname-doc"
+
 source="https://ftp.gnu.org/pub/gnu/sed/sed-$pkgver.tar.xz"
 
 build() {
-
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -32,10 +40,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-
-	#rm -rf "$pkgdir"/usr/lib/charset.alias || true
-	#rmdir -p "$pkgdir"/usr/lib 2>/dev/null || true
-	#rm -rv "$pkgdir"/usr/share/man || true
 }
 
 sha512sums="

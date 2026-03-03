@@ -267,20 +267,23 @@ index 78b54b39..013f9d0a 100755
    version_type=linux
    need_lib_prefix=no
    need_version=no
-diff --git a/ld/configure.tgt b/ld/configure.tgt
-index ea01ccf9..bc5947b2 100644
+
+
 --- a/ld/configure.tgt
 +++ b/ld/configure.tgt
-@@ -1019,6 +1019,9 @@ x86_64-*-linux-*)	targ_emul=elf_x86_64
- x86_64-*-redox*)	targ_emul=elf_x86_64
- 			targ_extra_emuls=elf_i386
+@@ -1039,6 +1039,9 @@
+ *-*-ieee*)		targ_emul=vanilla
+ 			targ_extra_ofiles=
  			;;
 +x86_64-*-emerixx*)      targ_emul=elf_x86_64
 +			targ_extra_emuls="elf_x86_64 elf_i386"
 +			;;
- x86_64-*-solaris2*)	targ_emul=elf_x86_64_sol2
- 			targ_extra_emuls="elf_x86_64 elf_i386_sol2 elf_i386_ldso elf_i386 elf_iamcu"
- 			targ_extra_libpath=$targ_extra_emuls
+ *)
+   echo 2>&1 "*** ld does not support target ${targ}"
+   echo 2>&1 "*** see ld/configure.tgt for supported targets"
+
+
+
 diff --git a/ld/emulparams/elf_x86_64.sh b/ld/emulparams/elf_x86_64.sh
 index 92449745..28df8fc1 100644
 --- a/ld/emulparams/elf_x86_64.sh

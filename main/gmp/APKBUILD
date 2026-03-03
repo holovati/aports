@@ -7,12 +7,13 @@ pkgdesc="free library for arbitrary precision arithmetic"
 url="https://gmplib.org/"
 arch="all"
 license="LGPL-3.0-or-later OR GPL-2.0-or-later"
+
 makedepends="m4 texinfo"
-subpackages="$pkgname-static $pkgname-doc $pkgname-dev libgmpxx"
+
+subpackages="$pkgname-static $pkgname-doc"
+
 source="https://gmplib.org/download/gmp/gmp-$pkgver.tar.xz
 	"
-
-
 build() {
 	CFLAGS="$CFLAGS -pipe -std=gnu99" \
 	./configure \
@@ -34,17 +35,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
-
-libgmpxx() {
-	pkgdesc="C++ support for gmp"
-	mkdir -p "$subpkgdir"/usr/lib/
-	mv "$pkgdir"/usr/lib/libgmpxx.so.* "$subpkgdir"/usr/lib/
-}
-
-doc() {
-	default_doc
-	replaces="gmp5-doc"
 }
 
 sha512sums="
