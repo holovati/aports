@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Create directory structure
+mkdir -p /dev/pts /dev/input
+
+# Helper function
+makedev() {
+    name="$1"
+    type="$2"
+    major="$3"
+    minor="$4"
+    path="/dev/$name"
+    
+    # Force overwrite: delete if exists
+    if [ -e "$path" ]; then
+        rm -f "$path"
+    fi
+
+    mknod "$path" "$type" "$major" "$minor"
+    chmod 600 "$path"
+}
+
+# Emerixx Kernel specific device numbers
+makedev "console" c 0 0
+makedev "null"    c 2 2
+makedev "zero"    c 2 12
+makedev "tty"     c 17 0
+makedev "ptmx"    c 18 0
+makedev "fb0"     c 23 0
+makedev "fuse"    c 10 229
+
+makedev "sda"     b 13 0
+makedev "sda1"    b 13 1
+makedev "sda2"    b 13 2
+
+makedev "input/mice" c 20 0
+
+for i in $(seq 0 16); do
+    makedev "pts/$i" c 19 "$i"
+done
+
+makedev "pts/ptmx" c 18 0

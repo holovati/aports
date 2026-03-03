@@ -1,31 +1,10 @@
 pkgname=emx-devnodes
 pkgver=1.0
-pkgrel=0
+pkgrel=1
 pkgdesc="Static device nodes for Emerixx kernel"
 arch="x86_64"
 license="MIT"
 options="!check"
 
-package() {
-    mkdir -p "$pkgdir/dev" "$pkgdir/dev/input" "$pkgdir/dev/pts"
-
-    mknod "$pkgdir/dev/console" c 0 0
-    mknod "$pkgdir/dev/null" c 2 2
-    mknod "$pkgdir/dev/zero" c 2 12
-    mknod "$pkgdir/dev/tty" c 17 0
-    mknod "$pkgdir/dev/ptmx" c 18 0
-    mknod "$pkgdir/dev/fb0" c 23 0
-    mknod "$pkgdir/dev/fuse" c 10 229
-
-    mknod "$pkgdir/dev/sda" b 13 0
-    mknod "$pkgdir/dev/sda1" b 13 1
-    mknod "$pkgdir/dev/sda2" b 13 2
-
-    mknod "$pkgdir/dev/input/mice" c 20 0
-
-    for i in $(seq 0 16); do
-        mknod "$pkgdir/dev/pts/$i" c 19 "$i"
-    done
-    
-    mknod "$pkgdir/dev/pts/ptmx" c 18 0
-}
+install="$pkgname.post-install"
+source="emx-devnodes.post-install"
