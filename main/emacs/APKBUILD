@@ -10,16 +10,16 @@ url="https://www.gnu.org/software/emacs/emacs.html"
 arch="all"
 license="GPL-3.0-or-later"
 
-makedepends="
-	gawk
-	gmp-dev
-	ncurses-dev
-	texinfo
-	"
+makedepends="gawk gmp ncurses texinfo"
+
+depends="ncurses readline"
+
 source="https://ftp.gnu.org/gnu/emacs/emacs-$pkgver.tar.xz
 	no-git-repo.patch
 	"
 options="!check"
+
+subpackages="$pkgname-doc"
 
 prepare() {
 	  default_prepare
@@ -68,7 +68,7 @@ build() {
 		--without-threads \
 		--disable-acl \
 		--without-compress-install
-		
+
 	make
 }
 

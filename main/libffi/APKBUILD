@@ -6,10 +6,13 @@ pkgdesc="portable, high level programming interface to various calling conventio
 url="https://sourceware.org/libffi/"
 arch="all"
 license="MIT"
-# depends_dev="linux-headers"
+
 makedepends_build="texinfo"
+
 checkdepends="dejagnu"
+
 subpackages="$pkgname-static $pkgname-doc"
+
 source="https://github.com/libffi/libffi/releases/download/v$pkgver/libffi-$pkgver.tar.gz"
 
 build() {

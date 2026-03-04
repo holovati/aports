@@ -6,7 +6,9 @@ pkgdesc="Hierarchial argument parsing library broken out from glibc"
 url="http://www.lysator.liu.se/~nisse/misc/"
 arch="all"
 license="LGPL-2.1-or-later"
+
 makedepends="libtool automake autoconf"
+
 source="$pkgname-$pkgver.tar.gz::https://github.com/argp-standalone/argp-standalone/archive/refs/tags/$pkgver.tar.gz
 	gnu89-inline.patch"
 

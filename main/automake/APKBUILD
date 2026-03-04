@@ -10,7 +10,11 @@ arch="noarch"
 license="GPL-2.0-or-later"
 depends="perl"
 makedepends="autoconf"
+
+depends="autoconf"
+
 subpackages="$pkgname-doc"
+
 source="https://ftp.gnu.org/gnu/automake/automake-$pkgver.tar.xz
 	add-emerixx-config-sub.patch
 	add-emerixx-config-guess.patch

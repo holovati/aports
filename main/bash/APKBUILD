@@ -14,7 +14,7 @@ arch="all"
 
 license="GPL-3.0-or-later"
 
-install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
+# install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
 
 subpackages="$pkgname-doc"
 

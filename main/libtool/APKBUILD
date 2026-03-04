@@ -2,16 +2,15 @@
 
 pkgname=libtool
 pkgver=2.6.0
-pkgrel=1
+pkgrel=0
 pkgdesc="Generic library support script"
 url="https://www.gnu.org/software/libtool/"
 arch="all"
 license="LGPL-2.0-or-later AND GPL-2.0-or-later"
 # libtool-next-version expects a `diff` that doesn't default to unified context
-depends="
-	diffutils
-	libltdl=$pkgver-r$pkgrel
-	"
+
+depends="diffutils"
+
 makedepends="
 	autoconf
 	automake
@@ -23,8 +22,10 @@ checkdepends="
 	gawk
 	gzip
 	"
-subpackages="libltdl-static libltdl $pkgname-doc"
+subpackages="$pkgname-doc"
+
 #source="https://ftp.gnu.org/gnu/libtool/libtool-$pkgver.tar.gz
+
 source="https://alpha.gnu.org/gnu/libtool/libtool-$pkgver.tar.gz
 	no-xz.patch
 	add-emerixx-libtool-m4.patch
@@ -58,13 +59,6 @@ check() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
-
-libltdl() {
-	pkgdesc="Runtime libraries for GNU Libtool Dynamic Module Loader"
-	depends=
-
-	amove usr/lib/libltdl.so*
 }
 
 sha512sums="

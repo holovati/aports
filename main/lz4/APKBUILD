@@ -1,4 +1,4 @@
-# Maintainer: Damir Holovati
+# Maintainer Damir Holovati
 pkgname=lz4
 pkgver=1.10.0
 pkgrel=0
@@ -7,7 +7,7 @@ url="https://github.com/lz4/lz4"
 arch="all"
 license="BSD-2-Clause AND GPL-2.0-or-later"
 checkdepends="diffutils"
-subpackages="$pkgname-dev $pkgname-doc"
+subpackages="$pkgname-doc"
 
 source="https://github.com/lz4/lz4/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
 

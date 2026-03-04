@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-# Create directory structure
-mkdir -p /dev/pts /dev/input
+mkdir -p /dev/{pts, input}
 
 # Helper function
 makedev() {

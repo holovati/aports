@@ -6,17 +6,15 @@ pkgdesc="library that can create and read several streaming archive formats"
 url="https://libarchive.org/"
 arch="all"
 license="BSD-2-Clause AND BSD-3-Clause AND Public-Domain"
-makedepends="
-	bsd-compat-headers
-	bzip2-dev
-	lz4-dev
-	openssl-dev
-	xz-dev
-	zlib-dev
-	zstd-dev
-	"
-subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-tools"
+
+makedepends="bzip2 lz4 openssl xz zlib zstd"
+
+depends="$makedepends"
+
+subpackages="$pkgname-static $pkgname-doc"
+
 source="https://libarchive.org/downloads/libarchive-$pkgver.tar.xz"
+
 options="!check"
 
 build() {
@@ -30,12 +28,6 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
-}
-
-tools() {
-	pkgdesc="libarchive tools bsdtar and bsdcpio"
-
-	amove usr/bin
 }
 
 sha512sums="
