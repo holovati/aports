@@ -2,7 +2,7 @@
 
 pkgname=abuild
 pkgver=3.16.0
-pkgrel=0
+pkgrel=3
 pkgdesc="Script to build Alpine Packages"
 url="https://gitlab.alpinelinux.org/alpine/abuild/"
 
@@ -16,6 +16,9 @@ depends="apk-tools
 	patch
 	pkgconf
 	tar
+	scdoc
+	bc
+	help2man
 	"
 makedepends_build="pkgconfig scdoc"
 
