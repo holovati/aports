@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=bzip2
 pkgver=1.0.8
-pkgrel=0
+pkgrel=1
 pkgdesc="A high-quality data compression program"
 url="https://sourceware.org/bzip2/"
 arch="all"
@@ -44,9 +44,10 @@ check() {
 
 package() {
 	make PREFIX="$pkgdir"/usr install
-	install -D libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.$pkgver
-	ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so
-	ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.${pkgver%%.*}
+	install -D libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.$pkgver    # e.g. libbz2.so.1.0.8 (the actual file)
+	ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so                 # e.g. libbz2.so (LINKNAME)
+	ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.${pkgver%%.*}   # e.g. libbz2.so.1 (SONAME)
+	ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.${pkgver%.*}    # e.g. libbz2.so.1.0 (SONAME with major and minor)
 
 	mkdir -p "$pkgdir"/usr/lib/pkgconfig/
 	sed "s|@VERSION@|$pkgver|" "$srcdir"/bzip2.pc.in \
