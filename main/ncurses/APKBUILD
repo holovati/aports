@@ -54,6 +54,15 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" install
+
+    # Create symlinks for non-wide libraries
+    cd "$pkgdir"/usr/lib
+    local lib
+    for lib in ncurses ncurses++ form panel menu tic tinfo; do
+        [ -f "lib${lib}w.so" ] && ln -s "lib${lib}w.so" "lib${lib}.so"
+        [ -f "lib${lib}w.a" ] && ln -s "lib${lib}w.a" "lib${lib}.a"
+        [ -f "pkgconfig/${lib}w.pc" ] && ln -s "${lib}w.pc" "pkgconfig/${lib}.pc"
+    done
 }
 
 sha512sums="
