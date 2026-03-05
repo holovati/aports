@@ -2,7 +2,7 @@
 
 pkgname=readline
 pkgver=8.3
-pkgrel=1
+pkgrel=2
 pkgdesc="GNU readline library"
 url="https://tiswww.cwru.edu/php/chet/readline/rltop.html"
 arch="all"
@@ -47,7 +47,10 @@ build() {
 package() {
 	make DESTDIR="$pkgdir" install
 	ln -sf libreadline.so."$pkgver" "$pkgdir"/usr/lib/libreadline.so
+	ln -sf libreadline.so."$pkgver" "$pkgdir"/usr/lib/libreadline.so.${pkgver%.*}
+
 	ln -sf libhistory.so."$pkgver"  "$pkgdir"/usr/lib/libhistory.so
+	ln -sf libhistory.so."$pkgver"  "$pkgdir"/usr/lib/libhistory.so.${pkgver%.*}
 }
 
 sha512sums="
