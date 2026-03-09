@@ -86,6 +86,7 @@ build() {
 		--disable-lslogins \
 		--disable-nologin \
 		--disable-sulogin \
+		--disable-logger \
 		--disable-su \
 		--disable-schedutils \
   		--disable-cramfs \
