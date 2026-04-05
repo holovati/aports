@@ -12,6 +12,13 @@ options="!check" # upstream requires an old check version (0.9.4)
 makedepends="$depends_dev libxdmcp python3"
 source="https://xorg.freedesktop.org/archive/individual/lib/libxcb-$pkgver.tar.xz"
 
+
+prepare() {
+	  default_prepare
+	  emerixx_prepare
+	  sed -i 's/|netbsd\*) ;;/|netbsd*|emerixx*) ;;/g'  "$srcdir"/libxcb-"$pkgver"/configure
+}
+
 build() {
 	./configure \
 		--build="$CBUILD" \
@@ -31,7 +38,7 @@ build() {
 		--disable-glx \
 		--disable-dri2 \
 		--disable-dri3 \
-		--disable-xf86-dri \
+		--disable-xfree86-dri \
 		--disable-present \
 		--disable-xv \
 		--disable-xvmc \
