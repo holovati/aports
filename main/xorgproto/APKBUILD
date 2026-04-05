@@ -63,3 +63,6 @@ package() {
 	rm -f "$pkgdir"/usr/include/X11/extensions/vldXvMC.h # libxvmc-dev >= 1.0.12-r0
 	rm -f "$pkgdir"/usr/include/X11/extensions/XKBgeom.h # libx11-dev >= 1.6.9-r0
 }
+sha512sums="
+053504c8fbaf952825c4c179e8de8c3502d816b961bc483b5d4f968a41a89802c71932d8073e7b3e4ffea61bf42596e98599c6ea5c750bb48ee5514916e7e387  xorgproto-2025.1.tar.gz
+"
