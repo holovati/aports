@@ -1,0 +1,55 @@
+--- a/libparted/arch/linux.c	2026-03-09 13:01:37.000000000 +0000
++++ b/libparted/arch/linux.c	2026-03-09 13:00:40.000000000 +0000
+@@ -19,7 +19,39 @@
+ 
+ #include <config.h>
+ #include <arch/linux.h>
++
++#ifndef __emerixx__
+ #include <linux/blkpg.h>
++#else
++// Hacky as fuck, but will do the job until we have our own
++#include <sys/ioctl.h>
++
++#define BLKPG _IO(0x12, 105)
++
++struct blkpg_ioctl_arg {
++  int op;
++  int flags;
++  int datalen;
++  void *data;
++};
++
++#define BLKPG_ADD_PARTITION 1
++#define BLKPG_DEL_PARTITION 2
++#define BLKPG_RESIZE_PARTITION 3
++
++#define BLKPG_DEVNAMELTH 64
++#define BLKPG_VOLNAMELTH 64
++
++struct blkpg_partition {
++  long long start;
++  long long length;
++  int pno;
++  char devname[BLKPG_DEVNAMELTH];
++  char volname[BLKPG_VOLNAMELTH];
++};
++
++#endif
++
+ #include <parted/parted.h>
+ #include <parted/debug.h>
+ #if defined __s390__ || defined __s390x__
+
+--- a/libparted/architecture.c	2026-03-09 13:01:26.000000000 +0000
++++ b/libparted/architecture.c	2026-03-09 13:01:18.000000000 +0000
+@@ -31,6 +31,9 @@
+ #ifdef linux
+ 	extern PedArchitecture ped_linux_arch;
+ 	const PedArchitecture* arch = &ped_linux_arch;
++#elif defined(__emerixx__)
++	extern PedArchitecture ped_linux_arch;
++	const PedArchitecture* arch = &ped_linux_arch;
+ #elif defined(__BEOS__)
+ 	extern PedArchitecture ped_beos_arch;
+ 	const PedArchitecture* arch = &ped_beos_arch;

@@ -2,7 +2,7 @@
 
 pkgname=abuild
 pkgver=3.16.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Script to build Alpine Packages"
 url="https://gitlab.alpinelinux.org/alpine/abuild/"
 
@@ -75,7 +75,7 @@ package() {
 	# We don't have them and will not anytime soon.
  	ln -s /usr/bin/bash "$pkgdir"/usr/bin/ash
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/getcap
- 	ln -s /usr/bin/true "$pkgdir"/usr/bin/getopt
+ 	# ln -s /usr/bin/true "$pkgdir"/usr/bin/getopt
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/fakeroot
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/scanelf
 
