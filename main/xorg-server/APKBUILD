@@ -54,9 +54,6 @@ prepare() {
 build() {
 	_fontroot="/usr/share/fonts"
 
-	# 32-bit fails otherwise
-	export CFLAGS="$CFLAGS -Wno-error=array-bounds"
-
 	abuild-meson \
 		  	-Dxorg=true \
 			-Dxephyr=false \
@@ -79,6 +76,7 @@ build() {
 			-Dudev=false \
 			-Dudev_kms=false \
 			-Dhal=false \
+			-Dsecure-rpc=false \
 			-Dsystemd_logind=false \
 			-Dlisten_tcp=false \
 			-Dlisten_unix=true \
@@ -102,6 +100,11 @@ build() {
 			-Dxkb_dir=/usr/share/X11/xkb \
 			-Dxkb_output_dir=/var/lib/xkb \
 			. output
+
+
+	echo "#include <errno.h>" >> output/include/xorg-config.h
+	echo "#include <sys/stat.h>" >> output/include/xorg-config.h
+	echo "#include <termios.h>" >> output/include/xorg-config.h
 	
 	meson compile -C output
 }
@@ -113,7 +116,7 @@ check() {
 package() {
 	DESTDIR="$pkgdir" meson install --no-rebuild -C output
 
-	chmod u+s "$pkgdir"/usr/libexec/Xorg.wrap
+	# chmod u+s "$pkgdir"/usr/libexec/Xorg.wrap
 
 	# Don't conflict with xf86-input-evdev
 	# rm -f "$pkgdir"/usr/share/X11/xorg.conf.d/10-evdev.conf

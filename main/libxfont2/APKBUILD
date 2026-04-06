@@ -8,14 +8,13 @@ arch="all"
 license="MIT"
 options="!check"  # No test suite.
 
-#freetype-dev
-
 makedepends="
 	libfontenc
 	util-macros
 	xorgproto
 	xtrans
 	zlib
+	freetype
 	"
 source="https://www.x.org/pub/individual/lib/libXfont2-$pkgver.tar.xz"
 
