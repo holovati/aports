@@ -1,0 +1,131 @@
+# Maintainer Damir Holovati
+
+pkgname=xorg-server
+pkgver=21.1.18
+pkgrel=0
+pkgdesc="X.Org X Server"
+url="https://www.x.org/wiki"
+arch="all"
+license="MIT"
+options="suid"
+subpackages="$pkgname-doc"
+
+#	font-cursor-misc
+#	font-misc-misc
+depends="
+	xkbcomp
+	xkeyboard-config
+	"
+
+#	libxcvt-dev
+#	libxext-dev
+#	libxshmfence-dev
+#	nettle-dev
+#	wayland-dev
+#	wayland-protocols
+#	xcb-util-dev
+#	xcb-util-image-dev
+#	xcb-util-keysyms-dev
+#	xcb-util-renderutil-dev
+#	xcb-util-wm-dev
+makedepends="
+	libx11
+	libxau
+	libxcb
+	libxdmcp
+	libxkbfile
+	pixman
+	xkbcomp
+	xorgproto
+	xtrans
+	meson
+	"
+source="https://www.x.org/releases/individual/xserver/xorg-server-$pkgver.tar.xz"
+
+# the modesetting driver is now shipped with xorg server
+#provides="xf86-video-modesetting=$pkgver-r$pkgrel"
+#replaces="xf86-video-modesetting"
+
+prepare() {
+	default_prepare
+	sed -i -e 's/termio.h/termios.h/' hw/xfree86/os-support/xf86_OSlib.h
+}
+
+build() {
+	_fontroot="/usr/share/fonts"
+
+	# 32-bit fails otherwise
+	export CFLAGS="$CFLAGS -Wno-error=array-bounds"
+
+	abuild-meson \
+		  	-Dxorg=true \
+			-Dxephyr=false \
+			-Dxnest=false \
+			-Dxvfb=false \
+			-Dxwin=false \
+			-Dxquartz=false \
+			-Dxwayland=false \
+			-Dxwayland_ei=false \
+			-Dxwayland_eglstream=false \
+			-Dglamor=false \
+			-Dglx=false \
+			-Ddri1=false \
+			-Ddri2=false \
+			-Ddri3=false \
+			-Ddrm=false \
+			-Dxv=false \
+			-Dxvmc=false \
+			-Dpresent=false \
+			-Ddga=false \
+			-Dvgahw=false \
+			-Dint10=false \
+			-Dpciaccess=false \
+			-Dudev=false \
+			-Dudev_kms=false \
+			-Dhal=false \
+			-Dsystemd_logind=false \
+			-Dsystemd_notify=false \
+			-Dlisten_tcp=false \
+			-Dlisten_unix=true \
+			-Dlisten_local=true \
+			-Dxdmcp=false \
+			-Dxdm-auth-1=false \
+			-Ddpms=false \
+			-Dscreensaver=false \
+			-Dxinerama=false \
+			-Dxres=false \
+			-Dxace=false \
+			-Dxcsecurity=false \
+			-Dxselinux=false \
+			-Dxf86bigfont=false \
+			-Dmitshm=false \
+			-Dlinux_apm=false \
+			-Dlinux_acpi=false \
+			-Dinput_thread=false \
+			-Dxf86-input-inputtest=false \
+			-Ddefault_font_path=$_fontroot/misc,$_fontroot/100dpi:unscaled,$_fontroot/75dpi:unscaled,$_fontroot/TTF,$_fontroot/Type1 \
+			-Dxkb_dir=/usr/share/X11/xkb \
+			-Dxkb_output_dir=/var/lib/xkb \
+			. output
+	
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+
+	chmod u+s "$pkgdir"/usr/libexec/Xorg.wrap
+
+	# Don't conflict with xf86-input-evdev
+	# rm -f "$pkgdir"/usr/share/X11/xorg.conf.d/10-evdev.conf
+
+	install -Dm0644 xkb/README.compiled -t "$pkgdir"/var/lib/xkb
+}
+
+sha512sums="
+839ce759fc0e5405599c4cff0acf381f278d22b465b9fb9e335b5fd1c63f6d546788e4e869854026eb4b1e1a77a83b60d6fef472cf8534d45630f31b587a50dd  xorg-server-21.1.18.tar.xz
+"
