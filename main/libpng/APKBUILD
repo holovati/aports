@@ -1,0 +1,41 @@
+# Maintainer Damir Holovati
+pkgname=libpng
+pkgver=1.6.49
+pkgrel=0
+pkgdesc="Portable Network Graphics library"
+url="http://www.libpng.org"
+arch="all"
+license="Libpng"
+makedepends_build="gawk autoconf automake libtool"
+makedepends_host="zlib"
+subpackages="$pkgname-doc"
+source="https://downloads.sourceforge.net/libpng/libpng-$pkgver.tar.gz
+		https://downloads.sourceforge.net/sourceforge/libpng-apng/libpng-$pkgver-apng.patch.gz
+		"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-static
+
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+d99a9b4121ebd45b19779d54bf8711e4a263064da6c62f782310871a91c2cfd082a22a2cced6fd0c5731e30a61f32b65cfc3112c2d7bf9936a7d2474e17f146c  libpng-1.6.49.tar.gz
+d3a7121f892049f5488f32b5de29fb8892f2b329ee1df956b129918601946ab86a542a4412587ee5f660c581484812aaf101f953bcc187c993d98ba9d8d63a00  libpng-1.6.49-apng.patch.gz
+"
