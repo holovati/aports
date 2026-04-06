@@ -1,0 +1,18 @@
+--- xorg-server-21.1.18.orig/hw/xfree86/fbdevhw/fbdevhw.c	2026-04-06 20:30:54.000000000 +0000
++++ xorg-server-21.1.18/hw/xfree86/fbdevhw/fbdevhw.c	2026-04-06 20:34:15.000000000 +0000
+@@ -329,6 +329,7 @@
+         return -1;
+     }
+ 
++#ifndef __emerixx__
+     /* only touch non-PCI devices on this path */
+     {
+         char buf[PATH_MAX] = {0};
+@@ -344,6 +345,7 @@
+         }
+         free(sysfs_path);
+     }
++#endif
+ 
+     if (namep) {
+         if (-1 == ioctl(fd, FBIOGET_FSCREENINFO, (void *) (&fix))) {
