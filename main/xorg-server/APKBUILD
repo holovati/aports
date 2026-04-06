@@ -2,7 +2,7 @@
 
 pkgname=xorg-server
 pkgver=21.1.18
-pkgrel=0
+pkgrel=1
 pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
@@ -53,6 +53,8 @@ prepare() {
 
 build() {
 	_fontroot="/usr/share/fonts"
+
+	sed -i 's/epoll_create1/___epoll_create1/g' include/meson.build
 
 	abuild-meson \
 		  	-Dxorg=true \
