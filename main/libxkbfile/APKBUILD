@@ -6,29 +6,22 @@ pkgdesc="X11 keyboard file manipulation library"
 url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
-makedepends="util-macros"
-subpackages="$pkgname-doc"
+makedepends="libx11 util-macros"
 source="https://www.x.org/releases/individual/lib/libxkbfile-$pkgver.tar.xz"
 
 build() {
-	./configure \
-		--build=$CBUILD \
-		--host=$CHOST \
-		--prefix=/usr \
-		--sysconfdir=/etc
-	make
+	abuild-meson output .
+	meson compile -C output
 }
 
 check() {
-	make check
+	meson test --print-errorlogs -C output
 }
 
 package() {
-	make DESTDIR="$pkgdir" install
-	install -D -m644 COPYING \
-		"$pkgdir"/usr/share/licenses/$pkgname/COPYING
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
 }
 
 sha512sums="
-d80ac41f6fa3a1ffad77ea1f8f9d9542f0bd210d74b263802bc6e6c1594fe325b27f42b5454aeeb36352518963b1ed1fdbbad95d7db3690b2e36d54742b7c236  libxkbfile-1.1.3.tar.xz
+772035b6bc1d692e8141e095fc2a8cf2ba7daed1d7148def862103160e0d7706f46865367befbbe4c777e7311b224d2cd4474f399d747b122dd395deac3e7cb7  libxkbfile-1.2.0.tar.xz
 "
