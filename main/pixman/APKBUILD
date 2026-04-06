@@ -7,7 +7,6 @@ url="https://gitlab.freedesktop.org/pixman"
 arch="all"
 license="MIT"
 makedepends="meson libpng"
-subpackages="$pkgname-dbg"
 source="https://xorg.freedesktop.org/releases/individual/lib/pixman-$pkgver.tar.xz"
 
 options="!check"
