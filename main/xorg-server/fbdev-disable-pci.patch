@@ -16,3 +16,22 @@
  
      if (namep) {
          if (-1 == ioctl(fd, FBIOGET_FSCREENINFO, (void *) (&fix))) {
+--- xorg-server-21.1.18.orig/hw/xfree86/common/xf86Bus.c	2026-04-06 22:29:24.000000000 +0000
++++ xorg-server-21.1.18/hw/xfree86/common/xf86Bus.c	2026-04-06 22:30:37.000000000 +0000
+@@ -556,6 +556,8 @@
+ void
+ xf86PostProbe(void)
+ {
++#if !defined(__emerixx__)
++  
+     if (fbSlotClaimed && (
+ #if (defined(__sparc__) || defined(__sparc)) && !defined(__OpenBSD__)
+                              sbusSlotClaimed ||
+@@ -571,6 +573,7 @@
+         ))
+         FatalError("Cannot run in framebuffer mode. Please specify busIDs "
+                    "       for all framebuffer devices\n");
++#endif
+ }
+ 
+ Bool

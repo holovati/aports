@@ -2,7 +2,7 @@
 
 pkgname=xorg-server
 pkgver=21.1.18
-pkgrel=3
+pkgrel=5
 pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
@@ -132,5 +132,5 @@ package() {
 sha512sums="
 839ce759fc0e5405599c4cff0acf381f278d22b465b9fb9e335b5fd1c63f6d546788e4e869854026eb4b1e1a77a83b60d6fef472cf8534d45630f31b587a50dd  xorg-server-21.1.18.tar.xz
 878e6e28dc8cb3b2afba3d13f28fd1e104cc0b9ba613e322cb1a1f49a06d2f7e010d756e962637bb3d597ca9884011c352f20e3fbc206a6df88fb4d0d0526660  no-linux-headers.patch
-72dce98eee201791990b6e63305b85786447848905cd31520640a53065bfdd87f02839360de3682bf24ac884f4eff35e873dba025ac6b9f5f78875404134d2c8  fbdev-disable-pci.patch
+ffbfcbb3cc45006c156e1eafc6e168c6f3749972b1da4b2b24659f904f0bc8a65e1295907274475e974f4f0091b681c0fd8b69487145c815e585213e47f5fba6  fbdev-disable-pci.patch
 "
