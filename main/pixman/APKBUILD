@@ -1,0 +1,34 @@
+# Maintainer Damir Holovati
+pkgname=pixman
+pkgver=0.46.4
+pkgrel=0
+pkgdesc="Low-level pixel manipulation library"
+url="https://gitlab.freedesktop.org/pixman"
+arch="all"
+license="MIT"
+makedepends="meson libpng"
+subpackages="$pkgname-dbg"
+source="https://xorg.freedesktop.org/releases/individual/lib/pixman-$pkgver.tar.xz"
+
+options="!check"
+
+build() {
+
+	# auto-features=auto: a lot of features are architecture dependent
+	abuild-meson \
+		--auto-features=auto \
+		-Ddefault_library=shared \
+		-Dlibpng=enabled \
+		-Ddemos=disabled \
+		-Dtests=disabled \
+		. output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+83b133e7969ba34f883f4e08dcc5d388c4397f43ce836c191c05945fe77c16ff501d531600780c12678a0d08105828a6bdeff2156b63f9c1a84087bc7f40ae9f  pixman-0.46.4.tar.xz
+"
