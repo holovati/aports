@@ -1,0 +1,55 @@
+# Maintainer Damir Holovati
+pkgname=freetype
+pkgver=2.13.3
+pkgrel=0
+
+# upgrading needs to rebuild py3-matplotlib and update its _ftver
+
+pkgdesc="TrueType font rendering library"
+url="https://www.freetype.org/"
+arch="all"
+license="FTL OR GPL-2.0-or-later"
+options="!check"
+
+#brotli-dev
+makedepends="
+	bzip2
+	libpng
+	libx11
+	meson
+	zlib-dev
+	"
+subpackages="$pkgname-doc"
+
+source="
+	https://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz
+	pcf-family-names.patch
+	subpixel.patch
+	table-validation-modules.patch
+	"
+
+prepare() {
+	default_prepare
+
+	ln -sfv ../../freetype-$pkgver "$srcdir"/ft2demos-$pkgver/subprojects/freetype2
+}
+
+build() {
+	abuild-meson \
+		-Dfreetype2:default_library=shared \
+		-Dlibrsvg=disabled \
+		. output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	install -Dm644 builds/unix/freetype2.m4 -t "$pkgdir"/usr/share/aclocal
+}
+
+sha512sums="
+600828d7756c8cfa974448ef34ee0db573fb8cfdb2dc1e0358b63c44a03bfd7e3d4384424b9cc5e4749034f60231a550c4b7fcb46694fcacea218787ce305504  freetype-2.13.3.tar.xz
+78ad6b1de388d3986fd5a51a7076b0a9d782733e85f400fc8c070b40e5e48130a562a67a7a9b251169b74ae052f571ea8e6b0f9435c271520d93dd72c1845d59  pcf-family-names.patch
+55fb06dbc7cc950129a99d9fd5480397b3e0720f32ab65fb3893768ed40e2de27be2cfd52ec6da490f79c79b4ddfecd0b7efcd32da4a95f2666a6b67a3cd9a31  subpixel.patch
+580fe59acddfd41966e387bdb6a88336b8bc119cc3d60d8689be20c96fb0dd07c5138ea31f6cb9c854f497ecb41c3adc49eb3ec16a34b2e010e8294851770763  table-validation-modules.patch
+"
