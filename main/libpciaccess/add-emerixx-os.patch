@@ -1,0 +1,23 @@
+--- a/src/common_init.c	2024-03-23 22:32:20.000000000 +0000
++++ b/src/common_init.c	2026-04-06 19:25:32.000000000 +0000
+@@ -69,7 +69,9 @@
+     err = pci_system_hurd_create();
+ #elif defined(__CYGWIN__)
+     err = pci_system_x86_create();
++#elif defined(__emerixx__)
++    // TODO 
+ #else
+ # error "Unsupported OS"
+ #endif
+ 
+--- a/src/common_interface.c	2024-03-23 22:32:20.000000000 +0000
++++ b/src/common_interface.c	2026-04-06 19:25:32.000000000 +0000
+@@ -39,7 +39,7 @@
+ #include "pciaccess.h"
+ #include "pciaccess_private.h"
+ 
+-#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__) || defined(__emerixx__)
+ #include <byteswap.h>
+ 
+ #if __BYTE_ORDER == __BIG_ENDIAN
