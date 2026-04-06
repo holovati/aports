@@ -2,7 +2,7 @@
 
 pkgname=xorg-server
 pkgver=21.1.18
-pkgrel=1
+pkgrel=2
 pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
@@ -34,13 +34,15 @@ makedepends="
 	libxcb
 	libxdmcp
 	libxkbfile
+	libpciaccess
 	pixman
 	xkbcomp
 	xorgproto
 	xtrans
 	meson
 	"
-source="https://www.x.org/releases/individual/xserver/xorg-server-$pkgver.tar.xz"
+source="https://www.x.org/releases/individual/xserver/xorg-server-$pkgver.tar.xz
+	no-linux-headers.patch"
 
 # the modesetting driver is now shipped with xorg server
 #provides="xf86-video-modesetting=$pkgver-r$pkgrel"
@@ -48,13 +50,13 @@ source="https://www.x.org/releases/individual/xserver/xorg-server-$pkgver.tar.xz
 
 prepare() {
 	default_prepare
-	sed -i -e 's/termio.h/termios.h/' hw/xfree86/os-support/xf86_OSlib.h
+	sed -i -e 's/termio.h/termios.h/'              hw/xfree86/os-support/xf86_OSlib.h
+	sed -i -e 's/linux/emerixx/g'                  hw/xfree86/fbdevhw/meson.build
+	sed -i -e 's/epoll_create1/___epoll_create1/g' include/meson.build
 }
 
 build() {
 	_fontroot="/usr/share/fonts"
-
-	sed -i 's/epoll_create1/___epoll_create1/g' include/meson.build
 
 	abuild-meson \
 		  	-Dxorg=true \
@@ -128,4 +130,5 @@ package() {
 
 sha512sums="
 839ce759fc0e5405599c4cff0acf381f278d22b465b9fb9e335b5fd1c63f6d546788e4e869854026eb4b1e1a77a83b60d6fef472cf8534d45630f31b587a50dd  xorg-server-21.1.18.tar.xz
+878e6e28dc8cb3b2afba3d13f28fd1e104cc0b9ba613e322cb1a1f49a06d2f7e010d756e962637bb3d597ca9884011c352f20e3fbc206a6df88fb4d0d0526660  no-linux-headers.patch
 "
