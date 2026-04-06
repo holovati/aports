@@ -67,9 +67,9 @@ build() {
 			-Ddri2=false \
 			-Ddri3=false \
 			-Ddrm=false \
-			-Dxv=false \
+			-Dxv=true \
 			-Dxvmc=false \
-			-Ddga=false \
+			-Ddga=true \
 			-Dvgahw=false \
 			-Dint10=false \
 			-Dpciaccess=false \

@@ -22,7 +22,11 @@ build() {
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
+		--disable-pciaccess \
 		--prefix=/usr
+
+	sed -i 's/#ifndef XSERVER_/#ifdef XSERVER_/g' ./src/fbdev.c
+
 	make
 }
 
