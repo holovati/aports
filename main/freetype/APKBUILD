@@ -19,7 +19,7 @@ makedepends="
 	meson
 	zlib-dev
 	"
-subpackages="$pkgname-doc"
+# subpackages="$pkgname-doc"
 
 source="
 	https://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz
@@ -28,16 +28,9 @@ source="
 	table-validation-modules.patch
 	"
 
-prepare() {
-	default_prepare
-
-	ln -sfv ../../freetype-$pkgver "$srcdir"/ft2demos-$pkgver/subprojects/freetype2
-}
-
 build() {
 	abuild-meson \
 		-Dfreetype2:default_library=shared \
-		-Dlibrsvg=disabled \
 		. output
 	meson compile -C output
 }
