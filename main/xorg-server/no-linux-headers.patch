@@ -1,0 +1,20 @@
+--- xorg-server-21.1.18.orig/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:48:29.000000000 +0000
++++ xorg-server-21.1.18/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:51:12.000000000 +0000
+@@ -10,7 +10,16 @@
+ #ifndef _LINUX_FB_H
+ #define _LINUX_FB_H
+ 
+-#include <asm/types.h>
++// #include <asm/types.h>
++#include <stdint.h>
++
++#define __u32 uint32_t
++#define __u16 uint16_t
++#define __u8 uint8_t
++
++#define __s32 int32_t
++#define __s16 int16_t
++#define __s8 int8_t
+ 
+ /* Definitions of frame buffers						*/
+ 
