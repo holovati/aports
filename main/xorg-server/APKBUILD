@@ -64,9 +64,6 @@ build() {
 			-Dxvfb=false \
 			-Dxwin=false \
 			-Dxquartz=false \
-			-Dxwayland=false \
-			-Dxwayland_ei=false \
-			-Dxwayland_eglstream=false \
 			-Dglamor=false \
 			-Dglx=false \
 			-Ddri1=false \
@@ -75,7 +72,6 @@ build() {
 			-Ddrm=false \
 			-Dxv=false \
 			-Dxvmc=false \
-			-Dpresent=false \
 			-Ddga=false \
 			-Dvgahw=false \
 			-Dint10=false \
@@ -84,7 +80,6 @@ build() {
 			-Dudev_kms=false \
 			-Dhal=false \
 			-Dsystemd_logind=false \
-			-Dsystemd_notify=false \
 			-Dlisten_tcp=false \
 			-Dlisten_unix=true \
 			-Dlisten_local=true \
