@@ -8,9 +8,7 @@ arch="all"
 license="MIT"
 subpackages="$pkgname-doc"
 
-#libxmu-dev libxcursor-dev xbitmaps
-
-makedepends="libx11 util-macros"
+makedepends="libx11 libxmu libxcursor util-macros xbitmaps"
 
 source="https://www.x.org/releases/individual/app/xsetroot-$pkgver.tar.xz"
 
