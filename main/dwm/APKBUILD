@@ -1,3 +1,4 @@
+#Maintainer Damir Holovati
 pkgname=dwm
 pkgver=6.6
 pkgrel=0
@@ -19,6 +20,8 @@ source="https://dl.suckless.org/dwm/dwm-$pkgver.tar.gz
 
 prepare() {
 	default_prepare
+	emerixx_prepare
+
 	sed -i -e '/CFLAGS/{s/-Os//;s/=/+=/}' \
 		-e '/LDFLAGS/{s/=/+=/}' \
 		"$builddir"/config.mk
