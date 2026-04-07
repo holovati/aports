@@ -1,0 +1,34 @@
+# Maintainer Damir Holovati
+pkgname=expat
+pkgver=2.7.1
+pkgrel=0
+pkgdesc="XML Parser library written in C"
+url="https://libexpat.github.io/"
+arch="all"
+license="MIT"
+checkdepends="bash"
+source="https://downloads.sourceforge.net/project/expat/expat/$pkgver/expat-$pkgver.tar.bz2"
+
+subpackages="$pkgname-doc"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--mandir=/usr/share/man
+		
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir/" install
+}
+
+sha512sums="
+ea78781ca03367a014afc1bb37c2306883b6f666d7cd90dc84a39c4abc6b7ec261636b8668540aa286c708a41dd02baae8249dc4391306da56431700460a0f23  expat-2.7.1.tar.bz2
+"
