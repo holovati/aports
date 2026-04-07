@@ -7,7 +7,7 @@ url="https://xorg.freedesktop.org/"
 arch="noarch"
 license="custom"
 source="https://www.x.org/releases/individual/font/font-alias-$pkgver.tar.xz"
-subpackages="$pkgname-doc"
+#subpackages="$pkgname-doc"
 
 build() {
 	./configure \
