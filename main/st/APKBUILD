@@ -17,6 +17,7 @@ source="https://dl.suckless.org/st/st-$pkgver.tar.gz"
 prepare() {
 	default_prepare
 	sed -i '/tic/d' Makefile
+	echo '#define __linux' >> config.h
 }
 
 build() {
