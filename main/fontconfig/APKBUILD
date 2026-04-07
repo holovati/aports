@@ -6,9 +6,8 @@ pkgdesc="Library for configuring and customizing font access"
 url="https://www.freedesktop.org/wiki/Software/fontconfig"
 arch="all"
 license="MIT"
-#expat-dev
 #docbook2x
-makedepends="freetype python3 gperf util-linux"
+makedepends="freetype python3 gperf util-linux expat"
 checkdepends="bash json-c-dev uuidgen curl"
 triggers="$pkgname.trigger=/usr/share/fonts/*"
 
@@ -16,6 +15,7 @@ triggers="$pkgname.trigger=/usr/share/fonts/*"
 
 source="https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$pkgver/fontconfig-$pkgver.tar.xz
 	fix-arithmetic.patch
+	add-emerixx.patch
 	"
 
 # For generation of man pages
@@ -49,4 +49,5 @@ package() {
 sha512sums="
 c09c1f041f61ee0d220ff906a86b5c4b329106dc96f8c04b23f8fdeb480df626717fe3613bccb41cb39e86334078139322710377f5ddaa3abe48569e798161c9  fontconfig-2.17.1.tar.xz
 9cb83535a49ddacf526a040d5407382a8d92b077200f24da983999dc81aa0966d6878bab5bf7c2d3bc6a50d2ca6edb8b56142362d34919b18cb947415384f25b  fix-arithmetic.patch
+09b7b635e356122f6f51a284f741f838c81cefb77063b5f911f54fcf6b12a72854296b285ea3452076f1ff91880bb6eb2152fa7c3a0ce0265513e5de636ce324  add-emerixx.patch
 "
