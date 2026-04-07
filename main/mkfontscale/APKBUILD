@@ -1,4 +1,4 @@
-# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer Damir Holovati
 pkgname=mkfontscale
 pkgver=1.2.3
 pkgrel=0
