@@ -10,6 +10,8 @@ license="MIT"
 source="http://bitmath.org/code/mtdev/mtdev-$pkgver.tar.gz"
 
 build() {
+	sed -i 's/<linux\//<emerixx\//g' include/mtdev.h
+
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \

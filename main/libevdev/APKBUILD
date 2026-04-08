@@ -1,24 +1,40 @@
 # Maintainer Damir Holovati
 pkgname=libevdev
 pkgver=1.13.3
-pkgrel=0
+pkgrel=1
 pkgdesc="Kernel Evdev Device Wrapper Library"
 url="https://www.freedesktop.org/wiki/Software/libevdev"
 arch="all"
 license="MIT"
 options="!check"  # Requires CONFIG_INPUT_UINPUT in kernel
-
+subpackages="$pkgname-doc"
 #doxygen
 makedepends=" meson python3"
 
 source="https://www.freedesktop.org/software/libevdev/libevdev-$pkgver.tar.xz"
 
 build() {
+	cat >> include/linux/input.h <<-EOF
+	#ifdef __emerixx__
+	#include <emerixx/input.h>
+	#endif
+	EOF
+
+	cat >> include/linux/uinput.h <<-EOF
+	#ifdef __emerixx__
+	#include <emerixx/uinput.h>
+	#endif
+	EOF
+
+	sed -i 's/<linux/<emerixx/g' libevdev/libevdev.h
+
+	ln -s linux include/linux/emerixx
 	abuild-meson \
 		-Dtests=disabled \
 		-Ddocumentation=disabled \
 		-Dcoverity=false \
 		. output
+	
 	meson compile -C output
 }
 

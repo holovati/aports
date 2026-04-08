@@ -7,11 +7,21 @@ url="https://xorg.freedesktop.org"
 arch="all"
 license="MIT"
 subpackages="$pkgname-doc"
-#eudev-dev mtdev-dev libevdev-dev libxi-dev
 
-makedepends="libxkbfile xorg-server libxrandr"
+makedepends="libxkbfile xorg-server libxrandr mtdev libevdev"
 
 source="https://www.x.org/releases/individual/driver/$pkgname-$pkgver.tar.gz"
+
+prepare() {
+	  default_prepare
+	  emerixx_prepare
+
+	  sed -i '/libudev/d' configure.ac
+
+	  autoreconf -fi
+
+	  sed -i 's/<linux/<emerixx/g' src/evdev.h
+}
 
 build() {
 	./configure \
