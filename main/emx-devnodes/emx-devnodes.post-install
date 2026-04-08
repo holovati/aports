@@ -32,7 +32,8 @@ makedev "sda"     b 13 0
 makedev "sda1"    b 13 1
 makedev "sda2"    b 13 2
 
-makedev "input/mice" c 20 0
+makedev "input/event0" c 16 0
+makedev "input/event1" c 16 1
 
 for i in $(seq 0 16); do
     makedev "pts/$i" c 19 "$i"
