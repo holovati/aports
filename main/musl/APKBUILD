@@ -15,8 +15,14 @@ source="
 	statx-rdev-fix.patch
 	vdso-not-usefull.patch
 	"
-build() {
+prepare() {
+	  default_prepare
+	  sed -i 's/linux/emerixx/g' arch/generic/bits/kd.h
+	  sed -i 's/linux/emerixx/g' arch/generic/bits/vt.h
+	  sed -i 's/linux/emerixx/g' arch/generic/bits/soundcard.h
+}
 
+build() {
 	# export CFLAGS="${CFLAGS/-O0 /}"
 
 	./configure \

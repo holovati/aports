@@ -1,5 +1,5 @@
---- xorg-server-21.1.18.orig/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:48:29.000000000 +0000
-+++ xorg-server-21.1.18/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:51:12.000000000 +0000
+--- a/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:48:29.000000000 +0000
++++ b/hw/xfree86/fbdevhw/fbpriv.h	2026-04-06 19:51:12.000000000 +0000
 @@ -10,7 +10,16 @@
  #ifndef _LINUX_FB_H
  #define _LINUX_FB_H
@@ -18,3 +18,63 @@
  
  /* Definitions of frame buffers						*/
  
+--- a/hw/xfree86/os-support/linux/lnx_bell.c	2026-04-09 17:18:30.000000000 +0000
++++ b/hw/xfree86/os-support/linux/lnx_bell.c	2026-04-09 17:16:01.000000000 +0000
+@@ -28,7 +28,11 @@
+ #endif
+ 
+ #include <sys/ioctl.h>
++#ifdef __linux__
+ #include <linux/kd.h>
++#elif __emerixx__
++#include <emerixx/kd.h>
++#endif
+ 
+ #include "xf86.h"
+ #include "xf86Priv.h"
+--- a/hw/xfree86/os-support/xf86_OSlib.h	2026-04-09 17:18:30.000000000 +0000
++++ b/hw/xfree86/os-support/xf86_OSlib.h	2026-04-09 17:16:38.000000000 +0000 
+@@ -176,7 +176,7 @@
+ /**************************************************************************/
+ /* Linux or Glibc-based system                                            */
+ /**************************************************************************/
+-#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__) || defined(__emerixx__)
+ #include <sys/ioctl.h>
+ #include <signal.h>
+ #include <stdlib.h>
+@@ -193,7 +193,7 @@
+ #include <sys/stat.h>
+ 
+ #include <sys/mman.h>
+-#ifdef __linux__
++#if defined (__linux__) || defined(__emerixx__)
+ #define HAS_USL_VTS
+ #include <sys/kd.h>
+ #include <sys/vt.h>
+--- a/hw/xfree86/os-support/meson.build	2026-04-09 17:18:30.000000000 +0000
++++ b/hw/xfree86/os-support/meson.build	2026-04-09 17:14:39.000000000 +0000
+@@ -60,6 +60,23 @@
+         srcs_xorg_os_support += 'shared/pm_noop.c'
+     endif
+ 
++elif host_machine.system() == 'emerixx'
++    srcs_xorg_os_support += [
++#       'shared/VTsw_noop.c',        
++        'shared/VTsw_usl.c',
++        'shared/agp_noop.c',
++        'shared/ioperm_noop.c',
++        'shared/kmod_noop.c',
++        'shared/pm_noop.c',
++        'shared/vidmem.c',
++        'shared/posix_tty.c',
++        'shared/sigio.c',
++#       'stub/stub_bell.c',
++        'linux/lnx_bell.c',
++#       'stub/stub_init.c',
++        'linux/lnx_init.c',
++        'stub/stub_video.c',
++    ]    
+ elif host_machine.system() == 'sunos'
+     srcs_xorg_os_support += [
+         'solaris/sun_apm.c',

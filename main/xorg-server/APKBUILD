@@ -43,7 +43,8 @@ makedepends="
 	"
 source="https://www.x.org/releases/individual/xserver/xorg-server-$pkgver.tar.xz
 	no-linux-headers.patch
-	fbdev-disable-pci.patch"
+	fbdev-disable-pci.patch
+	xorg.conf"
 
 # the modesetting driver is now shipped with xorg server
 #provides="xf86-video-modesetting=$pkgver-r$pkgrel"
@@ -106,11 +107,6 @@ build() {
 			-Dxkb_output_dir=/var/lib/xkb \
 			. output
 
-
-	echo "#include <errno.h>" >> output/include/xorg-config.h
-	echo "#include <sys/stat.h>" >> output/include/xorg-config.h
-	echo "#include <termios.h>" >> output/include/xorg-config.h
-	
 	meson compile -C output
 }
 
@@ -127,10 +123,12 @@ package() {
 	# rm -f "$pkgdir"/usr/share/X11/xorg.conf.d/10-evdev.conf
 
 	install -Dm0644 xkb/README.compiled -t "$pkgdir"/var/lib/xkb
+	install -Dm0644 "$srcdir"/xorg.conf -t "$pkgdir"/etc/X11
 }
 
 sha512sums="
 839ce759fc0e5405599c4cff0acf381f278d22b465b9fb9e335b5fd1c63f6d546788e4e869854026eb4b1e1a77a83b60d6fef472cf8534d45630f31b587a50dd  xorg-server-21.1.18.tar.xz
-878e6e28dc8cb3b2afba3d13f28fd1e104cc0b9ba613e322cb1a1f49a06d2f7e010d756e962637bb3d597ca9884011c352f20e3fbc206a6df88fb4d0d0526660  no-linux-headers.patch
+c3ae7f15fe8127a07b7b864187e89e81a65a1b481b01f15437229b95f6545f6c594d95924f863278c16f663bf2b859625802235fc8a093f091daff8c07c4c328  no-linux-headers.patch
 ffbfcbb3cc45006c156e1eafc6e168c6f3749972b1da4b2b24659f904f0bc8a65e1295907274475e974f4f0091b681c0fd8b69487145c815e585213e47f5fba6  fbdev-disable-pci.patch
+e995b2af41c0cd5c973cbd15f73587641558a79312e5298d88417a865e2f30aa9a0627961e562de07bbc43cabff8adb8da1603d6cdbcdd09e7954a28a9a24c49  xorg.conf
 "
