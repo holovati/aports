@@ -20,10 +20,22 @@ makedev() {
 }
 
 # Emerixx Kernel specific device numbers
-makedev "console" c 0 0
+makedev "console" c 0 1
+
+# Active VT
+makedev "tty0"     c 0 0
+
+# VT's 
+makedev "tty1"     c 0 1
+makedev "tty2"     c 0 2
+makedev "tty3"     c 0 3
+makedev "tty3"     c 0 4
+
+# Controlling terminal
+makedev "tty"     c 17 0
+
 makedev "null"    c 2 2
 makedev "zero"    c 2 12
-makedev "tty"     c 17 0
 makedev "ptmx"    c 18 0
 makedev "fb0"     c 23 0
 makedev "fuse"    c 10 229
