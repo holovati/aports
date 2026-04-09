@@ -2,7 +2,7 @@
 
 pkgname=xorg-server
 pkgver=21.1.18
-pkgrel=5
+pkgrel=6
 pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
