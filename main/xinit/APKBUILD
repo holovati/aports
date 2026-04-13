@@ -1,15 +1,14 @@
 # Maintainer Damir Holovati
 pkgname=xinit
 pkgver=1.4.3
-pkgrel=0
+pkgrel=1
 pkgdesc="X.Org initialization program"
 url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
 options="!check"  # No test suite.
 subpackages="$pkgname-doc"
-#xauth mcookie 
-depends="xmodmap xrdb"
+depends="xauth mcookie xmodmap xrdb"
 makedepends="libx11 util-macros"
 
 source="https://www.x.org/releases/individual/app/xinit-$pkgver.tar.xz
@@ -46,8 +45,8 @@ package() {
 sha512sums="
 ff754567d2224d1ff5023b302cae3a435950a6f24a773e214ea108b96d18b722d4cc86d0e25a7d92edea1307e3037248b4da004c1b392f73ba7bc1e04a94b77b  xinit-1.4.3.tar.xz
 4e2258419f86528adf22025af897c88696c79040352e1711aaf97d7e5cf0093779a5c43c9c107fe34321db2b33d81be5552ce01a6b71742ce92e638138f12ba2  06_move_serverauthfile_into_tmp.patch
-761db2ff2b501724ba8a7fde9df3d93851797a261871af205773159949bd74b4c1ac7c1afe0b816dce03825a5d7165caa474141cfb2ea82408abfe4719775ce0  xinitrc
+0a5109441c3e275d1beaca7be9dde5d59f32eb21675e1bc7b0fe03abdd2c9c070f3755469936681eb010af7e1209f1f9a4295f4693a7d20efd436be7c2f90baa  xinitrc
 448bc6c7987a4735b6584e307cd5c53092b1a338043293f5f110d11818dd1b80508401a3b6f09525c82a16a88f293b37011d8ca112460b0f95d26897e3e0619e  xsession.skel
 b311032a751bb21d6c49ffe1dfc67beb577b5d5bec4a4c12612c4c0f9b9d6d2a07f7435c7d2fe9ab4c318546ee0cb9d4ff3f7ef908e756a818da529e913e667d  Xsession
-f86d96d76bcb340021e7904925f0029f8662e4dfc32489198b3a8695dca069da496539e2287249c763fe9c4d8d5d591fd18fe49a0bee822cbbd0eb712efbb89b  xserverrc
+21fa4388e209bde9b461bd8ebb31dbaf76f1099d7d5db488f046e68bfd7b1f3b38d981cd254aafedc0cfd931e463701d2a8a1ea19f6895d51ce6ec04a7028027  xserverrc
 "

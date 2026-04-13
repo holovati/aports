@@ -7,7 +7,7 @@ url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
 subpackages="$pkgname-doc"
-makedepends="libx11-dev libxmu-dev libxau-dev util-macros"
+makedepends="libx11 libxmu libxau util-macros"
 source="https://www.x.org/releases/individual/app/xhost-$pkgver.tar.xz"
 
 build() {
