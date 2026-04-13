@@ -1,0 +1,30 @@
+# Maintainer Damir Holovati
+pkgname=sysvinit
+pkgver=3.04
+pkgrel=0
+pkgdesc="Tradidional initialization system for Unix systems"
+url="https://savannah.nongnu.org/projects/sysvinit"
+arch="all"
+license="GPL"
+subpackages="$pkgname-doc"
+options="!check"
+makedepends="emerixx-utils"
+source="https://download.savannah.nongnu.org/releases/sysvinit/sysvinit-$pkgver.tar.xz
+	add-emerixx-defines.patch"
+
+build() {
+    make
+}
+
+package() {
+	make ROOT="$pkgdir" install
+	mv "$pkgdir"/bin/* "$pkgdir"/usr/bin
+	rmdir "$pkgdir"/bin
+	mv "$pkgdir"/sbin "$pkgdir"/usr/sbin
+}
+
+
+sha512sums="
+059092ee857782e88f88e47475846f859589aa1062a6e1294fe8983a11d04a13811e0dd6d277431f45abc2d9d96e5358f6b2d2df1d291402fada66cd009a5fa9  sysvinit-3.04.tar.xz
+bc8c7843888a4889c17c9b41d938f0a59afab30b83bdb6620cd5c407cad6309694c46e8238795d14f240795b3b675123fe32f3182c739185072e1275163bf761  add-emerixx-defines.patch
+"
