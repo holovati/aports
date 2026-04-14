@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emerixx-utils
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="A stand-alone shell with many built-in commands"
 url="https://gitlab.com/holovati/emerixx-utils"
 arch="all"
@@ -24,5 +24,5 @@ package() {
 }
 
 sha512sums="
-8a590bb6f7e56b0ecf1f4219e558db378ed34dbcec1e84defc0b6616b415dcc0d7163163778e0f371ab6e53c46f1cee6b979c4f44ef84bddeff45dfe945359b8  emerixx-utils-main.tar.gz
+1ac2bbddeb299b8c0e9ceab1a3c5fcdafe337fcb44c17ddd2aa9df7ff349d5beec9f04f43ad5470a8594f096c548cf30ed8480c06b9bf83469cfc735740496d2  emerixx-utils-main.tar.gz
 "
