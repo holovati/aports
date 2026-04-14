@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=coreutils
 pkgver=9.9
-pkgrel=0
+pkgrel=1
 pkgdesc="The basic file, shell and text manipulation utilities"
 url="https://www.gnu.org/software/coreutils/"
 arch="all"
@@ -30,8 +30,9 @@ build() {
 		    --without-selinux \
 		    --disable-libcap \
 		    --disable-acl \
-		    --disable-threads \
-		    --enable-no-install-program=stty
+		    --disable-threads
+
+#		    --enable-no-install-program=stty
 	make
 }
 
