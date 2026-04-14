@@ -1,0 +1,19 @@
+--- mingetty-1.08.orig/mingetty.c	2026-04-14 20:53:47.000000000 +0000
++++ mingetty-1.08/mingetty.c	2026-04-14 20:51:23.000000000 +0000
+@@ -369,12 +369,15 @@
+ 	hn[MAXHOSTNAMELEN] = '\0';
+ 	pid = getpid ();
+ 	sid = getsid (0);
++#if     defined(__emerixx__)
++	putenv ("TERM=xterm");
++#else
+ #if	defined(s390) || defined(__s390__)
+ 	putenv ("TERM=dumb");
+ #else
+ 	putenv ("TERM=linux");
+ #endif
+-
++#endif
+ 	while ((c = getopt_long (argc, argv, "a:p:d:l:n:w:r:", long_options,
+ 		(int *) 0)) != EOF) {
+ 		switch (c) {
