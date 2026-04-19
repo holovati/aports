@@ -1,0 +1,42 @@
+--- a/misc/Makefile.in	2026-04-19 22:02:34.000000000 +0000
++++ b/misc/Makefile.in	2026-04-19 22:08:41.000000000 +0000
+@@ -35,6 +35,7 @@
+ @BLKID_CMT@FINDFS_MAN= findfs.8
+ 
+ @FUSE_CMT@FUSE_PROG= fuse2fs
++@FUSE_CMT@FUSE_STATIC= fuse2fs.static
+ 
+ SPROGS=		mke2fs badblocks tune2fs dumpe2fs $(BLKID_PROG) logsave \
+ 			$(E2IMAGE_PROG) @FSCK_PROG@ e2undo
+@@ -47,7 +48,7 @@
+ 			e2mmpstatus.8
+ FMANPAGES=	mke2fs.conf.5 ext4.5
+ 
+-UPROGS=		chattr lsattr $(FUSE_PROG) @UUID_CMT@ uuidgen
++UPROGS=		chattr lsattr $(FUSE_STATIC) $(FUSE_PROG) @UUID_CMT@ uuidgen
+ UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
+ UMANPAGES+=	@FUSE_CMT@ fuse2fs.1
+ 
+@@ -429,6 +430,13 @@
+ 		$(LIBFUSE) $(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBINTL) \
+ 		$(CLOCK_GETTIME_LIB) $(SYSLIBS) $(LIBS_E2P)
+ 
++fuse2fs.static: $(FUSE2FS_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
++		$(LIBEXT2FS) $(DEPLIBS_E2P)
++	$(E) "	LD $@"
++	$(Q) $(CC) $(LDFLAGS_STATIC) -o fuse2fs.static $(FUSE2FS_OBJS) $(STATIC_LIBS) \
++		$(LIBFUSE) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(STATIC_LIBEXT2FS) $(LIBINTL) \
++		$(CLOCK_GETTIME_LIB) $(SYSLIBS) $(STATIC_LIBE2P)
++
+ journal.o: $(srcdir)/../debugfs/journal.c
+ 	$(E) "	CC $<"
+ 	$(Q) $(CC) -c $(JOURNAL_CFLAGS) -I$(srcdir) \
+@@ -715,7 +723,7 @@
+ 		uuidd e2image tune2fs.static tst_ismounted fsck.profiled \
+ 		blkid.profiled tune2fs.profiled e2image.profiled \
+ 		e2undo.profiled mke2fs.profiled dumpe2fs.profiled \
+-		dumpe2fs.static e2image.static \
++		dumpe2fs.static e2image.static fuse2fs.static \
+ 		logsave.profiled filefrag.profiled uuidgen.profiled \
+ 		uuidd.profiled e2image.profiled e2fuzz mke2fs.conf \
+ 		profiled/*.o \#* *.s *.o *.a *~ core gmon.out

@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=mingetty
 pkgver=1.08
-pkgrel=0
+pkgrel=1
 pkgdesc="A compact getty program for virtual consoles only"
 url="https://sourceforge.net/projects/mingetty/"
 arch="all"
@@ -26,6 +26,12 @@ build() {
 
 package() {
 	make install DESTDIR="$pkgdir" SBINDIR="/usr/sbin"
+
+	mkdir -p "$pkgdir"/etc
+	cat >>"$pkgdir"/etc/issue <<-EOF
+	Welcome to Hyjal OS
+	Kernel (\s \r) on \m (\l)
+	EOF
 }
 
 sha512sums="

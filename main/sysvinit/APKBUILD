@@ -10,7 +10,9 @@ subpackages="$pkgname-doc"
 options="!check"
 makedepends="emerixx-utils"
 source="https://download.savannah.nongnu.org/releases/sysvinit/sysvinit-$pkgver.tar.xz
-	add-emerixx-defines.patch"
+	add-emerixx-defines.patch
+	emerixx-console-fix.patch
+	"
 
 build() {
     make
@@ -21,10 +23,25 @@ package() {
 	mv "$pkgdir"/bin/* "$pkgdir"/usr/bin
 	rmdir "$pkgdir"/bin
 	mv "$pkgdir"/sbin "$pkgdir"/usr/sbin
+
+	# util-linux provides these
+	rm "$pkgdir"/usr/bin/last
+	rm "$pkgdir"/usr/bin/lastb
+	rm "$pkgdir"/usr/bin/mesg
+	rm "$pkgdir"/usr/bin/utmpdump
+	rm "$pkgdir"/usr/bin/wall
+
+	rm "$pkgdir"/usr/share/man/man1/last.1
+	rm "$pkgdir"/usr/share/man/man1/lastb.1
+	rm "$pkgdir"/usr/share/man/man1/mesg.1
+	rm "$pkgdir"/usr/share/man/man1/utmpdump.1
+	rm "$pkgdir"/usr/share/man/man1/wall.1
+	
 }
 
 
 sha512sums="
 059092ee857782e88f88e47475846f859589aa1062a6e1294fe8983a11d04a13811e0dd6d277431f45abc2d9d96e5358f6b2d2df1d291402fada66cd009a5fa9  sysvinit-3.04.tar.xz
 bc8c7843888a4889c17c9b41d938f0a59afab30b83bdb6620cd5c407cad6309694c46e8238795d14f240795b3b675123fe32f3182c739185072e1275163bf761  add-emerixx-defines.patch
+6a86e7cb4ec099492282a46e58a591c6df627f92ce233e00849accb8577fb083c0e43be5faa58a9cc4c425fd82c1e36baadbfa97ca4eb6877380ea8c9deea4f5  emerixx-console-fix.patch
 "

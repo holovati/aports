@@ -1,0 +1,26 @@
+--- a/src/init.c	2026-04-14 11:35:28.000000000 +0000
++++ b/src/init.c	2026-04-14 21:34:37.000000000 +0000
+@@ -582,7 +582,11 @@
+ 		tried_devcons++;
+ 	}
+ 
++#if defined(__emerixx__)
++	while ((fd = open(console_dev, O_RDONLY|O_NONBLOCK|O_NOCTTY)) < 0) {
++#else
+ 	while ((fd = open(console_dev, O_RDONLY|O_NONBLOCK)) < 0) {
++#endif
+ 		if (!tried_devcons) {
+ 			tried_devcons++;
+ 			console_dev = CONSOLE;
+@@ -870,7 +874,11 @@
+ 	 *	and non-read input data.
+ 	 */
+ 	(void) tcsetattr(fd, TCSANOW, &tty);
++#if defined(__emerixx__)
++	(void) tcflush(fd, TCIFLUSH);
++#else
+ 	(void) tcflush(fd, TCIOFLUSH);
++#endif
+ 	(void) close(fd);
+ }
+ 
