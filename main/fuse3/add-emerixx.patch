@@ -1,0 +1,29 @@
+--- fuse-3.18.2.orig/lib/meson.build	2026-04-19 17:54:36.000000000 +0000
++++ fuse-3.18.2/lib/meson.build	2026-04-19 17:55:30.000000000 +0000
+@@ -4,7 +4,7 @@
+                    'helper.c', 'modules/subdir.c', 'mount_util.c',
+                    'fuse_log.c', 'compat.c', 'util.c', 'util.h' ]
+ 
+-if host_machine.system().startswith('linux')
++if host_machine.system().startswith('linux') or host_machine.system().startswith('emerixx')
+    libfuse_sources += [ 'mount.c' ]
+ else
+    libfuse_sources += [ 'mount_bsd.c' ]
+--- fuse-3.18.2.orig/util/mount.fuse.c	2026-04-19 17:54:37.000000000 +0000
++++ fuse-3.18.2/util/mount.fuse.c	2026-04-19 17:58:27.000000000 +0000
+@@ -351,6 +351,7 @@
+ 		}
+ 	}
+ 
++#if defined(linux)
+ 	if (drop_privileges) {
+ 		uint64_t required_caps = CAP_TO_MASK(CAP_SETPCAP) |
+ 				CAP_TO_MASK(CAP_SYS_ADMIN);
+@@ -360,6 +361,7 @@
+ 			exit(1);
+ 		}
+ 	}
++#endif
+ 
+ 	if (dev)
+ 		options = add_option("dev", options);
