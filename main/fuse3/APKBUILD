@@ -6,7 +6,7 @@ pkgdesc="Reference implementation of the Linux FUSE (Filesystem in Userspace) in
 url="https://github.com/libfuse/libfuse"
 arch="all"
 license="GPL-2.0-only AND LGPL-2.1-only"
-depends="fuse-common"
+# depends="fuse-common"
 # eudev-dev linux-headers
 makedepends="meson"
 #checkdepends="py3-pytest"
