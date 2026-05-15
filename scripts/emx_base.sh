@@ -6,7 +6,7 @@ if [ -z "$SYSROOT" ] || [ -z "$EMXREPO" ]; then
     echo "SYSROOT and EMXREPO must be set";
     exit 1
 fi
-    
+
 mkdir -p "$SYSROOT"/etc/apk
 
 echo "$EMXREPO" > "$SYSROOT"/etc/apk/repositories
@@ -22,4 +22,4 @@ ln -sf /usr/lib "$SYSROOT"/lib
 
 sysroot_name=`basename "$SYSROOT"`
 
-tar czfv "$sysroot_name".tar.gz "$SYSROOT"
+#tar czfv "$sysroot_name".tar.gz "$SYSROOT"

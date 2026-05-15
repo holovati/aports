@@ -9,6 +9,8 @@ options="!check !fhs keepdirs !usrmerge"
 
 builddir="$srcdir/$pkgname"
 
+source="emx-devnodes.post-install"
+
 build() {
 	mkdir -p "$builddir"/etc
 
@@ -240,3 +242,7 @@ package() {
         # Skeleton files
         install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"	
 }
+
+sha512sums="
+9ae47ae7410e180694b49ee5c3881d90ab101ba1383e1b5a3f6108ebd6314e90c615d390b563f05a874e1508762d3246c5514252cca44b1a3cfa4acdb1b20f97  emx-devnodes.post-install
+"

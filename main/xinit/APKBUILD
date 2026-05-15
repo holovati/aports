@@ -8,7 +8,7 @@ arch="all"
 license="MIT"
 options="!check"  # No test suite.
 subpackages="$pkgname-doc"
-depends="xauth mcookie xmodmap xrdb"
+depends="xauth util-linux xmodmap xrdb"
 makedepends="libx11 util-macros"
 
 source="https://www.x.org/releases/individual/app/xinit-$pkgver.tar.xz
