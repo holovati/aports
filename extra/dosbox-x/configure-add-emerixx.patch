@@ -1,0 +1,94 @@
+--- a/configure.ac	2026-05-31 11:05:47.000000000 +0000
++++ b/configure.ac	2026-05-31 11:42:08.000000000 +0000
+@@ -708,6 +708,10 @@
+        dnl FEATURE: Whether to support direct serial port pass-through
+        AC_DEFINE(C_DIRECTSERIAL, 1, [ Define to 1 if you want serial pass-through support (Win32, Posix and OS/2).])
+        ;;
++    *-*-emerixx*)
++       AC_DEFINE(EMERIXX, 1, [Compiling on GNU/Linux])
++       CXXFLAGS="$CXXFLAGS -D_XOPEN_SOURCE=700 -D_POSIX_C_SOURCE=200809L"
++       ;;
+     *-*-linux*)
+        AC_DEFINE(LINUX, 1, [Compiling on GNU/Linux])
+        CXXFLAGS="$CXXFLAGS -D_XOPEN_SOURCE=700 -D_POSIX_C_SOURCE=200809L"
+--- a/src/Makefile.am	2026-05-31 11:06:17.000000000 +0000
++++ b/src/Makefile.am	2026-05-31 11:44:00.000000000 +0000
+@@ -31,7 +31,7 @@
+ dosbox_x_SOURCES = dosbox.cpp $(ico_stuff)
+ dosbox_x_LDADD = debug/libdebug.a dos/libdos.a shell/libshell.a builtin/libbuiltin.a \
+                ints/libints.a hardware/serialport/libserial.a hardware/parport/libparallel.a \
+-               libs/passthroughio/libpassthroughio.a gui/libgui.a libs/gui_tk/libgui_tk.a hardware/libhardware.a \
++               libs/passthroughio/libpassthroughio.a gui/libgui.a libs/gui_tk/libgui_tk.a hardware/libhardware.a hardware/serialport/libserial.a \
+ 	       cpu/libcpu.a hardware/reSID/libresid.a fpu/libfpu.a gui/libgui.a \
+ 		   misc/libmisc.a output/liboutput.a hardware/mame/libmame.a libs/zmbv/libzmbv.a libs/decoders/internal/libopusint.a dos/libdos.a
+ 
+@@ -40,7 +40,6 @@
+ 
+ .rc.res:
+ 	wrc $< -i=. -r $@
+-	
+ endif
+ 
+ if !EMSCRIPTEN
+--- a/src/gui/whereami.c	2026-05-31 11:06:23.000000000 +0000
++++ b/src/gui/whereami.c	2026-05-31 11:52:16.000000000 +0000
+@@ -12,7 +12,7 @@
+ extern "C" {
+ #endif
+ 
+-#if defined(__linux__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__CYGWIN__) || defined(__emerixx__)
+ #undef _DEFAULT_SOURCE
+ #define _DEFAULT_SOURCE
+ #elif defined(__APPLE__)
+@@ -175,7 +175,7 @@
+   return length;
+ }
+ 
+-#elif defined(__linux__) || defined(__CYGWIN__) || defined(__sun) || defined(WAI_USE_PROC_SELF_EXE)
++#elif defined(__linux__) || defined(__CYGWIN__) || defined(__sun) || defined(WAI_USE_PROC_SELF_EXE) || defined(__emerixx__)
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+--- a/src/hardware/serialport/libserial.cpp	2026-05-31 11:06:25.000000000 +0000
++++ b/src/hardware/serialport/libserial.cpp	2026-05-31 11:55:30.000000000 +0000
+@@ -256,7 +256,7 @@
+ }
+ #endif
+ 
+-#if defined (LINUX) || defined (MACOSX) || defined (BSD) || defined (HAIKU)
++#if defined (LINUX) || defined (MACOSX) || defined (BSD) || defined (HAIKU) || defined(EMERIXX)
+ 
+ #include <string.h> // strlen
+ #include <stdlib.h>
+--- a/src/ints/bios_vhd.cpp	2026-05-31 11:06:27.000000000 +0000
++++ b/src/ints/bios_vhd.cpp	2026-05-31 12:00:29.000000000 +0000
+@@ -22,6 +22,8 @@
+ #include <time.h>
+ #if defined(__linux__)
+ #include <linux/limits.h>
++#else
++#include <limits.h>
+ #endif
+ #include "dosbox.h"
+ #include "callback.h"
+@@ -36,7 +38,7 @@
+ 
+ extern bool int13_enable_48bitLBA;
+ 
+-#if defined(__linux__) && !defined(__GLIBC__)
++#if (defined(__linux__) || defined(__emerixx__)) && !defined(__GLIBC__)
+ // msul libc does not need 64 suffix to work with files > 2 GiB 
+ #define fopen64 fopen
+ #define fseeko64 fseeko
+--- a/include/byteorder.h	2026-05-02 15:55:21.000000000 +0000
++++ b/include/byteorder.h	2026-05-28 22:42:09.000000000 +0000
+@@ -106,7 +106,7 @@
+ #define be64toh(x) OSSwapBigToHostInt64(x)
+ #define le64toh(x) OSSwapLittleToHostInt64(x)
+ 
+-#elif defined(__linux__) || defined(__CYGWIN__)
++#elif defined(__linux__) || defined(__CYGWIN__) || defined(__emerixx__)
+ 
+ #include <endian.h>
+ 

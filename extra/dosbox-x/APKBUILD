@@ -1,0 +1,52 @@
+# Maintainer Damir Holovati
+pkgname=dosbox-x
+pkgver=2026.05.02
+pkgrel=0
+pkgdesc="DOS emulator"
+url="https://dosbox-x.com"
+arch="all"
+license="GPL-2.0"
+
+subpackages="$pkgname-doc"
+
+depends="libpng sdl2 ncurses zlib libx11"
+
+makedepends="make autoconf automake $depends"
+
+source="https://github.com/joncampbell123/dosbox-x/archive/refs/tags/$pkgname-v$pkgver.tar.gz
+	configure-add-emerixx.patch"
+
+builddir="$srcdir/$pkgname-$pkgname-v$pkgver"
+
+prepare() {
+    default_prepare
+    emerixx_prepare
+    ./autogen.sh
+}
+
+build() {
+    
+    ./configure \
+	--build=$CBUILD \
+	--host=$CHOST \
+	--prefix=/usr \
+	--enable-sdl2 \
+	--disable-opengl \
+	--disable-gamelink \
+	--disable-sdlnet \
+	--disable-alsa-midi
+
+    make
+}
+
+check() {
+    make check
+}
+
+package() {
+    make DESTDIR="$pkgdir" install
+}
+sha512sums="
+e674866000d605096b6369e8744e598780bb94dbb545b02398185f0e5c37df51678a4bb193c724d8bdf165f89acf3ad03146390605db78cf81cb0ed744aa3c02  dosbox-x-v2026.05.02.tar.gz
+6d7b911928a72c11b9b47c5cf5a9c3042c9fcfb4294a8a93ffaa70794b805715c61aa2d05d64b194d630831b9f5eb8d72e075de9184e6cd9fc10bcfd9ea9eb61  configure-add-emerixx.patch
+"
