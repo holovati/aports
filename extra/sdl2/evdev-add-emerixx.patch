@@ -1,0 +1,29 @@
+--- a/src/core/linux/SDL_evdev.c	2026-05-30 23:52:02.000000000 +0000
++++ b/src/core/linux/SDL_evdev.c	2026-05-30 23:54:02.000000000 +0000
+@@ -36,7 +36,12 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <sys/ioctl.h>
++
++#ifdef __emerixx__
++#include <emerixx/input.h>
++#else
+ #include <linux/input.h>
++#endif
+ 
+ #include "SDL.h"
+ #include "SDL_endian.h"
+--- a/src/core/linux/SDL_evdev_capabilities.h	2026-05-30 23:52:02.000000000 +0000
++++ b/src/core/linux/SDL_evdev_capabilities.h	2026-05-30 23:54:55.000000000 +0000
+@@ -26,7 +26,11 @@
+ 
+ #ifdef HAVE_LINUX_INPUT_H
+ 
++#ifdef __emerixx__
++#include <emerixx/input.h>
++#else
+ #include <linux/input.h>
++#endif
+ 
+ /* A device can be any combination of these classes */
+ typedef enum

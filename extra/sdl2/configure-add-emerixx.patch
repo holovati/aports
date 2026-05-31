@@ -1,0 +1,146 @@
+--- a/configure	2026-05-31 00:10:27.000000000 +0000
++++ b/configure	2026-05-31 00:11:06.000000000 +0000
+@@ -5897,7 +5897,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -7234,7 +7234,7 @@
+   ;;
+ 
+ x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
+-s390*-*linux*|s390*-*tpf*|sparc*-*linux*|x86_64-gnu*)
++s390*-*linux*|s390*-*tpf*|sparc*-*linux*|x86_64-gnu*|x86_64-emerixx*)
+   # Find out what ABI is being produced by ac_compile, and set linker
+   # options accordingly.  Note that the listed cases only cover the
+   # situations where additional linker options are needed (such as when
+@@ -7253,7 +7253,7 @@
+ 	  x86_64-*kfreebsd*-gnu)
+ 	    LD="${LD-ld} -m elf_i386_fbsd"
+ 	    ;;
+-	  x86_64-*linux*|x86_64-gnu*)
++	  x86_64-*linux*|x86_64-gnu*|x86_64-*emerixx*)
+ 	    case `/usr/bin/file conftest.o` in
+ 	      *x86-64*)
+ 		LD="${LD-ld} -m elf32_x86_64"
+@@ -9397,7 +9397,7 @@
+       lt_prog_compiler_static='-non_shared'
+       ;;
+ 
+-    linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++    linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+       case $cc_basename in
+       # old Intel for x86_64, which still supported -KPIC.
+       ecc*)
+@@ -10062,7 +10062,7 @@
+       archive_expsym_cmds='sed "s|^|_|" $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-h,$soname $wl--retain-symbols-file,$output_objdir/$soname.expsym $wl--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
+       ;;
+ 
+-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
++    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | emerixx*)
+       tmp_diet=no
+       if test linux-dietlibc = "$host_os"; then
+ 	case $cc_basename in
+@@ -11889,7 +11889,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
+@@ -15383,7 +15383,7 @@
+         inherit_rpath_CXX=yes
+         ;;
+ 
+-      linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++      linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+         case $cc_basename in
+           KCC*)
+ 	    # Kuck and Associates, Inc. (KAI) C++ Compiler
+@@ -16200,7 +16200,7 @@
+ 	    ;;
+ 	esac
+ 	;;
+-      linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++      linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+ 	case $cc_basename in
+ 	  KCC*)
+ 	    # KAI C++ Compiler
+@@ -17271,7 +17271,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | emerixx*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
+@@ -26519,14 +26519,18 @@
+ 
+ fi
+ 
+-
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
+ printf %s "checking for Linux 2.4 unified input interface... " >&6; }
+         use_input_events=no
+         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+-
++#ifdef __linux__
+           #include <linux/input.h>
++#endif
++
++#ifdef __emerixx__
++          #include <emerixx/input.h>
++#endif
+ 
+ int
+ main (void)
+@@ -26542,7 +26546,8 @@
+ _ACEOF
+ if ac_fn_c_try_compile "$LINENO"
+ then :
+-  use_input_events=yes
++     use_input_events=yes
++     printf "%s\n" "#define HAVE_LINUX_INPUT_H 1" >>confdefs.h
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
+@@ -28627,7 +28632,7 @@
+ have_locale=no
+ 
+ case "$host" in
+-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
++    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*|*-*-emerixx*)
+         case "$host" in
+             *-*-android*)
+                 # Android
+@@ -28650,6 +28655,7 @@
+             *-*-linux*)         ARCH=linux ;;
+             *-*-uclinux*)       ARCH=linux ;;
+             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
++	    *-*-emerixx*)       ARCH=emerixx ;;
+             *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
+             *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
+             *-*-gnu*)           ARCH=gnu ;; # must be last of the gnu variants
+@@ -28705,7 +28711,13 @@
+         CheckLibUDev
+         CheckDBus
+         CheckIME
+-        CheckInotify
++        case $ARCH in
++            emerixx)
++		;;
++            *)
++		CheckInotify
++          ;;
++        esac
+         CheckIBus
+         CheckFcitx
+         case $ARCH in

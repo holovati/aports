@@ -1,0 +1,49 @@
+# Maintainer Damir Holovati
+pkgname=sdl2
+pkgver=2.32.8
+pkgrel=0
+pkgdesc="Game development library"
+url="https://www.libsdl.org"
+arch="all"
+license="Zlib"
+
+# libxi libxkbcommon 
+makedepends="make autoconf automake libx11 libxcursor libxext libxrandr libxrender libevdev"
+
+source="sdl-$pkgver.tar.gz::https://github.com/libsdl-org/SDL/archive/refs/tags/release-$pkgver.tar.gz
+	configure-add-emerixx.patch
+	evdev-add-emerixx.patch"
+
+builddir="$srcdir/SDL-release-$pkgver"
+
+build() {
+    
+    ./configure \
+	--build=$CBUILD \
+	--host=$CHOST \
+	--prefix=/usr \
+	--disable-static \
+	--disable-joystick \
+	--disable-haptic \
+	--disable-hidapi \
+	--disable-sensor \
+	--disable-power \
+	--disable-cpuinfo \
+	--disable-video-vulkan \
+	--disable-video-opengles
+
+    make
+}
+
+check() {
+    make check
+}
+
+package() {
+    make DESTDIR="$pkgdir" install
+}
+sha512sums="
+d58b5b9964fea3c04d13aae646b92e9646125f269088fc6698089f0dbb9506091739cb8a72bfead08aa3952f8b4df0a7886396eeee54a28388a6b89be01f44cf  sdl-2.32.8.tar.gz
+8f6664e6d5f82201406eb0af8ae01cbd1ea873d26e6a178861fe72219e4ae51292b50822b32d8700ed9c653fdec81530e9f6eb5405171ff7efa324c5aa3029c9  configure-add-emerixx.patch
+c01ad1b7cf9d4a47898f98078b5a365429471fa57a914b63919494c5a14544333412c7918ed08a52d415e99fc92675a4803fc427311399cbcb041269c1177965  evdev-add-emerixx.patch
+"
