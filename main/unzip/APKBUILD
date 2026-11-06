@@ -1,0 +1,45 @@
+# Maintainer Damir Holovati
+
+pkgname=unzip
+pkgver=6.0
+pkgrel=0
+
+_pkgver=${pkgver//./}
+
+pkgdesc="Extract .zip files"
+
+subpackages="$pkgname-doc"
+
+url="http://www.info-zip.org/UnZip.html"
+arch="all"
+license="custom"
+
+source="https://dev.alpinelinux.org/archive/unzip/unzip$_pkgver.tgz
+	gcc15.patch"
+
+builddir="$srcdir/$pkgname$_pkgver"
+
+build() {
+    local defines="-DWILD_STOP_AT_DIR -DLARGE_FILE_SUPPORT -DSYSV -D__GLIBC__"
+    defines="$defines -DUNICODE_SUPPORT -DUNICODE_WCHAR -DUTF8_MAYBE_NATIVE -DNO_LCHMOD"
+    defines="$defines -DDATE_FORMAT=DF_YMD -DNOMEMCPY -DNO_WORKING_ISPRINT"
+    
+    make -f unix/Makefile sysv_gcc \
+	 LF2="$LDFLAGS" CF="$CFLAGS -std=gnu17 -Wno-format-security $CPPFLAGS -I. $defines" \
+	 prefix=/usr
+}
+
+check() {
+    make -f unix/Makefile check
+}
+
+package() {
+    make -f unix/Makefile \
+	 MANDIR=$pkgdir/usr/share/man/man1/ \
+	 prefix=$pkgdir/usr install
+}
+
+sha512sums="
+0694e403ebc57b37218e00ec1a406cae5cc9c5b52b6798e0d4590840b6cdbf9ddc0d9471f67af783e960f8fa2e620394d51384257dca23d06bcd90224a80ce5d  unzip60.tgz
+1c93f72e96b19974d44556f2150ed28f825181b05aa41269e6df514e045c63b8c9318f2a414f9e50bf606dea26c8aac5ed9dd066978ba6bc79ccc39f770953bc  gcc15.patch
+"
