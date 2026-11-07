@@ -1,0 +1,55 @@
+# Maintainer: Damir Holovati
+
+pkgname=netsurf
+pkgver=3.11
+pkgrel=0
+
+pkgdesc="Ultra-lightweight web browser"
+url="https://www.netsurf-browser.org/"
+arch="all"
+license="GPL-2.0-only"
+
+depends="sdl2 libpng openssl curl"
+
+# subpackages="$pkgname-doc"
+
+source="$pkgname-$pkgver.tar.gz::https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$pkgver.tar.gz"
+
+sha512sums="
+f931687e08976ca336762587cc1ac75e45518be62b19d1d31aac3063b92b9666f8a022ff3a183e80c89404ba8ff33458b26521130e96943043085a42291ee283  netsurf-3.11.tar.gz
+"
+
+builddir="$srcdir/$pkgname-all-$pkgver"
+
+prepare() {
+    default_prepare
+    cat >> "$builddir/netsurf/Makefile.config" <<-EOF
+   	NETSURF_TARGET := framebuffer
+	NETSURF_USE_JPEG := NO
+EOF
+
+    cat >> "$builddir/libnsfb/Makefile.config" <<-EOF
+    	NSFB_SDL_AVAILABLE := YES
+	NSFB_XCB_AVAILABLE := NO
+	NSFB_LINUX_AVAILABLE := NO
+EOF
+
+}
+
+build() {
+    export LDFLAGS="$LDFLAGS -Wl,--allow-shlib-undefined"
+
+    make TARGET=framebuffer \
+	 PREFIX=/usr \
+	 LIBDIR=lib \
+	 INCLUDEDIR=include
+}
+
+package() {
+        make TARGET=framebuffer \
+	 PREFIX=/usr \
+	 LIBDIR=lib \
+	 INCLUDEDIR=include \
+	 DESTDIR="$pkgdir" \
+	 install
+}
