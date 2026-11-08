@@ -15,7 +15,7 @@ source="$pkgname-$pkgver.tar.gz::https://storage.googleapis.com/downloads.webmpr
 build() {
 	# vwebp needs GL/GLUT; GIF and TIFF are not packaged, so gif2webp,
 	# anim_* and the extras are left out. cwebp/dwebp use libpng/libjpeg.
-	cmake -B build -S . \
+	cmake -B build -S . -G "Unix Makefiles" \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \

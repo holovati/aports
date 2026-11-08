@@ -14,7 +14,7 @@ source="$pkgname-$pkgver.tar.xz::https://github.com/nghttp2/nghttp2/releases/dow
 build() {
 	# Library only: the nghttp, nghttpd and nghttpx applications need
 	# libev and c-ares, which are not packaged.
-	cmake -B build -S . \
+	cmake -B build -S . -G "Unix Makefiles" \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
