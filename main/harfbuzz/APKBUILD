@@ -9,7 +9,6 @@ license="MIT"
 depends="freetype glib"
 makedepends="freetype glib meson pkgconf"
 options="!check"
-subpackages="$pkgname-doc"
 source="https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz"
 
 build() {
