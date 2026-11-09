@@ -8,7 +8,7 @@ pkgdesc="Searches input files for lines containing a match to a specified patter
 url="https://www.gnu.org/software/grep/grep.html"
 arch="all"
 license="GPL-3.0-or-later"
-makedepends="pcre2-dev autoconf automake"
+makedepends="pcre2 autoconf automake"
 checkdepends="coreutils bash diffutils"
 subpackages="$pkgname-doc"
 
