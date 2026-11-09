@@ -22,6 +22,11 @@ builddir="$srcdir/cmake-$pkgver"
 
 prepare() {
 	default_prepare
+
+	# curl >= 8.13 defines CURL_NETRC_* as long macros instead of enum values
+	sed -i 's/CURL_NETRC_OPTION curl_netrc_level/long curl_netrc_level/' \
+		Source/cmCurl.cxx
+	grep -q 'long curl_netrc_level' Source/cmCurl.cxx
 }
 
 build() {
