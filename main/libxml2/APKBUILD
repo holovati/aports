@@ -1,0 +1,47 @@
+# Maintainer Damir Holovati
+pkgname=libxml2
+pkgver=2.13.8
+pkgrel=0
+pkgdesc="XML parsing library"
+url="https://gitlab.gnome.org/GNOME/libxml2"
+arch="all"
+license="MIT"
+makedepends="xz zlib"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://download.gnome.org/sources/libxml2/${pkgver%.*}/libxml2-$pkgver.tar.xz"
+
+build() {
+	# No python bindings, ICU, readline or history. ICU can be enabled
+	# once it is packaged; libxml2 has its own iconv-based conversion
+	# through musl's iconv.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-static \
+		--with-zlib \
+		--with-lzma \
+		--with-threads \
+		--without-python \
+		--without-icu \
+		--without-readline \
+		--without-history
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+668e556404693f17e074bc31e2caa5e50bf003ee3cd81b61a51ea25e76efd7eff7ec70ff603eed87b9d9e9b2299673e6e8871798264113e660e703b74b58458f  libxml2-2.13.8.tar.xz
+"
