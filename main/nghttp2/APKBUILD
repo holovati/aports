@@ -1,0 +1,36 @@
+# Maintainer Damir Holovati
+pkgname=nghttp2
+pkgver=1.64.0
+pkgrel=0
+pkgdesc="HTTP/2 C library (libnghttp2)"
+url="https://nghttp2.org/"
+arch="all"
+license="MIT"
+makedepends="cmake make"
+options="!check"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.xz::https://github.com/nghttp2/nghttp2/releases/download/v$pkgver/nghttp2-$pkgver.tar.xz"
+
+build() {
+	# Library only: the nghttp, nghttpd and nghttpx applications need
+	# libev and c-ares, which are not packaged.
+	cmake -B build -S . \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_LIB_ONLY=ON \
+		-DENABLE_STATIC_LIB=OFF \
+		-DENABLE_SHARED_LIB=ON \
+		-DENABLE_DOC=OFF \
+		-DENABLE_FAILMALLOC=OFF \
+		-DBUILD_TESTING=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+b544196c3b7a55faacd11700d11e2fe4f16a7418282c9abb24a668544a15293580fd1a2cc5f93367c8a17c7ee45335c6d2f5c68a72dd176d516fd033f203eeec  nghttp2-1.64.0.tar.xz
+"
