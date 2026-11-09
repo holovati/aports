@@ -11,7 +11,20 @@ makedepends="libffi pcre2 zlib python3 meson pkgconf"
 options="!check"
 source="https://download.gnome.org/sources/glib/${pkgver%.*}/glib-$pkgver.tar.xz"
 
+# musl resolves $ORIGIN of the main program through /proc/self/exe, which
+# emerixx does not provide yet. Build-tree executables (glib-compile-resources,
+# test programs) therefore cannot find the just-built libraries via RUNPATH.
+_buildtree_libpath() {
+	local d
+	for d in glib gobject gmodule gio girepository; do
+		LD_LIBRARY_PATH="$builddir/output/$d${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+	done
+	export LD_LIBRARY_PATH
+}
+
 build() {
+	_buildtree_libpath
+
 	# First bootstrap build: no NLS (gettext), introspection
 	# (gobject-introspection needs glib itself), libmount, SELinux,
 	# xattr, libelf, sysprof or documentation. Re-enable nls and
@@ -37,6 +50,7 @@ build() {
 }
 
 check() {
+	_buildtree_libpath
 	meson test --no-rebuild --print-errorlogs -C output
 }
 
