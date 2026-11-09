@@ -1,0 +1,35 @@
+# Maintainer Damir Holovati
+pkgname=woff2
+pkgver=1.0.2
+pkgrel=0
+pkgdesc="Web Open Font Format 2 reference implementation"
+url="https://github.com/google/woff2"
+arch="all"
+license="MIT"
+depends="brotli"
+makedepends="brotli cmake make"
+options="!check"
+source="$pkgname-$pkgver.tar.gz::https://github.com/google/woff2/archive/refs/tags/v$pkgver.tar.gz"
+
+build() {
+	cmake -B build -S . \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+
+	# The upstream install rules only install the tools for static builds
+	local tool
+	for tool in woff2_compress woff2_decompress woff2_info; do
+		install -Dm755 "build/$tool" "$pkgdir/usr/bin/$tool"
+	done
+}
+
+sha512sums="
+c788bba1530aec463e755e901f9342f4b599e3a07f54645fef1dc388ab5d5c30625535e5dd38e9e792e04a640574baa50eeefb6b7338ab403755f4a4e0c3044d  woff2-1.0.2.tar.gz
+"
