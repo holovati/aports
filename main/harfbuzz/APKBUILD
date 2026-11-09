@@ -1,0 +1,43 @@
+# Maintainer Damir Holovati
+pkgname=harfbuzz
+pkgver=11.3.2
+pkgrel=1
+pkgdesc="Text shaping library"
+url="https://harfbuzz.github.io/"
+arch="all"
+license="MIT"
+depends="freetype glib"
+makedepends="freetype glib meson pkgconf"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz"
+
+build() {
+	# First build: FreeType and GLib only. Rebuild with cairo (hb-view),
+	# ICU (needed by WebKitGTK) and graphite2 once those are packaged.
+	abuild-meson \
+		-Dglib=enabled \
+		-Dgobject=enabled \
+		-Dfreetype=enabled \
+		-Dcairo=disabled \
+		-Dicu=disabled \
+		-Dgraphite=disabled \
+		-Dintrospection=disabled \
+		-Ddocs=disabled \
+		-Dtests=disabled \
+		-Dbenchmark=disabled \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+d3ba37b55b04863e75f9af80839f0efe9baad2cde3c7334383e313e863bdc1532c8a6e00669ee8d8d6634e8066d0a66119c0a953df427694a1219d002e4644b5  harfbuzz-11.3.2.tar.xz
+"
