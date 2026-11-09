@@ -1,13 +1,13 @@
 # Maintainer Damir Holovati
 pkgname=glib
 pkgver=2.82.5
-pkgrel=0
+pkgrel=1
 pkgdesc="Common C routines used by GTK+ and other libs"
 url="https://gitlab.gnome.org/GNOME/glib"
 arch="all"
 license="LGPL-2.1-or-later"
-depends="libffi pcre2 zlib"
-makedepends="libffi pcre2 zlib python3 meson pkgconf"
+depends="gettext libffi pcre2 zlib"
+makedepends="gettext libffi pcre2 zlib python3 meson pkgconf"
 options="!check"
 source="https://download.gnome.org/sources/glib/${pkgver%.*}/glib-$pkgver.tar.xz"
 
@@ -25,12 +25,11 @@ _buildtree_libpath() {
 build() {
 	_buildtree_libpath
 
-	# First bootstrap build: no NLS (gettext), introspection
-	# (gobject-introspection needs glib itself), libmount, SELinux,
-	# xattr, libelf, sysprof or documentation. Re-enable nls and
-	# introspection once gettext and gobject-introspection are packaged.
+	# No introspection yet (gobject-introspection needs glib itself),
+	# libmount, SELinux, xattr, libelf, sysprof or documentation.
+	# Re-enable introspection once gobject-introspection is packaged.
 	abuild-meson \
-		-Dnls=disabled \
+		-Dnls=enabled \
 		-Dintrospection=disabled \
 		-Dlibmount=disabled \
 		-Dselinux=disabled \
