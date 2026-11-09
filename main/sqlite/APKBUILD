@@ -1,0 +1,59 @@
+# Maintainer Damir Holovati
+pkgname=sqlite
+pkgver=3.54.1
+_pkgver=3540100
+pkgrel=0
+pkgdesc="C library implementing an SQL database engine"
+url="https://www.sqlite.org/"
+arch="all"
+license="blessing"
+depends="zlib"
+makedepends="zlib"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://www.sqlite.org/2026/sqlite-autoconf-$_pkgver.tar.gz"
+builddir="$srcdir/sqlite-autoconf-$_pkgver"
+
+build() {
+	# Same feature set as the common distribution builds; WebKitGTK,
+	# libsoup and GLib consumers rely on column metadata, FTS and
+	# unlock-notify. No readline: the shell uses its own line editing.
+	CFLAGS="$CFLAGS -O2 \
+		-DSQLITE_ENABLE_COLUMN_METADATA=1 \
+		-DSQLITE_ENABLE_UNLOCK_NOTIFY \
+		-DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+		-DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
+		-DSQLITE_ENABLE_FTS3_PARENTHESIS \
+		-DSQLITE_ENABLE_FTS4 \
+		-DSQLITE_ENABLE_FTS5 \
+		-DSQLITE_ENABLE_RTREE \
+		-DSQLITE_ENABLE_JSON1 \
+		-DSQLITE_SECURE_DELETE \
+		-DSQLITE_SOUNDEX=1 \
+		-DSQLITE_USE_URI=1" \
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--enable-shared \
+		--disable-static \
+		--disable-readline \
+		--enable-threadsafe
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+3df4348f54f5cd0554eec6d91e1d08a70535b7b78f497b2c6f24910b5087f6ef70483c9e35fa388bd8f38483cb8d1cb84e98ccdd58b9f525a10e0cf48c8c6742  sqlite-autoconf-3540100.tar.gz
+"
