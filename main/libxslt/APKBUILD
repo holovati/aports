@@ -1,0 +1,41 @@
+# Maintainer Damir Holovati
+pkgname=libxslt
+pkgver=1.1.43
+pkgrel=0
+pkgdesc="XSLT processing library and xsltproc"
+url="https://gitlab.gnome.org/GNOME/libxslt"
+arch="all"
+license="X11"
+depends="libxml2"
+makedepends="libxml2 zlib"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://download.gnome.org/sources/libxslt/${pkgver%.*}/libxslt-$pkgver.tar.xz"
+
+build() {
+	# No python bindings and no libgcrypt (EXSLT crypto) for now.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-static \
+		--without-python \
+		--without-crypto
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+96110b0397a8f5791f489127574e2143845feb61bea0581d7b7e3c1101fd0718483bae81a7ce417b971bd678293bfd95daddad0dadd3e256c87d41a69faed85a  libxslt-1.1.43.tar.xz
+"
