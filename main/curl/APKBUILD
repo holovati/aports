@@ -2,16 +2,16 @@
 
 pkgname=curl
 pkgver=8.15.0
-pkgrel=0
+pkgrel=1
 pkgdesc="URL retrival utility and library"
 url="https://curl.se/"
 arch="all"
 license="curl"
-depends="ca-certificates zlib zstd"
+depends="brotli ca-certificates nghttp2 zlib zstd"
 
-depends_dev="ca-certificates openssl zlib zstd"
+depends_dev="brotli ca-certificates nghttp2 openssl zlib zstd"
 
-checkdepends="nghttp2 python3"
+checkdepends="python3"
 
 makedepends_host="$depends_dev"
 
@@ -46,8 +46,8 @@ build() {
 		--disable-smb \
 		--disable-mqtt \
 		--without-libpsl \
-		--without-nghttp2 \
-		--without-brotli \
+		--with-nghttp2 \
+		--with-brotli \
 		--without-libssh2 # https://bugs.alpinelinux.org/issues/10222
 	make
 }
