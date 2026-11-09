@@ -12,7 +12,10 @@ options="!check"
 source="$pkgname-$pkgver.tar.gz::https://github.com/google/woff2/archive/refs/tags/v$pkgver.tar.gz"
 
 build() {
+	# woff2 1.0.2 headers use uint8_t without including <cstdint>, which
+	# GCC 13+ no longer provides transitively through <string>.
 	cmake -B build -S . \
+		-DCMAKE_CXX_FLAGS="$CXXFLAGS -include cstdint" \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DCMAKE_INSTALL_LIBDIR=lib \
