@@ -2,14 +2,14 @@
 
 pkgname=netsurf
 pkgver=3.11
-pkgrel=1
+pkgrel=2
 
 pkgdesc="Ultra-lightweight web browser"
 url="https://www.netsurf-browser.org/"
 arch="all"
 license="GPL-2.0-only"
 
-depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng libjpeg openssl curl"
+depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng libjpeg freetype font-dejavu openssl curl"
 makedepends="$depends libxcb xcb-proto pkgconf"
 
 # subpackages="$pkgname-doc"
@@ -33,6 +33,10 @@ prepare() {
     cat >> "$builddir/netsurf/Makefile.config" <<-EOF
 	NETSURF_TARGET := framebuffer
 	NETSURF_FB_FRONTEND := x
+	NETSURF_FB_FONTLIB := freetype
+	NETSURF_FB_FONTPATH := /usr/share/fonts/dejavu
+	NETSURF_FB_FONT_CURSIVE := DejaVuSerif-Italic.ttf
+	NETSURF_FB_FONT_FANTASY := DejaVuSans-Bold.ttf
 EOF
 }
 
