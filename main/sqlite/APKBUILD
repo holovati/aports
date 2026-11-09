@@ -14,6 +14,20 @@ subpackages="$pkgname-doc"
 source="https://www.sqlite.org/2026/sqlite-autoconf-$_pkgver.tar.gz"
 builddir="$srcdir/sqlite-autoconf-$_pkgver"
 
+prepare() {
+	default_prepare
+
+	# sqlite uses autosetup, which ships its own copies named
+	# autosetup-config.{guess,sub}. abuild's update_config_* helpers only
+	# look for config.guess/config.sub, so replicate them here with the
+	# emerixx-aware versions from abuild's shared directory.
+	local f
+	for f in guess sub; do
+		msg "Updating autosetup/autosetup-config.$f"
+		cp "${sharedir:-/usr/share/abuild}/config.$f" \
+			"autosetup/autosetup-config.$f" || return 1
+	done
+}
 build() {
 	# Same feature set as the common distribution builds; WebKitGTK,
 	# libsoup and GLib consumers rely on column metadata, FTS and
