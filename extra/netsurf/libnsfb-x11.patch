@@ -1,0 +1,162 @@
+--- a/libnsfb/src/surface/x.c
++++ b/libnsfb/src/surface/x.c
+@@ -575,11 +575,14 @@
+ }
+ 
+ 
++static int x_resize_surface(nsfb_t *nsfb, int width, int height,
++                            enum nsfb_format_e format);
++
+ static int 
+ x_set_geometry(nsfb_t *nsfb, int width, int height, enum nsfb_format_e format)
+ {
+     if (nsfb->surface_priv != NULL)
+-        return -1; /* if were already initialised fail */
++        return x_resize_surface(nsfb, width, height, format);
+ 
+     nsfb->width = width;
+     nsfb->height = height;
+@@ -623,6 +626,15 @@
+     xcb_shm_query_version_cookie_t ck;
+     xcb_void_cookie_t shm_attach_cookie;
+     xcb_generic_error_t *generic_error;
++    const xcb_query_extension_reply_t *shmext;
++
++    /* libxcb shuts the whole connection down if a request is sent for an
++     * extension the server does not provide, so check it is there first.
++     */
++    shmext = xcb_get_extension_data(xstate->connection, &xcb_shm_id);
++    if ((shmext == NULL) || (!shmext->present)) {
++        return NULL;
++    }
+ 
+     ck = xcb_shm_query_version(xstate->connection);
+     rep = xcb_shm_query_version_reply(xstate->connection, ck , NULL);
+@@ -763,6 +775,68 @@
+     return cur;
+ }
+ 
++/**
++ * Resize an initialised surface to match a new window size.
++ *
++ * Replaces the local image buffer and the server side backing pixmap. The
++ * pixel format cannot be changed.
++ */
++static int
++x_resize_surface(nsfb_t *nsfb, int width, int height,
++                 enum nsfb_format_e format)
++{
++    xstate_t *xstate = nsfb->surface_priv;
++    xcb_image_t *old_image = xstate->image;
++    xcb_shm_segment_info_t old_shm = xstate->shminfo;
++    xcb_image_t *image = NULL;
++
++    if (format != nsfb->format)
++        return -1; /* cannot change pixel format of a live window */
++
++    if ((width == nsfb->width) && (height == nsfb->height))
++        return 0;
++
++    if (old_shm.shmseg != 0)
++        image = create_shm_image(xstate, width, height, nsfb->bpp);
++
++    if (image == NULL) {
++        xstate->shminfo.shmseg = 0;
++        image = create_image(xstate->connection, width, height, nsfb->bpp);
++    }
++
++    if (image == NULL) {
++        xstate->shminfo = old_shm;
++        return -1;
++    }
++
++    xstate->image = image;
++    nsfb->width = width;
++    nsfb->height = height;
++    nsfb->ptr = image->data;
++    nsfb->linelen = image->stride;
++
++    /* the saved cursor background belongs to the old buffer */
++    if (nsfb->cursor != NULL)
++        nsfb->cursor->plotted = false;
++
++    nsfb->plotter_fns->set_clip(nsfb, NULL);
++
++    /* recreate the backing pixmap at the new size */
++    xcb_free_pixmap(xstate->connection, xstate->pmap);
++    xcb_create_pixmap(xstate->connection, 24, xstate->pmap, xstate->window,
++                      width, height);
++
++    /* release the old buffer */
++    if (old_shm.shmseg != 0) {
++        xcb_shm_detach(xstate->connection, old_shm.shmseg);
++        shmdt(old_shm.shmaddr);
++        old_image->base = NULL; /* shared memory is not heap allocated */
++    }
++    xcb_image_destroy(old_image);
++
++    return 0;
++}
++
+ 
+ static int x_initialise(nsfb_t *nsfb)
+ {
+@@ -832,7 +906,8 @@
+ 		XCB_EVENT_MASK_KEY_RELEASE |
+ 		XCB_EVENT_MASK_BUTTON_PRESS |
+                 XCB_EVENT_MASK_BUTTON_RELEASE |
+-                XCB_EVENT_MASK_POINTER_MOTION;
++                XCB_EVENT_MASK_POINTER_MOTION |
++                XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+     values[2] = blank_cursor;
+ 
+     xstate->window = xcb_generate_id(xstate->connection);
+@@ -844,15 +919,13 @@
+                        XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                        xstate->screen->root_visual,
+                        mask, values);
+-    /* set size hits on window */
++    /* set size hints on window. Only a minimum is given (matching the
++     * minimum netsurf accepts) so that the window is resizable and tiling
++     * window managers do not treat it as a fixed size, floating window.
++     */
+     hints = xcb_alloc_size_hints();
+     if (hints != NULL) {
+-        xcb_size_hints_set_max_size(hints,
+-                                    xstate->image->width,
+-                                    xstate->image->height);
+-        xcb_size_hints_set_min_size(hints,
+-                                    xstate->image->width,
+-                                    xstate->image->height);
++        xcb_size_hints_set_min_size(hints, 300, 200);
+         xcb_set_wm_size_hints(xstate->connection,
+                               xstate->window,
+                               WM_NORMAL_HINTS,
+@@ -912,6 +985,7 @@
+     xcb_button_press_event_t *ebp;
+     xcb_key_press_event_t *ekp;
+     xcb_key_press_event_t *ekr;
++    xcb_configure_notify_event_t *ecn;
+     xstate_t *xstate = nsfb->surface_priv;
+ 
+     if (xstate == NULL)
+@@ -960,7 +1034,18 @@
+ 
+     event->type = NSFB_EVENT_NONE;
+ 
+-    switch (e->response_type) {
++    /* mask off the send_event bit, window managers send synthetic events */
++    switch (e->response_type & 0x7f) {
++    case XCB_CONFIGURE_NOTIFY:
++        ecn = (xcb_configure_notify_event_t *)e;
++        if ((ecn->width != xstate->image->width) ||
++            (ecn->height != xstate->image->height)) {
++            event->type = NSFB_EVENT_RESIZE;
++            event->value.resize.w = ecn->width;
++            event->value.resize.h = ecn->height;
++        }
++        break;
++
+     case XCB_EXPOSE:
+         ee = (xcb_expose_event_t *)e;
+         xcb_copy_area(xstate->connection,

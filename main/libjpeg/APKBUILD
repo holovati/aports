@@ -1,0 +1,41 @@
+# Maintainer Damir Holovati
+pkgname=libjpeg
+pkgver=9f
+pkgrel=0
+pkgdesc="Independent JPEG Group's JPEG runtime library"
+url="https://www.ijg.org/"
+arch="all"
+license="custom"
+subpackages="$pkgname-doc"
+# plain autotools, no SIMD (no nasm) and no tmpfile() based memory manager
+# (jmemnobs.c is used)
+options="!check"
+source="$pkgname-$pkgver.tar.gz::https://www.ijg.org/files/jpegsrc.v$pkgver.tar.gz"
+builddir="$srcdir/jpeg-$pkgver"
+
+prepare() {
+	default_prepare
+	emerixx_prepare
+}
+
+build() {
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--disable-static
+
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+
+	install -Dm644 README "$pkgdir"/usr/share/licenses/$pkgname/README
+}
+
+sha512sums="
+7f733d79cf176c690dcf127352f9aa7ec48000455944f286faae606cdeada6f6865b4a3f9f01bda8947b5b1089bb3e52d2b56879b6e871279ec5cbd1829304dc  libjpeg-9f.tar.gz
+"

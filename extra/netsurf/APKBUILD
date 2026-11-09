@@ -2,22 +2,28 @@
 
 pkgname=netsurf
 pkgver=3.11
-pkgrel=0
+pkgrel=1
 
 pkgdesc="Ultra-lightweight web browser"
 url="https://www.netsurf-browser.org/"
 arch="all"
 license="GPL-2.0-only"
 
-depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng openssl curl"
+depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng libjpeg openssl curl"
 makedepends="$depends libxcb xcb-proto pkgconf"
 
 # subpackages="$pkgname-doc"
 
-source="$pkgname-$pkgver.tar.gz::https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$pkgver.tar.gz"
+# libnsfb-x11.patch: skip MIT-SHM when the X server lacks it, do not make the
+# window fixed size (tiling WMs such as dwm float those) and follow window
+# resizes.
+source="$pkgname-$pkgver.tar.gz::https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$pkgver.tar.gz
+	libnsfb-x11.patch
+	"
 
 sha512sums="
 f931687e08976ca336762587cc1ac75e45518be62b19d1d31aac3063b92b9666f8a022ff3a183e80c89404ba8ff33458b26521130e96943043085a42291ee283  netsurf-3.11.tar.gz
+e4680c5a4c9b9e6004756031fc3a220fc34d1e0992e6505d7f0e69e4470047165c6983c4009ec3763570ce5812bf7726831efb4d9008736027d0af61c8ec3d68  libnsfb-x11.patch
 "
 
 builddir="$srcdir/$pkgname-all-$pkgver"
@@ -27,17 +33,7 @@ prepare() {
     cat >> "$builddir/netsurf/Makefile.config" <<-EOF
 	NETSURF_TARGET := framebuffer
 	NETSURF_FB_FRONTEND := x
-	NETSURF_USE_JPEG := NO
 EOF
-
-    # libxcb shuts the whole connection down (XCB_CONN_CLOSED_EXT_NOTSUPPORTED)
-    # when a request for an extension the server lacks is sent. libnsfb sends
-    # xcb_shm_query_version unconditionally, so on an X server built without
-    # MIT-SHM the connection dies and netsurf quits right after startup.
-    # Check that the extension is present before using it.
-    sed -i 's|^\([[:space:]]*\)ck = xcb_shm_query_version(xstate->connection);|\1{\n\1\tconst xcb_query_extension_reply_t *shmext = xcb_get_extension_data(xstate->connection, \&xcb_shm_id);\n\1\tif (shmext == NULL \|\| !shmext->present) return NULL;\n\1}\n&|' \
-	"$builddir"/libnsfb/src/surface/x.c
-    grep -q shmext "$builddir"/libnsfb/src/surface/x.c || return 1
 }
 
 build() {
@@ -60,4 +56,10 @@ package() {
 	 INCLUDEDIR=include \
 	 DESTDIR="$pkgdir" \
 	 install
+
+	# JavaScript (bundled duktape) is compiled in but disabled by default.
+	# Per-user ~/.netsurf/Choices is searched first and overrides this.
+	mkdir -p "$pkgdir"/usr/share/netsurf
+	echo "enable_javascript:1" > "$pkgdir"/usr/share/netsurf/Choices
+	chmod 644 "$pkgdir"/usr/share/netsurf/Choices
 }
