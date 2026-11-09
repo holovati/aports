@@ -1,0 +1,50 @@
+# Maintainer Damir Holovati
+
+pkgname=cmake
+pkgver=3.31.6
+pkgrel=0
+pkgdesc="Cross-platform, open-source build system"
+url="https://cmake.org/"
+arch="x86_64"
+license="BSD-3-Clause"
+depends="openssl"
+makedepends="make ninja openssl"
+
+# The Emerixx kernel has no epoll, so the bundled libuv is built with its
+# poll()-based POSIX backend (see cmake-emerixx.patch).
+source="$pkgname-$pkgver.tar.gz::https://github.com/Kitware/CMake/releases/download/v$pkgver/cmake-$pkgver.tar.gz
+	cmake-emerixx.patch
+	"
+builddir="$srcdir/cmake-$pkgver"
+
+prepare() {
+	default_prepare
+}
+
+build() {
+	# Stage 1: ./bootstrap builds a minimal cmake with make (uses poll()
+	# only). Stage 2: that cmake configures and builds the real one with
+	# ninja, using bundled third-party libraries.
+	./bootstrap \
+		--prefix=/usr \
+		--mandir=/share/man \
+		--docdir=/share/doc/cmake \
+		--parallel="${JOBS:-1}" \
+		--generator=Ninja \
+		--no-qt-gui \
+		--no-debugger \
+		-- \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_USE_OPENSSL=ON \
+		-DBUILD_TESTING=OFF
+	ninja
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja install
+}
+
+sha512sums="
+839d06b6ebd0bf78cbe8f7ae3a7c00026e70d759a81ac51aa103f35ad985ac69be9e667aae7b5fe48c5e0c41baec791259279679dbdf2ddd8b63a48382a8a2a0  cmake-3.31.6.tar.gz
+388f1b44d124933acc5f7025d003b3c802bee94466caab2cc8ff9bf76e2ddf34993d849a7fab7df45a7978b8c3f051ed9c68544c4126abc85adbf7371ea6257e  cmake-emerixx.patch
+"
