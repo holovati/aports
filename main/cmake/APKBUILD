@@ -7,11 +7,14 @@ pkgdesc="Cross-platform, open-source build system"
 url="https://cmake.org/"
 arch="x86_64"
 license="BSD-3-Clause"
-depends="openssl"
-makedepends="make ninja openssl"
+depends="bzip2 curl expat libarchive xz zlib zstd"
+makedepends="make ninja $depends"
+subpackages="$pkgname-doc"
 
 # The Emerixx kernel has no epoll, so the bundled libuv is built with its
-# poll()-based POSIX backend (see cmake-emerixx.patch).
+# poll()-based POSIX backend (see cmake-emerixx.patch). libuv, jsoncpp and
+# librhash are not packaged, so they stay bundled; everything else uses the
+# system libraries.
 source="$pkgname-$pkgver.tar.gz::https://github.com/Kitware/CMake/releases/download/v$pkgver/cmake-$pkgver.tar.gz
 	cmake-emerixx.patch
 	"
@@ -24,7 +27,7 @@ prepare() {
 build() {
 	# Stage 1: ./bootstrap builds a minimal cmake with make (uses poll()
 	# only). Stage 2: that cmake configures and builds the real one with
-	# ninja, using bundled third-party libraries.
+	# ninja, using the system libraries listed below.
 	./bootstrap \
 		--prefix=/usr \
 		--mandir=/share/man \
@@ -33,15 +36,34 @@ build() {
 		--generator=Ninja \
 		--no-qt-gui \
 		--no-debugger \
+		--system-bzip2 \
+		--system-curl \
+		--system-expat \
+		--system-libarchive \
+		--system-liblzma \
+		--system-zlib \
+		--system-zstd \
 		-- \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_USE_OPENSSL=ON \
 		-DBUILD_TESTING=OFF
 	ninja
 }
 
 package() {
 	DESTDIR="$pkgdir" ninja install
+}
+
+doc() {
+	default_doc
+
+	# Reference documentation (.rst) installed under share/cmake-X.Y/Help
+	local help
+	for help in "$pkgdir"/usr/share/cmake-*/Help; do
+		[ -d "$help" ] || continue
+		local dest="$subpkgdir/${help#"$pkgdir"/}"
+		mkdir -p "${dest%/*}"
+		mv "$help" "$dest"
+	done
 }
 
 sha512sums="
