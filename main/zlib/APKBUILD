@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=zlib
 pkgver=1.3.1
-pkgrel=0
+pkgrel=1
 pkgdesc="A compression/decompression library"
 url="https://zlib.net"
 arch="all"
@@ -10,9 +10,14 @@ subpackages="$pkgname-doc"
 source="https://zlib.net/fossils/zlib-$pkgver.tar.gz"
 
 build() {
+	# configure only emits -soname and --version-script (zlib.map) for
+	# Linux-like uname values. Without it libz.so has no SONAME and no
+	# ZLIB_x.y symbol versions, which breaks consumers linked against a
+	# versioned libz (e.g. libcurl: inflateReset2@ZLIB_1.2.3.4).
 	./configure \
 		--prefix=/usr \
-		--shared
+		--shared \
+		--uname=Linux
 	make
 }
 
