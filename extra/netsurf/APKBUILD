@@ -29,6 +29,15 @@ prepare() {
 	NETSURF_FB_FRONTEND := x
 	NETSURF_USE_JPEG := NO
 EOF
+
+    # libxcb shuts the whole connection down (XCB_CONN_CLOSED_EXT_NOTSUPPORTED)
+    # when a request for an extension the server lacks is sent. libnsfb sends
+    # xcb_shm_query_version unconditionally, so on an X server built without
+    # MIT-SHM the connection dies and netsurf quits right after startup.
+    # Check that the extension is present before using it.
+    sed -i 's|^\([[:space:]]*\)ck = xcb_shm_query_version(xstate->connection);|\1{\n\1\tconst xcb_query_extension_reply_t *shmext = xcb_get_extension_data(xstate->connection, \&xcb_shm_id);\n\1\tif (shmext == NULL \|\| !shmext->present) return NULL;\n\1}\n&|' \
+	"$builddir"/libnsfb/src/surface/x.c
+    grep -q shmext "$builddir"/libnsfb/src/surface/x.c || return 1
 }
 
 build() {
