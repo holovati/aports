@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=libxcb
 pkgver=1.17.0
-pkgrel=0
+pkgrel=1
 pkgdesc="X11 client-side library"
 url="https://xcb.freedesktop.org/"
 arch="all"
@@ -34,7 +34,7 @@ build() {
 		--enable-sync \
 		--enable-dbe \
 		--enable-xinerama \
-		--disable-shm \
+		--enable-shm \
 		--disable-glx \
 		--disable-dri2 \
 		--disable-dri3 \

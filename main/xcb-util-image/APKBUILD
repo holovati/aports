@@ -1,0 +1,33 @@
+# Maintainer Damir Holovati
+pkgname=xcb-util-image
+pkgver=0.4.1
+pkgrel=0
+pkgdesc="XCB port of Xlib's XImage and XShmImage"
+url="https://xcb.freedesktop.org/"
+arch="all"
+license="MIT"
+depends_dev="libxcb xcb-util"
+makedepends="$depends_dev util-macros"
+source="https://xcb.freedesktop.org/dist/xcb-util-image-$pkgver.tar.xz"
+
+build() {
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--disable-static
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/COPYING
+}
+
+sha512sums="
+9b47ba38b91196d76541b6ccabeaf291d3b91036f15422909cd6a79b3fd1a9786d5b1728e411bc41cfdf3d60a253485f4ef7c65ffa6ae646fa93439ec782746e  xcb-util-image-0.4.1.tar.xz
+"

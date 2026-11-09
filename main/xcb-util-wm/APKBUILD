@@ -1,0 +1,33 @@
+# Maintainer Damir Holovati
+pkgname=xcb-util-wm
+pkgver=0.4.2
+pkgrel=0
+pkgdesc="XCB ICCCM and EWMH helpers"
+url="https://xcb.freedesktop.org/"
+arch="all"
+license="MIT"
+depends_dev="libxcb"
+makedepends="$depends_dev m4 util-macros"
+source="https://xcb.freedesktop.org/dist/xcb-util-wm-$pkgver.tar.xz"
+
+build() {
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--disable-static
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/COPYING
+}
+
+sha512sums="
+eab6588e6a47d28a3b25ecd13b5018529419db6b49c74458c093699b60a194933be1e1f6f7799abf03344f7ebc7af88586ff2935938d53644bdd5c763a7fa9b0  xcb-util-wm-0.4.2.tar.xz
+"

@@ -1,0 +1,33 @@
+# Maintainer Damir Holovati
+pkgname=xcb-util-keysyms
+pkgver=0.4.1
+pkgrel=0
+pkgdesc="XCB keysym utilities"
+url="https://xcb.freedesktop.org/"
+arch="all"
+license="MIT"
+depends_dev="libxcb xorgproto"
+makedepends="$depends_dev util-macros"
+source="https://xcb.freedesktop.org/dist/xcb-util-keysyms-$pkgver.tar.xz"
+
+build() {
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--disable-static
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/COPYING
+}
+
+sha512sums="
+dd53a36b52647f22bf0da8cded4b2974a51899eaac799797017ed8534f14bc2d2d339a14fa5ef387ae4528b7d9a5d31920bb0c71b09ca34f58e5081e768e2bbf  xcb-util-keysyms-0.4.1.tar.xz
+"

@@ -9,7 +9,8 @@ url="https://www.netsurf-browser.org/"
 arch="all"
 license="GPL-2.0-only"
 
-depends="sdl2 libpng openssl curl"
+depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng openssl curl"
+makedepends="$depends libxcb xcb-proto pkgconf"
 
 # subpackages="$pkgname-doc"
 
@@ -24,20 +25,18 @@ builddir="$srcdir/$pkgname-all-$pkgver"
 prepare() {
     default_prepare
     cat >> "$builddir/netsurf/Makefile.config" <<-EOF
-   	NETSURF_TARGET := framebuffer
+	NETSURF_TARGET := framebuffer
+	NETSURF_FB_FRONTEND := x
 	NETSURF_USE_JPEG := NO
 EOF
-
-    cat >> "$builddir/libnsfb/Makefile.config" <<-EOF
-    	NSFB_SDL_AVAILABLE := YES
-	NSFB_XCB_AVAILABLE := NO
-	NSFB_LINUX_AVAILABLE := NO
-EOF
-
 }
 
 build() {
     export LDFLAGS="$LDFLAGS -Wl,--allow-shlib-undefined"
+
+    # libnsfb autodetects the XCB surface via pkg-config; fail early if missing
+    pkg-config --exists xcb xcb-icccm xcb-image xcb-keysyms xcb-atom xcb-aux ||
+	    { echo "missing xcb-util pkg-config modules" >&2; return 1; }
 
     make TARGET=framebuffer \
 	 PREFIX=/usr \
