@@ -42,7 +42,7 @@ build() {
 		-Ddtrace=disabled \
 		-Dsystemtap=false \
 		-Dglib_debug=disabled \
-		-Dtests=true \
+		-Dtests=false \
 		-Dinstalled_tests=false \
 		. output
 

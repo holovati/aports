@@ -1,0 +1,50 @@
+# Maintainer Damir Holovati
+pkgname=gettext
+pkgver=0.22.5
+pkgrel=0
+pkgdesc="GNU locale utilities and the libintl runtime"
+url="https://www.gnu.org/software/gettext/"
+arch="all"
+license="GPL-3.0-or-later AND LGPL-2.1-or-later"
+makedepends="ncurses-dev"
+options="!check"
+subpackages="$pkgname-dev $pkgname-doc"
+source="https://ftp.gnu.org/pub/gnu/gettext/gettext-$pkgver.tar.xz"
+
+build() {
+	# musl has no gettext of its own, so the bundled libintl is built
+	# and installed. libunistring, libxml2 and glib are the bundled
+	# copies: they are only used by the gettext tools.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--enable-shared \
+		--disable-static \
+		--disable-nls \
+		--disable-java \
+		--disable-native-java \
+		--disable-csharp \
+		--disable-openmp \
+		--disable-rpath \
+		--without-emacs \
+		--without-git \
+		--without-cvs \
+		--with-included-gettext \
+		--with-included-libunistring \
+		--with-included-libxml \
+		--with-included-glib
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/charset.alias "$pkgdir"/usr/share/info/dir
+}
+
+sha512sums="
+a60999bb9d09441f138214d87acb7e59aab81e765bb9253a77c54902681c5de164a5a04de2a9778dfb479dbdefaab2d5de1fbaf6095c555c43e7e9fd7a1c09bd  gettext-0.22.5.tar.xz
+"
