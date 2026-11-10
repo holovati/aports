@@ -46,7 +46,7 @@ source="https://webkitgtk.org/releases/webkitgtk-$pkgver.tar.xz"
 
 prepare() {
 	default_prepare
-	emerixx_prepare
+	emerixx_prepare | true
 
 	# gcc here defines __emerixx__ but not __linux__, and CMAKE_SYSTEM_NAME
 	# is Emerixx, so WebKit would pick its generic OS fallbacks, which do
