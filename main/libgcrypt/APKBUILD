@@ -1,0 +1,40 @@
+# Maintainer Damir Holovati
+pkgname=libgcrypt
+pkgver=1.12.4
+pkgrel=0
+pkgdesc="General purpose crypto library based on the code used in GnuPG"
+url="https://www.gnupg.org/related_software/libgcrypt/"
+arch="all"
+license="LGPL-2.1-or-later"
+depends="libgpg-error"
+makedepends="libgpg-error"
+options="!check"
+source="https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$pkgver.tar.bz2"
+
+build() {
+	# --enable-ld-version-script: configure only enables it for *-linux* and
+	# *-gnu* hosts, not for emerixx. Docs are off (needs makeinfo).
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
+		--disable-doc \
+		--enable-ld-version-script
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+632bac4146ba6b3d5e4672e28b1a8b276fcc8bf17961021240b080c6ea4470e46016968a39ee943d3dcd496bda5c9617bf7704bdec75be55847b738809053d8d  libgcrypt-1.12.4.tar.bz2
+"

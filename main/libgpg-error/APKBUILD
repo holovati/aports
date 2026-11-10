@@ -9,11 +9,6 @@ license="LGPL-2.1-or-later"
 options="!check"
 source="https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$pkgver.tar.bz2"
 
-prepare() {
-	default_prepare
-	emerixx_prepare
-}
-
 build() {
 	# Docs (needs makeinfo), tests and the C++/Common Lisp/Qt language
 	# bindings are off. NLS stays off: musl has its own libintl and gettext
