@@ -34,7 +34,8 @@ build() {
 	# files, so no baseruby is required. Coroutine implementation is picked
 	# by hand as configure only does it for *-linux* (musl has no
 	# getcontext() for the ucontext fallback). rdoc/ri are not installed;
-	# psych is skipped by the build as libyaml is not packaged.
+	# psych is skipped by the build as libyaml is not packaged. PIE is off
+	# because the kernel cannot load ET_DYN executables yet.
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -45,7 +46,8 @@ build() {
 		--with-baseruby=no \
 		--with-coroutine=amd64 \
 		--disable-install-doc \
-		--disable-rpath
+		--disable-rpath \
+		--disable-pie
 	make
 }
 
