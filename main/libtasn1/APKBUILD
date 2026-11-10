@@ -1,0 +1,40 @@
+# Maintainer Damir Holovati
+pkgname=libtasn1
+pkgver=4.21.0
+pkgrel=0
+pkgdesc="The ASN.1 library used in GNUTLS"
+url="https://www.gnu.org/software/libtasn1/"
+arch="all"
+license="LGPL-2.1-or-later"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://ftp.gnu.org/gnu/libtasn1/libtasn1-$pkgver.tar.gz"
+
+build() {
+	# The tarball ships prebuilt man pages and info, so makeinfo is not needed.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var \
+		--disable-static \
+		--disable-gtk-doc \
+		--disable-valgrind-tests
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la "$pkgdir"/usr/share/info/dir
+}
+
+sha512sums="
+6a581c4c072b168bf29a0dec7e59a9329a798e392b7d1033791d0e3166a5d1164e2a7065373a84018d500a01563657900c318b1fd437c227c3174b754f9998d3  libtasn1-4.21.0.tar.gz
+"
