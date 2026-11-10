@@ -44,6 +44,32 @@ makedepends="
 options="!check"
 source="https://webkitgtk.org/releases/webkitgtk-$pkgver.tar.xz"
 
+prepare() {
+	default_prepare
+	emerixx_prepare
+
+	# gcc here defines __emerixx__ but not __linux__, and CMAKE_SYSTEM_NAME
+	# is Emerixx, so WebKit would pick its generic OS fallbacks, which do
+	# not even compile (memoryStatus() is only declared for OS(LINUX)).
+	# The kernel ABI and musl are Linux-like, so treat it as Linux.
+	sed -i 's/^#if defined(__linux__)$/#if defined(__linux__) || defined(__emerixx__)/' \
+		Source/WTF/wtf/PlatformOS.h
+	sed -i 's/^#ifdef __linux__$/#if defined(__linux__) || defined(__emerixx__)/' \
+		Source/bmalloc/bmalloc/BPlatform.h \
+		Source/bmalloc/libpas/src/libpas/pas_platform.h
+	sed -i 's/CMAKE_SYSTEM_NAME MATCHES "Linux")/CMAKE_SYSTEM_NAME MATCHES "Linux|Emerixx")/' \
+		Source/WTF/wtf/CMakeLists.txt \
+		Source/WTF/wtf/PlatformGTK.cmake \
+		Source/JavaScriptCore/CMakeLists.txt \
+		Source/cmake/OptionsGTK.cmake \
+		Source/cmake/WebKitCommon.cmake
+
+	# There are no kernel headers in the sysroot, the GPL-free uapi copies
+	# live in <emerixx/...>. libpas only needs the futex constants.
+	sed -i 's|<linux/futex.h>|<emerixx/futex_ops.h>|' \
+		Source/bmalloc/libpas/src/libpas/pas_lock.c
+}
+
 build() {
 	# - The JIT tiers (LLInt, Baseline, DFG, FTL), WebAssembly and bmalloc
 	#   are left at their x86_64 defaults and need PROT_EXEC mappings from
@@ -71,7 +97,6 @@ build() {
 		-DUSE_GTK4=OFF \
 		-DDEVELOPER_MODE=OFF \
 		-DLTO_MODE=OFF \
-		-DUSE_LD_GOLD=OFF \
 		-DUSE_LD_LLD=OFF \
 		-DENABLE_UNIFIED_BUILDS=OFF \
 		-DENABLE_SAMPLING_PROFILER=OFF \
