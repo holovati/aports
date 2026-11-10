@@ -1,0 +1,46 @@
+# Maintainer Damir Holovati
+pkgname=cairo
+pkgver=1.18.4
+pkgrel=0
+pkgdesc="2D graphics library with support for multiple output devices"
+url="https://cairographics.org/"
+arch="all"
+license="LGPL-2.1-only OR MPL-1.1"
+depends="fontconfig freetype glib libpng libx11 libxcb libxext libxrender pixman zlib"
+makedepends="fontconfig freetype glib libpng libx11 libxcb libxext libxrender
+	meson pixman pkgconf xcb-util xorgproto zlib"
+options="!check"
+source="https://cairographics.org/releases/cairo-$pkgver.tar.xz"
+
+build() {
+	# Backends: image, PNG/SVG, PDF/PS/script (zlib), tee, xlib, xcb and
+	# xlib-xcb. No OpenGL/EGL (cairo 1.18 removed its GL backend), no
+	# lzo, libspectre, bfd symbol lookup, tests or docs.
+	abuild-meson \
+		-Ddefault_library=shared \
+		-Dfontconfig=enabled \
+		-Dfreetype=enabled \
+		-Dpng=enabled \
+		-Dzlib=enabled \
+		-Dtee=enabled \
+		-Dxlib=enabled \
+		-Dxcb=enabled \
+		-Dxlib-xcb=enabled \
+		-Dglib=enabled \
+		-Dlzo=disabled \
+		-Dspectre=disabled \
+		-Dsymbol-lookup=disabled \
+		-Dgtk2-utils=disabled \
+		-Dtests=disabled \
+		-Dgtk_doc=false \
+		. output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+863679f817ed67dc2c916c035d740916e27e7e69c04fca63936e37d274e7f4c79848d16c8f7c481798864602e8847c489f698df89b785cbc576c925dbd513316  cairo-1.18.4.tar.xz
+"
