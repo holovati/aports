@@ -1,0 +1,62 @@
+# Maintainer Damir Holovati
+pkgname=ruby
+pkgver=3.4.12
+pkgrel=0
+pkgdesc="Ruby scripting language"
+url="https://www.ruby-lang.org/"
+arch="all"
+license="BSD-2-Clause OR Ruby"
+depends="gmp libffi openssl zlib"
+makedepends="gmp libffi openssl zlib"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://cache.ruby-lang.org/pub/ruby/${pkgver%.*}/ruby-$pkgver.tar.xz"
+
+prepare() {
+	default_prepare
+	emerixx_prepare
+
+	# configure only knows Linux-like targets for the C compiler search
+	# order, the getcwd(NULL) check, and, critically, for "-rdynamic" and
+	# "$(CC) -shared" (needed to load C extensions). Treat emerixx the same
+	# (musl, ELF, GNU toolchain).
+	sed -i \
+		-e 's,^  linux\*|cygwin\*|msys\*) :$,  linux*|emerixx*|cygwin*|msys*) :,' \
+		-e 's,^  linux\*|darwin\*|,  linux*|emerixx*|darwin*|,' \
+		-e 's,^  linux\* | gnu\* | ,  linux* | emerixx* | gnu* | ,' \
+		configure
+	[ "$(grep -c emerixx configure)" = 5 ] || die "configure patch did not apply"
+}
+
+build() {
+	# Static libruby (no libruby.so), so no run-time library path or
+	# $ORIGIN handling is needed. The release tarball ships all generated
+	# files, so no baseruby is required. Coroutine implementation is picked
+	# by hand as configure only does it for *-linux* (musl has no
+	# getcontext() for the ucontext fallback). rdoc/ri are not installed;
+	# psych is skipped by the build as libyaml is not packaged.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--with-baseruby=no \
+		--with-coroutine=amd64 \
+		--disable-install-doc \
+		--disable-rpath
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+7866ed652921f9f0d601e1e323d29fddee3506cfd89e258cab7601786bffec8a17245468d517d246ecfa7fa9a982b73cfff0aaf6534444753e8b6add297bfbd3  ruby-3.4.12.tar.xz
+"
