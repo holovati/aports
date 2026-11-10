@@ -1,0 +1,46 @@
+# Maintainer Damir Holovati
+pkgname=libgpg-error
+pkgver=1.61
+pkgrel=0
+pkgdesc="Support library for libgcrypt"
+url="https://www.gnupg.org/related_software/libgpg-error/"
+arch="all"
+license="LGPL-2.1-or-later"
+options="!check"
+source="https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$pkgver.tar.bz2"
+
+prepare() {
+	default_prepare
+	emerixx_prepare
+}
+
+build() {
+	# Docs (needs makeinfo), tests and the C++/Common Lisp/Qt language
+	# bindings are off. NLS stays off: musl has its own libintl and gettext
+	# is built without it.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
+		--disable-nls \
+		--disable-doc \
+		--disable-tests \
+		--disable-languages
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/*.la
+}
+
+sha512sums="
+3e59eb52d061709fd8dfe56a4b36d2d5b49dd5e0c90c283899669d6a355286cb3a3f851631f8456c78c48b652bb31a4c1f8b081ccdf87e5db64b313d141a7670  libgpg-error-1.61.tar.bz2
+"
