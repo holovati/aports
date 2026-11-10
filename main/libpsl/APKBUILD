@@ -1,0 +1,38 @@
+# Maintainer Damir Holovati
+pkgname=libpsl
+pkgver=0.21.5
+pkgrel=0
+pkgdesc="C library for the Public Suffix List"
+url="https://rockdaboot.github.io/libpsl/"
+arch="all"
+license="MIT"
+makedepends="meson pkgconf python3"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://github.com/rockdaboot/libpsl/releases/download/$pkgver/libpsl-$pkgver.tar.gz"
+
+build() {
+	# Built-in PSL data (compiled into the library from the list shipped
+	# in the tarball), no run-time IDNA library: callers such as libsoup
+	# convert host names to ASCII with GLib first. Revisit when libidn2
+	# or ICU is packaged.
+	abuild-meson \
+		-Dbuiltin=true \
+		-Druntime=no \
+		-Ddocs=false \
+		-Dtests=false \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+c14d575cecc0f1693894dd79565b6b9220084ddfa43b908a1cefe16d147cdd5ec47796eb0c2135e2f829a951abaf39d8a371ab5c1352f57b36e610e25adf91f5  libpsl-0.21.5.tar.gz
+"
