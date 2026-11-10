@@ -6,8 +6,8 @@ pkgdesc="Ruby scripting language"
 url="https://www.ruby-lang.org/"
 arch="all"
 license="BSD-2-Clause OR Ruby"
-depends="gmp libffi openssl zlib"
-makedepends="gmp libffi openssl zlib"
+depends="gmp libffi libyaml openssl zlib"
+makedepends="gmp libffi libyaml openssl zlib"
 options="!check"
 subpackages="$pkgname-doc"
 source="https://cache.ruby-lang.org/pub/ruby/${pkgver%.*}/ruby-$pkgver.tar.xz"
@@ -34,7 +34,7 @@ build() {
 	# files, so no baseruby is required. Coroutine implementation is picked
 	# by hand as configure only does it for *-linux* (musl has no
 	# getcontext() for the ucontext fallback). rdoc/ri are not installed;
-	# psych is skipped by the build as libyaml is not packaged. PIE is off
+	# psych is built against the system libyaml. PIE is off
 	# because the kernel cannot load ET_DYN executables yet. The kernel has
 	# no epoll, so pretend sys/epoll.h is missing: Ruby then builds without
 	# M:N threads (the only epoll user) and the timer thread uses plain
