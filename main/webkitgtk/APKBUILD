@@ -85,8 +85,11 @@ build() {
 	#   glib-compile-resources, so it stays on.
 	# - Accessibility goes over plain GDBus, so there is no hard dependency
 	#   on at-spi2-core. It stays inactive until there is a D-Bus.
-	# - The bundled unifdef is used, unified builds are off to keep the
-	#   memory use per compiler process down.
+	# - The bundled unifdef is used. Unified builds stay at their default
+	#   (on): WebKit sources rely on the includes of their bundle
+	#   neighbours and do not compile standalone (Repatch.cpp lacks
+	#   CallLinkInfo.h). Peak memory per compiler process is higher, so
+	#   keep JOBS low.
 	cmake -B build -S . -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
@@ -98,7 +101,6 @@ build() {
 		-DDEVELOPER_MODE=OFF \
 		-DLTO_MODE=OFF \
 		-DUSE_LD_LLD=OFF \
-		-DENABLE_UNIFIED_BUILDS=OFF \
 		-DENABLE_SAMPLING_PROFILER=OFF \
 		-DENABLE_INTROSPECTION=OFF \
 		-DENABLE_DOCUMENTATION=OFF \
