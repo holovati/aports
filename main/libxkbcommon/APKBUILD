@@ -1,0 +1,38 @@
+# Maintainer Damir Holovati
+pkgname=libxkbcommon
+pkgver=1.7.0
+pkgrel=0
+pkgdesc="Keyboard handling library using XKB data"
+url="https://xkbcommon.org/"
+arch="all"
+license="MIT"
+depends="libxcb libxml2 xkeyboard-config"
+makedepends="bison libxcb libxml2 meson pkgconf xkeyboard-config"
+options="!check"
+source="https://xkbcommon.org/download/libxkbcommon-$pkgver.tar.xz"
+
+build() {
+	# X11 support (libxkbcommon-x11) and the registry library are on; there
+	# is no Wayland on emerixx. Docs and bash completion are off.
+	abuild-meson \
+		-Denable-x11=true \
+		-Denable-wayland=false \
+		-Denable-xkbregistry=true \
+		-Denable-tools=true \
+		-Denable-docs=false \
+		-Denable-bash-completion=false \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+4b74a9f3f63e2ebc1cbdcaa963c70362e55fa527e1d89b6a1fd30d7a84a8b60c1b3dc99bcfbde85aa31890e0b2f62f0bad3c8ff8340fe6a930ee662b33448ba5  libxkbcommon-1.7.0.tar.xz
+"
