@@ -1,0 +1,55 @@
+# Maintainer Damir Holovati
+pkgname=icu
+pkgver=79.1
+pkgrel=0
+pkgdesc="International Components for Unicode library"
+url="https://icu.unicode.org/"
+arch="all"
+license="Unicode-3.0"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://github.com/unicode-org/icu/releases/download/release-$pkgver/icu4c-$pkgver-sources.tgz"
+builddir="$srcdir/icu/source"
+
+prepare() {
+	default_prepare
+	emerixx_prepare
+
+	# configure only knows Linux-like hosts for the mh-linux makefile
+	# fragment, the genccode assembly mode and the U_LINUX platform. Treat
+	# emerixx the same (musl, ELF, GNU toolchain).
+	sed -i \
+		-e 's/^\([[:space:]]*\)\*-\*-linux\*|\*-\*-gnu|/\1*-*-linux*|*-*-emerixx*|*-*-gnu|/' \
+		-e 's/^\*-linux\*|\*-kfreebsd\*-gnu\*|/*-linux*|*-emerixx*|*-kfreebsd*-gnu*|/' \
+		configure
+	grep -q 'emerixx' configure || die "configure patch did not apply"
+}
+
+build() {
+	# Native build, no separate cross stage. Tests, samples and extras are
+	# not built.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-static \
+		--disable-tests \
+		--disable-samples \
+		--disable-extras
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+9098adf9ba7fbe11d92963415cc80bf09de39ce1372414dbc2561e5f8ef57479a9fe4b6f7abc61911e4659e5953be987c459297d29e61b064d1931a16195a973  icu4c-79.1-sources.tgz
+"
