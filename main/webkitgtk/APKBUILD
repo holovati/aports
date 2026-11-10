@@ -1,0 +1,117 @@
+# Maintainer Damir Holovati
+pkgname=webkitgtk
+pkgver=2.54.2
+pkgrel=0
+pkgdesc="GTK3 port of the WebKit web content engine (API 4.1)"
+url="https://webkitgtk.org/"
+arch="all"
+license="LGPL-2.1-or-later AND BSD-2-Clause"
+depends="
+	cairo
+	fontconfig
+	freetype
+	glib
+	gtk3
+	harfbuzz
+	icu
+	lcms2
+	libepoxy
+	libgcrypt
+	libjpeg
+	libpng
+	libsoup3
+	libtasn1
+	libwebp
+	libx11
+	libxml2
+	libxslt
+	libxt
+	sqlite
+	woff2
+	zlib
+	"
+makedepends="
+	$depends
+	cmake
+	gettext
+	gperf
+	libgpg-error
+	ninja
+	perl
+	python3
+	ruby
+	"
+options="!check"
+source="https://webkitgtk.org/releases/webkitgtk-$pkgver.tar.xz"
+
+build() {
+	# - The JIT tiers (LLInt, Baseline, DFG, FTL), WebAssembly and bmalloc
+	#   are left at their x86_64 defaults and need PROT_EXEC mappings from
+	#   the kernel. If that misbehaves, fall back to -DENABLE_JIT=OFF
+	#   -DENABLE_C_LOOP=ON -DENABLE_WEBASSEMBLY=OFF -DUSE_SYSTEM_MALLOC=ON.
+	#   Only the sampling profiler is off, as it needs signal based thread
+	#   suspension with register access.
+	# - Everything pulling in GStreamer (video, audio, web audio, codecs,
+	#   speech) is off, as are WebGL (no GL stack yet), the GPU process
+	#   (needs GBM/DRM), the bubblewrap sandbox, Wayland, gamepad, spell
+	#   checking, libsecret, hyphenation, AVIF/JPEG XL and journald.
+	#   pdf.js is bundled in the tarball and only needs glib's
+	#   glib-compile-resources, so it stays on.
+	# - Accessibility goes over plain GDBus, so there is no hard dependency
+	#   on at-spi2-core. It stays inactive until there is a D-Bus.
+	# - The bundled unifdef is used, unified builds are off to keep the
+	#   memory use per compiler process down.
+	cmake -B build -S . -G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_INSTALL_LIBEXECDIR=libexec \
+		-DCMAKE_SKIP_RPATH=ON \
+		-DPORT=GTK \
+		-DUSE_GTK4=OFF \
+		-DDEVELOPER_MODE=OFF \
+		-DLTO_MODE=OFF \
+		-DUSE_LD_GOLD=OFF \
+		-DUSE_LD_LLD=OFF \
+		-DENABLE_UNIFIED_BUILDS=OFF \
+		-DENABLE_SAMPLING_PROFILER=OFF \
+		-DENABLE_INTROSPECTION=OFF \
+		-DENABLE_DOCUMENTATION=OFF \
+		-DENABLE_BUBBLEWRAP_SANDBOX=OFF \
+		-DENABLE_MINIBROWSER=OFF \
+		-DENABLE_WEBDRIVER=OFF \
+		-DENABLE_GAMEPAD=OFF \
+		-DENABLE_SPELLCHECK=OFF \
+		-DENABLE_SPEECH_SYNTHESIS=OFF \
+		-DENABLE_VIDEO=OFF \
+		-DENABLE_WEB_AUDIO=OFF \
+		-DENABLE_WEB_CODECS=OFF \
+		-DENABLE_MEDIA_RECORDER=OFF \
+		-DENABLE_MEDIA_SESSION=OFF \
+		-DENABLE_MEDIA_STREAM=OFF \
+		-DENABLE_MEDIA_CONTROLS_CONTEXT_MENUS=OFF \
+		-DENABLE_WEBGL=OFF \
+		-DENABLE_GPU_PROCESS=OFF \
+		-DENABLE_JOURNALD_LOG=OFF \
+		-DENABLE_WAYLAND_TARGET=OFF \
+		-DENABLE_X11_TARGET=ON \
+		-DUSE_GBM=OFF \
+		-DUSE_LIBDRM=OFF \
+		-DUSE_LIBSECRET=OFF \
+		-DUSE_LIBHYPHEN=OFF \
+		-DUSE_AVIF=OFF \
+		-DUSE_JPEGXL=OFF \
+		-DUSE_LIBBACKTRACE=OFF \
+		-DUSE_SYSPROF_CAPTURE=OFF \
+		-DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
+		-DUSE_SYSTEM_UNIFDEF=OFF
+	cmake --build build -j"${JOBS:-2}"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+5e35d8d5d74e5e648df112db082cdb3b99949ce2a81c87af2462ebb5aba4e7e122b04ba421d826deebbffcd7fe2d620957450308539907ae2f41bdef7b5def24  webkitgtk-2.54.2.tar.xz
+"
