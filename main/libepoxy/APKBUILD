@@ -1,23 +1,26 @@
 # Maintainer Damir Holovati
 pkgname=libepoxy
 pkgver=1.5.10
-pkgrel=0
+pkgrel=1
 pkgdesc="OpenGL function pointer management library"
 url="https://github.com/anholt/libepoxy"
 arch="all"
 license="MIT"
-makedepends="meson pkgconf python3"
+depends="libx11"
+makedepends="libx11 meson pkgconf python3 xorgproto"
 options="!check"
 source="$pkgname-$pkgver.tar.gz::https://github.com/anholt/libepoxy/archive/refs/tags/$pkgver.tar.gz"
 
 build() {
-	# There is no GL/EGL/X11 GL stack on emerixx yet. libepoxy loads the GL
+	# There is no GL/EGL stack on emerixx yet. libepoxy loads the GL
 	# libraries with dlopen() at runtime, so it builds without them; GTK3 and
-	# WebKitGTK only need the library and headers to link.
+	# WebKitGTK only need the library and headers to link. GLX is enabled
+	# because it only needs the X11 headers and GTK3's X11 backend includes
+	# <epoxy/glx.h>. EGL needs EGL headers, which are not available.
 	abuild-meson \
-		-Dglx=no \
+		-Dglx=yes \
 		-Degl=no \
-		-Dx11=false \
+		-Dx11=true \
 		-Ddocs=false \
 		-Dtests=false \
 		. output
