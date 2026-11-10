@@ -1,0 +1,44 @@
+# Maintainer Damir Holovati
+pkgname=pango
+pkgver=1.56.4
+pkgrel=0
+pkgdesc="Library for layout and rendering of text"
+url="https://pango.gnome.org/"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="cairo fontconfig freetype fribidi glib harfbuzz libxft"
+makedepends="cairo fontconfig freetype fribidi glib harfbuzz libxft
+	meson pkgconf"
+options="!check"
+source="https://download.gnome.org/sources/pango/${pkgver%.*}/pango-$pkgver.tar.xz"
+
+build() {
+	# No introspection yet (gobject-introspection is not packaged), no
+	# libthai, sysprof, docs, man pages, test suite or examples.
+	abuild-meson \
+		-Dintrospection=disabled \
+		-Dfontconfig=enabled \
+		-Dfreetype=enabled \
+		-Dcairo=enabled \
+		-Dxft=enabled \
+		-Dlibthai=disabled \
+		-Dsysprof=disabled \
+		-Ddocumentation=false \
+		-Dman-pages=false \
+		-Dbuild-testsuite=false \
+		-Dbuild-examples=false \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+19471618a66b68e19786c458387f2bc8027ecbda5aaf29efcc025a99b3a74402765c6c4c6ea2997d8f1219ef7f1bea817e6ca55e494dff24780f5d3f2a6242a2  pango-1.56.4.tar.xz
+"
