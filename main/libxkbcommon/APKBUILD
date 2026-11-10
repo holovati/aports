@@ -5,6 +5,7 @@ pkgrel=0
 pkgdesc="Keyboard handling library using XKB data"
 url="https://xkbcommon.org/"
 arch="all"
+subpackages="$pkgname-doc"
 license="MIT"
 depends="libxcb libxml2 xkeyboard-config"
 makedepends="bison libxcb libxml2 meson pkgconf xkeyboard-config"
