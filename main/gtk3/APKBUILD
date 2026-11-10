@@ -1,0 +1,74 @@
+# Maintainer Damir Holovati
+pkgname=gtk3
+pkgver=3.24.43
+pkgrel=0
+pkgdesc="GTK+ 3 graphical user interface toolkit"
+url="https://www.gtk.org/"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="atk cairo fontconfig fribidi gdk-pixbuf glib libepoxy libx11 libxcomposite
+	libxcursor libxdamage libxext libxfixes libxi libxinerama libxkbcommon
+	libxrandr libxrender pango"
+makedepends="$depends meson pkgconf python3 xorgproto"
+triggers="$pkgname.trigger=/usr/share/glib-2.0/schemas"
+options="!check"
+source="https://download.gnome.org/sources/gtk+/${pkgver%.*}/gtk+-$pkgver.tar.xz"
+builddir="$srcdir/gtk+-$pkgver"
+
+prepare() {
+	default_prepare
+
+	# TODO(dbus): GTK3 hard-requires the AT-SPI bridge (atk-bridge-2.0, from
+	# at-spi2-core) for the X11 backend, and at-spi2-core needs D-Bus.
+	# D-Bus is blocked on kernel support (stat on socket fds, peer
+	# credentials). Until then the bridge is removed; widgets still implement
+	# ATK, but nothing exports them to the accessibility bus.
+	# When D-Bus and at-spi2-core are packaged: drop the sed lines below, add
+	# at-spi2-core to depends/makedepends, bump pkgrel.
+	sed -i \
+		-e "s|^\(  atkbridge_dep  = \).*|\1[]|" \
+		-e "/atk_pkgs += \['atk-bridge-2.0'\]/d" \
+		meson.build
+	sed -i \
+		-e '/#include <atk-bridge.h>/d' \
+		-e '/atk_bridge_adaptor_init (NULL, NULL);/d' \
+		gtk/a11y/gtkaccessibility.c
+}
+
+build() {
+	# X11 backend only. No Wayland, Broadway, CUPS, colord, introspection
+	# (gobject-introspection is not packaged), docs, demos or tests. All input
+	# method modules are built in, so there is no immodules.cache to update.
+	abuild-meson \
+		-Dx11_backend=true \
+		-Dwayland_backend=false \
+		-Dbroadway_backend=false \
+		-Dxinerama=yes \
+		-Dprint_backends=file,lpr \
+		-Dcolord=no \
+		-Dcloudproviders=false \
+		-Dtracker3=false \
+		-Dprofiler=false \
+		-Dintrospection=false \
+		-Dgtk_doc=false \
+		-Dman=false \
+		-Ddemos=false \
+		-Dexamples=false \
+		-Dtests=false \
+		-Dinstalled_tests=false \
+		-Dbuiltin_immodules=all \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+2f208a353d94fa504088ab080006cb097de721ec934b69b5719af0f4c8c72d2aa9a68b47239feca1622ec67c7389be87023729ee6ad3580a87777f2bf9ed5375  gtk+-3.24.43.tar.xz
+"
