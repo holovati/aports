@@ -1,0 +1,39 @@
+# Maintainer Damir Holovati
+pkgname=glib-networking
+pkgver=2.80.1
+pkgrel=0
+pkgdesc="Network-related GIO modules for GLib (TLS via OpenSSL)"
+url="https://gitlab.gnome.org/GNOME/glib-networking"
+arch="all"
+license="LGPL-2.1-or-later"
+depends="ca-certificates glib openssl"
+makedepends="gettext glib meson openssl pkgconf"
+options="!check"
+source="https://download.gnome.org/sources/glib-networking/${pkgver%.*}/glib-networking-$pkgver.tar.xz"
+
+build() {
+	# TLS backend: OpenSSL instead of GnuTLS (gnutls, nettle, libtasn1 and
+	# p11-kit are not packaged). No libproxy or GNOME proxy settings; proxies
+	# are taken from the environment (http_proxy etc.).
+	abuild-meson \
+		-Dgnutls=disabled \
+		-Dopenssl=enabled \
+		-Dlibproxy=disabled \
+		-Dgnome_proxy=disabled \
+		-Denvironment_proxy=enabled \
+		-Dinstalled_tests=false \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+0f1b3807635fcae143ad1a89731a8f7e1b6f4b8f6cc2dd1b7b5eea3d77c796ee5a55ea330901bfd22927d07795f39450d30f0f1029595761e659f96a8415c263  glib-networking-2.80.1.tar.xz
+"
