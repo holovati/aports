@@ -1,0 +1,45 @@
+# Maintainer Damir Holovati
+pkgname=libsoup3
+pkgver=3.6.5
+pkgrel=0
+pkgdesc="HTTP client/server library for GNOME"
+url="https://libsoup.org/"
+arch="all"
+license="LGPL-2.0-or-later"
+depends="brotli glib glib-networking libpsl nghttp2 sqlite zlib"
+makedepends="brotli glib glib-networking libpsl meson nghttp2 pkgconf sqlite
+	zlib"
+options="!check"
+source="https://download.gnome.org/sources/libsoup/${pkgver%.*}/libsoup-$pkgver.tar.xz"
+builddir="$srcdir/libsoup-$pkgver"
+
+build() {
+	# tls_check runs a test program at configure time that loads the GIO TLS
+	# backend, so glib-networking must be installed first.
+	# No GSSAPI/Kerberos, NTLM, introspection, vala bindings, docs, tests
+	# or sysprof.
+	abuild-meson \
+		-Dgssapi=disabled \
+		-Dntlm=disabled \
+		-Dbrotli=enabled \
+		-Dtls_check=true \
+		-Dintrospection=disabled \
+		-Dvapi=disabled \
+		-Ddocs=disabled \
+		-Dtests=false \
+		-Dsysprof=disabled \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+cb44d93b16048d31ae04a8c2416bbe233e0e9bdaf2d9bfe2879260fd3da27e90a0bb05cddbd82cdf81a4a778bd451ad172a14dd31e2fd113c3bbbe13c0029b03  libsoup-3.6.5.tar.xz
+"
