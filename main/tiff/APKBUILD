@@ -1,0 +1,46 @@
+# Maintainer Damir Holovati
+pkgname=tiff
+pkgver=4.7.0
+pkgrel=0
+pkgdesc="Library and tools for the Tag Image File Format (TIFF)"
+url="https://libtiff.gitlab.io/libtiff/"
+arch="all"
+license="libtiff"
+depends="libjpeg xz zlib"
+makedepends="cmake make libjpeg xz zlib"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://download.osgeo.org/libtiff/tiff-$pkgver.tar.gz"
+
+build() {
+	# Optional codecs that are not packaged (jbig, lerc, libdeflate) and the OpenGL viewer, C++ API, docs, tests and
+	# contrib programs are left out.
+	cmake -B build -S . -G "Unix Makefiles" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-Dtiff-tools=ON \
+		-Dtiff-tests=OFF \
+		-Dtiff-contrib=OFF \
+		-Dtiff-docs=OFF \
+		-Dtiff-opengl=OFF \
+		-Dcxx=OFF \
+		-Dzlib=ON \
+		-Djpeg=ON \
+		-Dlzma=ON \
+		-Dwebp=ON \
+		-Dzstd=ON \
+		-Djbig=OFF \
+		-Dlerc=OFF \
+		-Dlibdeflate=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+a77a050d1d8777c6d86077c3c26e8d35f98717fe14bb3c049e2b82fbfbb374e96f83a0c1ff67ffb21591a9a7abf0d3e18c3d7695c96939326cc19a9712dd2492  tiff-4.7.0.tar.gz
+"
