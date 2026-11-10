@@ -9,7 +9,6 @@ license="libtiff"
 depends="libjpeg xz zlib"
 makedepends="cmake make libjpeg xz zlib"
 options="!check"
-subpackages="$pkgname-doc"
 source="https://download.osgeo.org/libtiff/tiff-$pkgver.tar.gz"
 
 build() {
