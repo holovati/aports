@@ -1,0 +1,33 @@
+# Maintainer Damir Holovati
+pkgname=libxcomposite
+pkgver=0.4.6
+pkgrel=0
+pkgdesc="X11 Composite extension library"
+url="https://xorg.freedesktop.org/"
+arch="all"
+license="MIT"
+options="!check"  # No test suite.
+makedepends="xorgproto libx11 libxfixes util-macros"
+subpackages="$pkgname-doc"
+source="https://www.x.org/releases/individual/lib/libXcomposite-$pkgver.tar.xz"
+builddir="$srcdir"/libXcomposite-$pkgver
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--without-xmlto
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+f35a0da8f9f22fd788eee01209557fe3a1b1abdc9744f76330ba42b21b6e3af5464ca4451c33415856417c30da5aa5624e3707980c644327249bfeda5a62a59b  libXcomposite-0.4.6.tar.xz
+"
