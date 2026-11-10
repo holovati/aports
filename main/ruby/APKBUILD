@@ -39,6 +39,8 @@ build() {
 	# no epoll, so pretend sys/epoll.h is missing: Ruby then builds without
 	# M:N threads (the only epoll user) and the timer thread uses plain
 	# poll(). Drop the cache override once the kernel gets epoll.
+	# copy_file_range() and sendfile() fail with ENOTSUP in the kernel, so
+	# hide them too and let IO.copy_stream use its read/write loop.
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -51,7 +53,10 @@ build() {
 		--disable-install-doc \
 		--disable-rpath \
 		--disable-pie \
-		ac_cv_header_sys_epoll_h=no
+		ac_cv_header_sys_epoll_h=no \
+		ac_cv_func_copy_file_range=no \
+		rb_cv_use_copy_file_range=no \
+		ac_cv_func_sendfile=no
 	make
 }
 
