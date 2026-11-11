@@ -6,10 +6,13 @@ pkgdesc="Library and tools for the Tag Image File Format (TIFF)"
 url="https://libtiff.gitlab.io/libtiff/"
 arch="all"
 license="libtiff"
-depends="libjpeg xz zlib"
+depends="libjpeg-turbo xz zlib"
 makedepends="cmake make libjpeg xz zlib"
 options="!check"
-source="https://download.osgeo.org/libtiff/tiff-$pkgver.tar.gz"
+#source="https://download.osgeo.org/libtiff/tiff-$pkgver.tar.gz"
+source="https://mirror.sg.gs/debian-security/pool/main/t/tiff/tiff_$pkgver.orig.tar.bz2"
+
+builddir="$srcdir/libtiff-v$pkgver"
 
 build() {
 	# Optional codecs that are not packaged (jbig, lerc, libdeflate) and the OpenGL viewer, C++ API, docs, tests and
@@ -41,5 +44,5 @@ package() {
 }
 
 sha512sums="
-a77a050d1d8777c6d86077c3c26e8d35f98717fe14bb3c049e2b82fbfbb374e96f83a0c1ff67ffb21591a9a7abf0d3e18c3d7695c96939326cc19a9712dd2492  tiff-4.7.0.tar.gz
+6d6f39727a4403ffaae390d54f1d7a6ff926085480422cbc4e2168e8e6490bf283e69361860d0ca0d7951543f48be550641b76d814c24a1b4e4bff1da9e27c6d  tiff_4.7.0.orig.tar.bz2
 "

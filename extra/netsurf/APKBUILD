@@ -9,7 +9,7 @@ url="https://www.netsurf-browser.org/"
 arch="all"
 license="GPL-2.0-only"
 
-depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng libjpeg freetype font-dejavu openssl curl"
+depends="libxcb xcb-util xcb-util-image xcb-util-keysyms xcb-util-wm libpng libjpeg-turbo freetype font-dejavu openssl curl"
 makedepends="$depends libxcb xcb-proto pkgconf"
 
 # subpackages="$pkgname-doc"
