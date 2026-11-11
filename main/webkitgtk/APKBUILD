@@ -17,7 +17,7 @@ depends="
 	lcms2
 	libepoxy
 	libgcrypt
-	libjpeg
+	libjpeg-turbo
 	libpng
 	libsoup3
 	libtasn1
@@ -68,14 +68,6 @@ prepare() {
 	# live in <emerixx/...>. libpas only needs the futex constants.
 	sed -i 's|<linux/futex.h>|<emerixx/futex_ops.h>|' \
 		Source/bmalloc/libpas/src/libpas/pas_lock.c
-
-	# Skia assumes libjpeg-turbo, where boolean is an int. libjpeg 9 has
-	# boolean as an enum, to which C++ bool does not convert. The other
-	# libjpeg callbacks in Skia already use FALSE/TRUE.
-	sed -i '/FillInputBuffer(j_decompress_ptr dinfo) {/,/^}/ {
-		s/return false;/return FALSE;/
-		s/return true;/return TRUE;/
-	}' Source/ThirdParty/skia/src/codec/SkJpegDecoderMgr.cpp
 }
 
 build() {

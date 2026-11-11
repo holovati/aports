@@ -1,0 +1,46 @@
+# Maintainer Damir Holovati
+pkgname=libjpeg-turbo
+pkgver=3.1.2
+pkgrel=0
+pkgdesc="JPEG image codec with libjpeg API/ABI (libjpeg-turbo)"
+url="https://libjpeg-turbo.org/"
+arch="all"
+license="BSD-3-Clause AND IJG AND Zlib"
+# Replaces the IJG libjpeg 9 package: WebKit's Skia needs the turbo only
+# API (JCS_EXT_RGBA, JCS_RGB565, jpeg_crop_scanline, jpeg_skip_scanlines).
+# Packages built against libjpeg 9 link libjpeg.so.9 and have to be rebuilt.
+provides="libjpeg"
+replaces="libjpeg"
+makedepends="cmake make"
+options="!check"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$pkgver/libjpeg-turbo-$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+	emerixx_prepare
+}
+
+build() {
+	# - No SIMD, as there is no nasm.
+	# - TurboJPEG is only needed by Java/JNI style consumers, nothing here
+	#   uses it.
+	cmake -B build -S . -G "Unix Makefiles" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_SHARED=ON \
+		-DENABLE_STATIC=OFF \
+		-DWITH_SIMD=OFF \
+		-DWITH_TURBOJPEG=OFF \
+		-DWITH_JAVA=OFF
+	cmake --build build -j"${JOBS:-2}"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+79271ae4ddc12e3753cc7323dc15617f1d82b2d554ef27b555712f6ab5de603323dd33747620815e3b55663a20e07b292a55172aee9f401f9fd3557145967abe  libjpeg-turbo-3.1.2.tar.gz
+"
