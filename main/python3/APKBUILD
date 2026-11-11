@@ -4,8 +4,7 @@
 pkgname=python3
 
 pkgver=3.14.3
-_basever="${pkgver%.*}"
-pkgrel=0
+pkgrel=1
 pkgdesc="High-level scripting language"
 url="https://www.python.org/"
 arch="all"
@@ -31,11 +30,16 @@ prepare() {
 	default_prepare
 	update_config_guess
 	update_config_sub
-	sed -i 's/GNU\*)/Emerixx*)/g' configure
 }
 
 build() {
 	export CCSHARED="-fPIC"
+
+	# Debug aid: build without optimization. OPT must be set explicitly,
+	# otherwise configure appends -O3 after CFLAGS.
+	export CFLAGS="-O0"
+	export CXXFLAGS="-O0"
+	export OPT="-O0"
 
 	LIBREADLINE_CFLAGS="-I/usr/include" \
 	LIBREADLINE_LIBS="-L/usr/lib -lreadline" \
@@ -43,20 +47,17 @@ build() {
 	OPENSSL_LIBS="-L/usr/lib -lssl -lcrypto" \
 	ac_cv_file__dev_ptmx=yes \
 	ac_cv_file__dev_ptc=no \
-	ac_cv_have_long_long_format=yes \
-    	ac_cv_func_sem_clockwait=no \
-    	ac_cv_func_close_range=no \
-    	ac_cv_func_closefrom=no \
-    	ac_cv_func_fdwalk=no \
-    	ac_cv_func_posix_spawn_file_actions_addclosefrom_np=no \
-    	ac_cv_func_rtpSpawn=no \
-    	ac_cv_func_plock=no \
-    	ac_cv_have_lchflags=no \
-    	ac_cv_have_chflags=no \
-    	ac_cv_func_fork1=no \
+	ac_cv_func_sem_clockwait=no \
+	ac_cv_func_close_range=no \
+	ac_cv_func_closefrom=no \
+	ac_cv_func_fdwalk=no \
+	ac_cv_func_posix_spawn_file_actions_addclosefrom_np=no \
+	ac_cv_func_rtpSpawn=no \
+	ac_cv_func_plock=no \
+	ac_cv_have_lchflags=no \
+	ac_cv_have_chflags=no \
+	ac_cv_func_fork1=no \
 	ac_cv_func_sched_getaffinity=no \
-	ac_cv_func_epoll=no \
-	ac_cv_func_epoll_create=no \
 	ac_cv_func_epoll_create1=no \
 	./configure \
 		--build=$CBUILD \
@@ -70,10 +71,7 @@ build() {
 }
 
 package() {
-	PYTHON_FOR_BUILD="_PYTHON_CPU_COUNT=1" make DESTDIR="$pkgdir" install COMPILEALL_OPTS="-j 1"	
-
-	#"$pkgdir"/usr/share/man
-	#"$pkgdir"/usr/share/info
+	_PYTHON_CPU_COUNT=1 make DESTDIR="$pkgdir" install COMPILEALL_OPTS="-j 1"
 }
 
 sha512sums="
