@@ -58,6 +58,8 @@ build() {
 	ac_cv_have_chflags=no \
 	ac_cv_func_fork1=no \
 	ac_cv_func_sched_getaffinity=no \
+	ac_cv_func_epoll=no \
+	ac_cv_func_epoll_create=no \
 	ac_cv_func_epoll_create1=no \
 	./configure \
 		--build=$CBUILD \
