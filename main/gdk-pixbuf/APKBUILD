@@ -1,13 +1,13 @@
 # Maintainer Damir Holovati
 pkgname=gdk-pixbuf
 pkgver=2.42.12
-pkgrel=0
+pkgrel=1
 pkgdesc="Image loading library for GTK"
 url="https://gitlab.gnome.org/GNOME/gdk-pixbuf"
 arch="all"
 license="LGPL-2.1-or-later"
 depends="glib libjpeg libpng tiff"
-makedepends="glib libjpeg libpng tiff meson pkgconf python3"
+makedepends="glib libjpeg-turbo libpng tiff meson pkgconf python3"
 options="!check"
 source="https://download.gnome.org/sources/gdk-pixbuf/${pkgver%.*}/gdk-pixbuf-$pkgver.tar.xz"
 
