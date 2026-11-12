@@ -22,7 +22,6 @@ build() {
 		--with-features=normal \
 		--enable-gui=gtk3 \
 		--with-x \
-		--with-tlib=ncurses \
 		--enable-multibyte \
 		--disable-nls \
 		--disable-gpm \
