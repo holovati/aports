@@ -1,13 +1,13 @@
 # Maintainer Damir Holovati
 pkgname=libepoxy
 pkgver=1.5.10
-pkgrel=1
+pkgrel=2
 pkgdesc="OpenGL function pointer management library"
 url="https://github.com/anholt/libepoxy"
 arch="all"
 license="MIT"
-depends="libx11"
-makedepends="libx11 meson pkgconf python3 xorgproto"
+depends="egl-headers libx11"
+makedepends="egl-headers libx11 meson pkgconf python3 xorgproto"
 options="!check"
 source="$pkgname-$pkgver.tar.gz::https://github.com/anholt/libepoxy/archive/refs/tags/$pkgver.tar.gz"
 
@@ -16,10 +16,11 @@ build() {
 	# libraries with dlopen() at runtime, so it builds without them; GTK3 and
 	# WebKitGTK only need the library and headers to link. GLX is enabled
 	# because it only needs the X11 headers and GTK3's X11 backend includes
-	# <epoxy/glx.h>. EGL needs EGL headers, which are not available.
+	# <epoxy/glx.h>. EGL is enabled too, as it only needs the Khronos
+	# headers (egl-headers): WebKitGTK's Skia includes <epoxy/egl.h>.
 	abuild-meson \
 		-Dglx=yes \
-		-Degl=no \
+		-Degl=yes \
 		-Dx11=true \
 		-Ddocs=false \
 		-Dtests=false \

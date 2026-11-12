@@ -1,0 +1,29 @@
+# Maintainer Damir Holovati
+
+pkgname=egl-headers
+_commit=8e56e86e65687697ef54114cdb1afabdfac756bf
+pkgver=20260101
+pkgrel=0
+pkgdesc="Khronos EGL and KHR platform headers"
+url="https://github.com/KhronosGroup/EGL-Registry"
+arch="noarch"
+license="Apache-2.0"
+options="!check"
+source="$pkgname-$_commit.tar.gz::https://github.com/KhronosGroup/EGL-Registry/archive/$_commit.tar.gz"
+
+builddir="$srcdir/EGL-Registry-$_commit"
+
+build() {
+	:
+}
+
+package() {
+	install -Dm644 api/EGL/egl.h "$pkgdir"/usr/include/EGL/egl.h
+	install -Dm644 api/EGL/eglext.h "$pkgdir"/usr/include/EGL/eglext.h
+	install -Dm644 api/EGL/eglplatform.h "$pkgdir"/usr/include/EGL/eglplatform.h
+	install -Dm644 api/KHR/khrplatform.h "$pkgdir"/usr/include/KHR/khrplatform.h
+}
+
+sha512sums="
+93dc83a7244506d7618be8863487d9aad3e225c1a7319af385f3bfd0bc842f7a487ae5f0b6911e4ff8fed2b5b450ea387a955a78bcc507a5d1861ae15b5f7f3e  egl-headers-8e56e86e65687697ef54114cdb1afabdfac756bf.tar.gz
+"

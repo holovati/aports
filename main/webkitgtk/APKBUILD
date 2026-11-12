@@ -33,6 +33,7 @@ depends="
 makedepends="
 	$depends
 	cmake
+	egl-headers
 	gettext
 	gperf
 	libgpg-error
