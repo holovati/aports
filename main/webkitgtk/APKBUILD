@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=webkitgtk
 pkgver=2.54.2
-pkgrel=0
+pkgrel=1
 pkgdesc="GTK3 port of the WebKit web content engine (API 4.1)"
 url="https://webkitgtk.org/"
 arch="all"
@@ -175,7 +175,7 @@ build() {
 		-DUSE_SYSPROF_CAPTURE=OFF \
 		-DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
 		-DUSE_SYSTEM_UNIFDEF=OFF
-	cmake --build build -j"${JOBS:-2}"
+	cmake --build build -j"${JOBS:-4}"
 }
 
 package() {
