@@ -3,8 +3,8 @@
 
 pkgname=python3
 
-pkgver=3.14.3
-pkgrel=1
+pkgver=3.14.10
+pkgrel=0
 pkgdesc="High-level scripting language"
 url="https://www.python.org/"
 arch="all"
@@ -26,20 +26,8 @@ builddir="$srcdir/Python-$pkgver"
 # was briefly present, and is in 3.16
 provides="pythonispython3=$pkgver-r$pkgrel"
 
-prepare() {
-	default_prepare
-	update_config_guess
-	update_config_sub
-}
-
 build() {
 	export CCSHARED="-fPIC"
-
-	# Debug aid: build without optimization. OPT must be set explicitly,
-	# otherwise configure appends -O3 after CFLAGS.
-	export CFLAGS="-O0"
-	export CXXFLAGS="-O0"
-	export OPT="-O0"
 
 	LIBREADLINE_CFLAGS="-I/usr/include" \
 	LIBREADLINE_LIBS="-L/usr/lib -lreadline" \
@@ -68,16 +56,16 @@ build() {
 		--disable-ipv6 \
 		--enable-shared \
 		--without-lto \
+		--without-mimalloc \
 		--disable-test-modules
 	make
 }
 
 package() {
-	_PYTHON_CPU_COUNT=1 make DESTDIR="$pkgdir" install COMPILEALL_OPTS="-j 1"
+	make DESTDIR="$pkgdir" install
 }
-
 sha512sums="
-9fd875f7a1d96d64e7150913ef38b72b0aeecfcbc24ba46967e57b6495146b0cba6b940c273561fc4d656b6d0ce2e23ffb7bd32bcd0b61fd59a6d90585998c07  Python-3.14.3.tar.xz
+730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a  Python-3.14.10.tar.xz
 ab8eaa2858d5109049b1f9f553198d40e0ef8d78211ad6455f7b491af525bffb16738fed60fc84e960c4889568d25753b9e4a1494834fea48291b33f07000ec2  musl-find_library.patch
 5dff54772ab6e4b90c0fbe59ec3582b7921bc9b3951aade2263a8904092ffa2d99690078afcbbfbc8fd2014c9cb3b2382b1805c5c63e979495de64b62e4736e8  add-emerixx-configure.patch
 "
