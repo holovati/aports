@@ -86,6 +86,30 @@ prepare() {
 		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
 	grep -q 'EGLImage image = nullptr;' \
 		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
+
+	# rendererBufferTransportMode() queries EGL (eglQueryString) before
+	# looking at anything else. libepoxy dlopen()s libEGL.so.1 for that
+	# and abort()s when it is missing, which kills the UI process at
+	# startup. There is no EGL/GL implementation here: an empty mode
+	# makes WebKit turn hardware acceleration off and use the Skia CPU
+	# path with shared memory buffers.
+	perl -0pi -e 's/(    std::call_once\(onceFlag, \[\] \{\n)(        const char\* disableDMABuf = getenv\("WEBKIT_DISABLE_DMABUF_RENDERER"\);)/$1#if !USE(GBM)\n        return;\n#endif\n$2/' \
+		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
+	grep -q -B1 -A1 '^#if !USE(GBM)$' \
+		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
+
+	# SharedMemory only tries memfd_create() when <linux/memfd.h> exists
+	# (HAVE_LINUX_MEMFD_H), and there are no kernel headers here, so it
+	# falls back to shm_open() on /dev/shm. musl has memfd_create() and
+	# MFD_CLOEXEC in <sys/mman.h>; use that instead of the raw syscall.
+	# memfd_create() failing with ENOSYS still falls back to shm_open().
+	sed -i \
+		-e 's|^#if HAVE(LINUX_MEMFD_H)$|#if 1|' \
+		-e 's|^#include <linux/memfd.h>$|#include <sys/mman.h>|' \
+		-e 's|syscall(__NR_memfd_create, "WebKitSharedMemory", MFD_CLOEXEC)|memfd_create("WebKitSharedMemory", MFD_CLOEXEC)|' \
+		Source/WebCore/platform/unix/SharedMemoryUnix.cpp
+	grep -q 'memfd_create("WebKitSharedMemory", MFD_CLOEXEC)' \
+		Source/WebCore/platform/unix/SharedMemoryUnix.cpp
 }
 
 build() {
