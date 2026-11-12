@@ -1,0 +1,48 @@
+--- a/surf.c
++++ b/surf.c
+@@ -24,7 +24,6 @@
+ #include <glib/gstdio.h>
+ #include <gtk/gtk.h>
+ #include <gtk/gtkx.h>
+-#include <gcr/gcr.h>
+ #include <JavaScriptCore/JavaScript.h>
+ #include <webkit2/webkit2.h>
+ #include <X11/X.h>
+@@ -1804,23 +1803,27 @@
+ showcert(Client *c, const Arg *a)
+ {
+ 	GTlsCertificate *cert = c->failedcert ? c->failedcert : c->cert;
+-	GcrCertificate *gcrt;
+-	GByteArray *crt;
+-	GtkWidget *win;
+-	GcrCertificateWidget *wcert;
++	GtkWidget *win, *scroll, *text;
++	gchar *pem;
+ 
+ 	if (!cert)
+ 		return;
+ 
+-	g_object_get(cert, "certificate", &crt, NULL);
+-	gcrt = gcr_simple_certificate_new(crt->data, crt->len);
+-	g_byte_array_unref(crt);
++	/* no gcr here: show the PEM encoded certificate in a plain window */
++	g_object_get(cert, "certificate-pem", &pem, NULL);
+ 
+ 	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+-	wcert = gcr_certificate_widget_new(gcrt);
+-	g_object_unref(gcrt);
++	gtk_window_set_default_size(GTK_WINDOW(win), 600, 500);
++	scroll = gtk_scrolled_window_new(NULL, NULL);
++	text = gtk_text_view_new();
++	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
++	gtk_text_view_set_monospace(GTK_TEXT_VIEW(text), TRUE);
++	gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(text)),
++	                         pem ? pem : "", -1);
++	g_free(pem);
+ 
+-	gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(wcert));
++	gtk_container_add(GTK_CONTAINER(scroll), text);
++	gtk_container_add(GTK_CONTAINER(win), scroll);
+ 	gtk_widget_show_all(win);
+ }
+ 

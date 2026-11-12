@@ -1,0 +1,47 @@
+# Maintainer Damir Holovati
+pkgname=surf
+pkgver=2.1
+pkgrel=0
+pkgdesc="Simple WebKit based browser"
+url="https://surf.suckless.org"
+arch="all"
+license="MIT"
+depends="dmenu glib-networking"
+makedepends="gtk3 webkitgtk glib libx11 pkgconf"
+subpackages="$pkgname-doc"
+options="!check" # no test suite
+
+# surf-no-gcr.patch: gcr is not available, the certificate viewer shows the
+# PEM text in a plain GTK window instead.
+source="https://dl.suckless.org/surf/surf-$pkgver.tar.gz
+	surf-no-gcr.patch
+	"
+
+prepare() {
+	default_prepare
+
+	# WebKitGTK is built as the GTK3 / libsoup3 API, 4.1 not 4.0; gcr is
+	# dropped by the patch above.
+	sed -i \
+		-e 's/ gcr-3//' \
+		-e 's/-4\.0/-4.1/g' \
+		"$builddir"/config.mk
+	grep -q 'webkit2gtk-4.1' "$builddir"/config.mk
+	if grep -q 'gcr-3' "$builddir"/config.mk; then
+		return 1
+	fi
+}
+
+build() {
+	make PREFIX=/usr
+}
+
+package() {
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+	install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+sha512sums="
+06f31f683a941d9a587d908ae7f6949255937b0b0c9c133a18c6fa753c7da75de267adda1c83dd9ba0a8535e2b6d4ff2b5408cc5e8a2e315d4198fe68df5db12  surf-2.1.tar.gz
+b23d57e9eb7ba0f14fbd7eb577e6bfe1d32b2f6176e78b19e94afaf0c09bbd30ca261c073815025235a6d522da5e4ed463f1d97c61e880c69b2d7d831bfbf32e  surf-no-gcr.patch
+"
