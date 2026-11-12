@@ -1,0 +1,58 @@
+# Maintainer Damir Holovati
+pkgname=vim
+pkgver=9.2.1332
+pkgrel=0
+pkgdesc="Improved vi-style text editor, with a GTK3 GUI (gvim)"
+url="https://www.vim.org"
+arch="all"
+license="Vim"
+depends="ncurses font-dejavu gtk3"
+makedepends="gtk3 ncurses libx11 libxt libsm libice pkgconf"
+subpackages="$pkgname-doc"
+options="!check" # the test suite needs a pty, a display and a lot of tooling
+source="$pkgname-$pkgver.tar.gz::https://github.com/vim/vim/archive/refs/tags/v$pkgver.tar.gz"
+
+build() {
+	# vim shares the feature set between the terminal and GUI binaries, so
+	# one GUI-enabled "vim" is built. It still runs in a terminal when
+	# there is no DISPLAY; gvim, gview and gvimdiff are links to it.
+	./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--with-features=normal \
+		--enable-gui=gtk3 \
+		--with-x \
+		--with-tlib=ncurses \
+		--enable-multibyte \
+		--disable-nls \
+		--disable-gpm \
+		--disable-sysmouse \
+		--disable-selinux \
+		--disable-acl \
+		--disable-canberra \
+		--disable-netbeans \
+		--disable-pythoninterp \
+		--disable-python3interp \
+		--disable-perlinterp \
+		--disable-rubyinterp \
+		--disable-luainterp \
+		--disable-tclinterp \
+		--disable-cscope \
+		--disable-darwin \
+		--disable-smack
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+
+	ln -sf vim "$pkgdir"/usr/bin/vi
+
+	# make install links gvim to vim only when the GTK GUI was built; fail
+	# otherwise, so a silent fallback to a console-only vim is noticed.
+	test -e "$pkgdir"/usr/bin/gvim
+}
+
+sha512sums="
+6df4696af4fc07a78085b2cad4dc74b354733e610b6b66fccc549aceeb326991814464e748c849d18880a7e94253c4fe2c4420e4a5780e5d5b1fa3972ad02bb7  vim-9.2.1332.tar.gz
+"
