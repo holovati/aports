@@ -69,6 +69,23 @@ prepare() {
 	# live in <emerixx/...>. libpas only needs the futex constants.
 	sed -i 's|<linux/futex.h>|<emerixx/futex_ops.h>|' \
 		Source/bmalloc/libpas/src/libpas/pas_lock.c
+
+	# renderBufferDescription() is only defined under USE(LIBDRM), but the
+	# fallback branch of handleGPU() calls it for every GTK build. Upstream
+	# bug that only shows with -DUSE_LIBDRM=OFF.
+	perl -0pi -e 's/#if PLATFORM\(GTK\)\n(\s+addTableRow\(hardwareAccelerationObject, "Buffer format"_s, renderBufferDescription\(request\)\);\n#endif)/#if PLATFORM(GTK) && USE(LIBDRM)\n$1/' \
+		Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp
+	grep -q 'PLATFORM(GTK) && USE(LIBDRM)' \
+		Source/WebKit/UIProcess/API/glib/WebKitProtocolHandler.cpp
+
+	# DMABufBuffer::createEGLImage() is only compiled with USE(GBM), but
+	# the GTK UI process calls it unconditionally, which fails at link
+	# time with -DUSE_GBM=OFF. Without GBM no DMABuf buffers are
+	# negotiated anyway, so make BufferEGLImage::create() fail cleanly.
+	perl -0pi -e 's/    auto\* image = DMABufBuffer::createEGLImage\(\*glDisplay, dmaBufAttributes\);\n/#if USE(GBM)\n    auto* image = DMABufBuffer::createEGLImage(*glDisplay, dmaBufAttributes);\n#else\n    EGLImage image = nullptr;\n#endif\n/' \
+		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
+	grep -q 'EGLImage image = nullptr;' \
+		Source/WebKit/UIProcess/gtk/AcceleratedBackingStore.cpp
 }
 
 build() {
