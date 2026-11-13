@@ -3,16 +3,23 @@
 
 pkgname=emacs
 pkgver=30.2
-pkgrel=2
+pkgrel=4
 _pkgdesc="Extensible, customizable, self-documenting real-time display editor"
 pkgdesc="$_pkgdesc (common files)"
 url="https://www.gnu.org/software/emacs/emacs.html"
 arch="all"
 license="GPL-3.0-or-later"
 
-makedepends="gawk gmp ncurses texinfo"
+makedepends="gawk gmp ncurses texinfo pkgconf xorgproto
+	cairo fontconfig freetype gdk-pixbuf glib gtk3 harfbuzz lcms2 libjpeg-turbo
+	libpng libwebp libx11 libxext libxfixes libxft libxi libxinerama libxml2
+	libxpm libxrandr libxrender pango sqlite tiff"
 
-depends="ncurses readline"
+# openssl and ca-certificates: no GnuTLS, so tls.el runs `openssl s_client` (needed for MELPA)
+depends="ncurses readline cairo fontconfig freetype gdk-pixbuf glib gtk3 harfbuzz
+	lcms2 libjpeg-turbo libpng libwebp libx11 libxext libxfixes libxft libxi
+	libxinerama libxml2 libxpm libxrandr libxrender pango sqlite tiff
+	openssl ca-certificates"
 
 source="https://ftp.gnu.org/gnu/emacs/emacs-$pkgver.tar.xz
 	no-git-repo.patch
@@ -28,23 +35,32 @@ prepare() {
 }
 
 build() {
-
+	# GTK3 on X11 with cairo/xft text rendering (harfbuzz shaping). Still off:
+	# - dbus, gsettings, gconf: D-Bus is not packaged yet (see gtk3).
+	# - gif, rsvg, gnutls, tree-sitter, xwidgets: the libraries are not packaged.
+	# File notification uses the kernel inotify.
 	./configure \
 		--prefix=/usr \
 		--build=$CBUILD \
 		--host=$CHOST \
-		--without-x \
-		--without-x-toolkit \
-		--without-toolkit-scroll-bars \
-		--without-xpm \
-		--without-jpeg \
-		--without-tiff \
+		--with-x \
+		--with-x-toolkit=gtk3 \
+		--with-toolkit-scroll-bars \
+		--with-cairo \
+		--with-harfbuzz \
+		--with-xft \
+		--with-xpm \
+		--with-jpeg \
+		--with-tiff \
+		--with-png \
+		--with-webp \
+		--with-lcms2 \
+		--with-xml2 \
+		--with-sqlite3 \
+		--with-file-notification=inotify \
 		--without-gif \
-		--without-png \
 		--without-rsvg \
-		--without-xml2 \
 		--without-imagemagick \
-		--without-xft \
 		--without-libotf \
 		--without-m17n-flt \
 		--without-xaw3d \
@@ -59,13 +75,8 @@ build() {
 		--without-selinux \
 		--without-gnutls \
 		--without-gpm \
-		--without-sqlite3 \
-		--without-cairo \
-		--without-lcms2 \
-		--without-webp \
-		--without-harfbuzz \
 		--without-tree-sitter \
-		--without-threads \
+		--without-xwidgets \
 		--disable-acl \
 		--without-compress-install
 
