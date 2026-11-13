@@ -25,6 +25,14 @@ prepare() {
 	sed -i 's/^#elif defined(__linux__)$/#elif defined(__linux__) || defined(__emerixx__)/' \
 		src/lj_arch.h
 	grep -q 'defined(__linux__) || defined(__emerixx__)' src/lj_arch.h
+
+	# With LUAJIT_OS_LINUX the allocator uses mremap(), which musl only
+	# declares under _GNU_SOURCE. lj_alloc.c defines that itself, but only
+	# when __linux__ is set, so without this there is an implicit
+	# declaration of mremap() (and no MREMAP_MAYMOVE).
+	sed -i 's/^#if defined(__linux__) && !defined(_GNU_SOURCE)$/#if (defined(__linux__) || defined(__emerixx__)) \&\& !defined(_GNU_SOURCE)/' \
+		src/lj_alloc.c
+	grep -q 'defined(__emerixx__)) && !defined(_GNU_SOURCE)' src/lj_alloc.c
 }
 
 build() {
