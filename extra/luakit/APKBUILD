@@ -1,0 +1,56 @@
+# Maintainer Damir Holovati
+pkgname=luakit
+pkgver=2.4.0
+pkgrel=0
+pkgdesc="Fast, extensible, Lua configurable micro-browser based on WebKitGTK"
+url="https://luakit.github.io/"
+arch="x86_64"
+license="GPL-3.0-or-later"
+depends="
+	glib-networking
+	gtk3
+	lua-filesystem
+	luajit
+	sqlite
+	webkitgtk
+	"
+makedepends="
+	glib
+	gtk3
+	libsoup3
+	lua-filesystem
+	luajit
+	pkgconf
+	sqlite
+	webkitgtk
+	"
+subpackages="$pkgname-doc"
+options="!check" # the test suite needs a running X server
+
+source="$pkgname-$pkgver.tar.gz::https://github.com/luakit/luakit/archive/refs/tags/$pkgver.tar.gz"
+
+build() {
+	# luakit needs the Lua 5.1 API, so it is built against LuaJIT. The
+	# build also runs LuaJIT to generate the token tables and the API
+	# documentation, and the docs generator needs lfs.
+	make \
+		PREFIX=/usr \
+		USE_LUAJIT=1 \
+		XDGPREFIX=/etc/xdg \
+		MANPREFIX=/usr/share/man \
+		DOCDIR=/usr/share/doc/$pkgname
+}
+
+package() {
+	make install \
+		PREFIX=/usr \
+		USE_LUAJIT=1 \
+		XDGPREFIX=/etc/xdg \
+		MANPREFIX=/usr/share/man \
+		DOCDIR=/usr/share/doc/$pkgname \
+		DESTDIR="$pkgdir"
+}
+
+sha512sums="
+dfcace205c7011028763f71315f5e4c0bae65f51c61b111c53308df2e1931385ed0029bedf3e0f90cc0059e2240a5791c11615754e3109e7f264069a8621f761  luakit-2.4.0.tar.gz
+"

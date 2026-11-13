@@ -1,0 +1,45 @@
+# Maintainer Damir Holovati
+pkgname=luajit
+# LuaJIT has no tagged releases, upstream tracks the rolling v2.1 branch. The
+# patch level is the commit timestamp (the .relver file of the archive).
+pkgver=2.1.1794386141
+_commit=63c8f1a9b479ba5518cf6a170ff7729178bc3cfd
+pkgrel=0
+pkgdesc="Just-In-Time compiler for the Lua programming language"
+url="https://luajit.org/"
+arch="x86_64"
+license="MIT"
+subpackages="$pkgname-doc"
+options="!check" # no test suite in the source archive
+
+source="luajit-$pkgver.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/$_commit.tar.gz"
+builddir="$srcdir/LuaJIT-$_commit"
+
+prepare() {
+	default_prepare
+
+	# gcc here defines __emerixx__ but not __linux__, so LuaJIT would pick
+	# LUAJIT_OS_OTHER: no dlopen() (C modules such as lfs would not load),
+	# no POSIX profiler and no mmap based allocator. The kernel ABI and
+	# musl are Linux-like, so treat it as Linux.
+	sed -i 's/^#elif defined(__linux__)$/#elif defined(__linux__) || defined(__emerixx__)/' \
+		src/lj_arch.h
+	grep -q 'defined(__linux__) || defined(__emerixx__)' src/lj_arch.h
+}
+
+build() {
+	# amalg builds the whole VM as one translation unit (faster interpreter).
+	# PREFIX=/usr also makes the default package.path/cpath search
+	# /usr/share/lua/5.1 and /usr/lib/lua/5.1.
+	make amalg PREFIX=/usr
+}
+
+package() {
+	make install PREFIX=/usr DESTDIR="$pkgdir"
+
+	install -Dm644 COPYRIGHT -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+sha512sums="
+c1ab4518b9d62b66b6dd7985ea8802001e062a271c0804700feb841ea64027d7fdf2b1203261e11805a96b372191963e4198cd0c188f3092a4669b9b3fb04702  luajit-2.1.1794386141.tar.gz
+"

@@ -3,7 +3,7 @@
 
 pkgname=emacs
 pkgver=30.2
-pkgrel=4
+pkgrel=5
 _pkgdesc="Extensible, customizable, self-documenting real-time display editor"
 pkgdesc="$_pkgdesc (common files)"
 url="https://www.gnu.org/software/emacs/emacs.html"
@@ -32,6 +32,12 @@ prepare() {
 	  default_prepare
 	  emerixx_prepare
 	  sed -i 's/\*-\*-linux\* )/*-*-linux* | *-*-emerixx* )/g' configure
+
+	  # configure treats emerixx as gnu-linux, so the splash, about and text startup
+	  # screens say "one component of the GNU/Linux operating system". Take the
+	  # non-Linux branch of those three checks, which says GNU instead.
+	  sed -i "s/(if (eq system-type 'gnu\/linux)/(if nil/" lisp/startup.el
+	  [ "$(grep -c "(if nil" lisp/startup.el)" -ge 3 ]
 }
 
 build() {

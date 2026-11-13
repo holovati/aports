@@ -1,0 +1,38 @@
+# Maintainer Damir Holovati
+pkgname=lua-filesystem
+_pkgname=luafilesystem
+pkgver=1.9.0
+pkgrel=0
+pkgdesc="Lua library for file system access (LuaJIT / Lua 5.1 module)"
+url="https://github.com/lunarmodules/luafilesystem"
+arch="all"
+license="MIT"
+depends="luajit"
+makedepends="luajit"
+options="!check" # the test suite needs a writable cwd and a lua binary
+
+source="$_pkgname-$pkgver.tar.gz::https://github.com/lunarmodules/luafilesystem/archive/refs/tags/v${pkgver//./_}.tar.gz"
+builddir="$srcdir/$_pkgname-${pkgver//./_}"
+
+build() {
+	# config sets CFLAGS/CC itself, only override the paths. The module is
+	# built for Lua 5.1 (LuaJIT) and goes to /usr/lib/lua/5.1/lfs.so.
+	make lib \
+		PREFIX=/usr \
+		LUA_VERSION=5.1 \
+		LUA_INC="-I/usr/include/luajit-2.1" \
+		CC="${CC:-gcc}"
+}
+
+package() {
+	make install \
+		PREFIX=/usr \
+		LUA_VERSION=5.1 \
+		DESTDIR="$pkgdir"
+
+	install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+sha512sums="
+753ae633966364835b9c81a020cf0b7674da443adeafee70b7a9637571a8180c7f1526d3b7f4bea4f85ec201e8609ebd93e82e309b54cff1e7b7dcb5e6481b39  luafilesystem-1.9.0.tar.gz
+"
