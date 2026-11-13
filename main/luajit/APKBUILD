@@ -25,21 +25,20 @@ prepare() {
 	sed -i 's/^#elif defined(__linux__)$/#elif defined(__linux__) || defined(__emerixx__)/' \
 		src/lj_arch.h
 	grep -q 'defined(__linux__) || defined(__emerixx__)' src/lj_arch.h
-
-	# With LUAJIT_OS_LINUX the allocator uses mremap(), which musl only
-	# declares under _GNU_SOURCE. lj_alloc.c defines that itself, but only
-	# when __linux__ is set, so without this there is an implicit
-	# declaration of mremap() (and no MREMAP_MAYMOVE).
-	sed -i 's/^#if defined(__linux__) && !defined(_GNU_SOURCE)$/#if (defined(__linux__) || defined(__emerixx__)) \&\& !defined(_GNU_SOURCE)/' \
-		src/lj_alloc.c
-	grep -q 'defined(__emerixx__)) && !defined(_GNU_SOURCE)' src/lj_alloc.c
 }
 
 build() {
 	# amalg builds the whole VM as one translation unit (faster interpreter).
 	# PREFIX=/usr also makes the default package.path/cpath search
 	# /usr/share/lua/5.1 and /usr/lib/lua/5.1.
-	make amalg PREFIX=/usr
+	#
+	# -D_GNU_SOURCE: with LUAJIT_OS_LINUX the allocator uses mremap() and
+	# MREMAP_MAYMOVE, which musl only declares under _GNU_SOURCE. LuaJIT
+	# defines it itself, but only #if defined(__linux__), and in the
+	# amalgamation <sys/mman.h> is already included (by lj_mcode.c) before
+	# lj_alloc.c, so patching that guard is not enough. Define it for the
+	# whole build instead.
+	make amalg PREFIX=/usr XCFLAGS=-D_GNU_SOURCE
 }
 
 package() {
