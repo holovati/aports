@@ -1,0 +1,81 @@
+# Maintainer Damir Holovati
+
+pkgname=openssh
+pkgver=10.6_p2
+_myver=${pkgver%_*}${pkgver#*_}
+pkgrel=0
+pkgdesc="Port of OpenBSD's free SSH release (client, sshd and tools)"
+url="https://www.openssh.com/portable.html"
+arch="all"
+license="BSD-2-Clause AND ISC AND SSH-OpenSSH"
+depends="openssl zlib"
+makedepends="openssl zlib"
+options="!check"
+
+install="$pkgname.post-install"
+subpackages="$pkgname-doc"
+
+source="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$_myver.tar.gz
+	openssh.post-install
+	"
+builddir="$srcdir/openssh-$_myver"
+
+prepare() {
+	default_prepare
+
+	# gcc here defines __emerixx__ but not __linux__, and configure keys its
+	# platform settings off the host triplet (x86_64-unknown-emerixx-musl).
+	# Without the Linux case it would not use openpty() instead of
+	# /dev/ptmx, would not add _GNU_SOURCE and would miss the musl
+	# specific quirks. The kernel ABI and musl are Linux-like, so treat it
+	# as Linux.
+	sed -i 's/^\*-\*-linux\*)$/*-*-linux*|*-*-emerixx*)/' configure
+	grep -q '^\*-\*-linux\*|\*-\*-emerixx\*)$' configure
+}
+
+build() {
+	# --without-pam: there is no PAM here; password logins go through
+	# /etc/shadow (getspnam) via crypt().
+	# --with-privsep-path: sshd chroots into this directory (must be
+	# root owned, not writable by anyone else) after authentication.
+	# --without-hardening/-stackprotect/-retpoline/-pie: plain build, no
+	# toolchain exploit mitigations (relro/now, fortify, canaries, PIE).
+	# --with-sandbox=no: no rlimit sandbox (RLIMIT_NOFILE=0 in the
+	# privsep child), the child still drops privileges and chroots.
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc/ssh \
+		--libexecdir=/usr/lib/ssh \
+		--mandir=/usr/share/man \
+		--with-pid-dir=/run \
+		--with-privsep-path=/var/empty \
+		--with-privsep-user=sshd \
+		--without-pam \
+		--without-selinux \
+		--without-libedit \
+		--without-hardening \
+		--without-stackprotect \
+		--without-retpoline \
+		--without-pie \
+		--with-sandbox=no \
+		--disable-security-key \
+		--disable-strip
+	make
+}
+
+package() {
+	# install-nokeys: skip host key generation, done by the post-install
+	# script on the target.
+	make DESTDIR="$pkgdir" install-nokeys
+
+	install -dm755 "$pkgdir"/var/empty
+
+	install -Dm644 LICENCE -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+sha512sums="
+70696ed12bd1be04f67440415528f1ced1ef68c8ee7836e587395618d0992f3fd20c9498c44d46ad9f5806b9a73ce256fd6a2807f9c5c02e6496cf06816c749e  openssh-10.6p2.tar.gz
+dab36f048914cb367ed7eda5aa0bec9de43d9c06d1280d352d5e28eb8b6d2e4c20a1df6e1ccb0a5ab870da82ecb11b196c29569a34f316ec64da687b520c9134  openssh.post-install
+"
