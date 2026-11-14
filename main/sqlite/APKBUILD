@@ -2,7 +2,7 @@
 pkgname=sqlite
 pkgver=3.54.1
 _pkgver=3540100
-pkgrel=0
+pkgrel=1
 pkgdesc="C library implementing an SQL database engine"
 url="https://www.sqlite.org/"
 arch="all"
@@ -53,6 +53,7 @@ build() {
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
 		--enable-shared \
+		--soname=legacy \
 		--disable-static \
 		--disable-readline \
 		--enable-threadsafe
