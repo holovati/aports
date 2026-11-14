@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emx-baselayout
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
 arch="noarch"
 license="MIT"
@@ -9,7 +9,12 @@ options="!check !fhs keepdirs !usrmerge"
 
 builddir="$srcdir/$pkgname"
 
-source="emx-devnodes.post-install"
+source="emx-devnodes.post-install
+	inittab
+	rc.sysinit
+	000-disk-cleanup.sh
+	050-network.sh
+	"
 
 build() {
 	mkdir -p "$builddir"/etc
@@ -315,8 +320,19 @@ package() {
 
         # Skeleton files
         install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"	
+
+        # Init: sysvinit runs rc.sysinit, which sources the executable /etc/rc.d/NNN-*.sh scripts
+        install -m 644 "$srcdir/inittab"    "$pkgdir/etc/inittab"
+        install -m 644 "$srcdir/rc.sysinit" "$pkgdir/etc/rc.sysinit"
+        install -d "$pkgdir/etc/rc.d" "$pkgdir/etc/emx"
+        install -m 755 "$srcdir/000-disk-cleanup.sh" "$pkgdir/etc/rc.d/000-disk-cleanup.sh"
+        install -m 755 "$srcdir/050-network.sh"      "$pkgdir/etc/rc.d/050-network.sh"
 }
 
 sha512sums="
-9ae47ae7410e180694b49ee5c3881d90ab101ba1383e1b5a3f6108ebd6314e90c615d390b563f05a874e1508762d3246c5514252cca44b1a3cfa4acdb1b20f97  emx-devnodes.post-install
+0f5051d1d61b6feb0699786dc6fec850d94764fe43e05e5dee86bbde555a065f4d6e48e06f31ea8d61da21511e6c376c52146f941d9d1618455b02b133cd7edb  emx-devnodes.post-install
+69300ef15f752e63737d6d0cf9ae281cb334db246118799f0c099ee80f09490b70f2888bb30f5af4345e51df2bc0fcc5e60e4a8859c5790a55c15ff1d100a047  inittab
+58bd29ef73687fee88d789c3149b21ee2aa2b5333d1a631c054a904e4f81254a553d6d5f3e510e9f17c8a3522e247a1138d07cf328070a73c358635b82c26fc3  rc.sysinit
+fb046bb453941c64a424916441e64ece3cc0f901b1a4383083466174688ae36e7dc786f5999e4c4694214a7d099fd612992c2876a30d77a04d17460d5a0d887e  000-disk-cleanup.sh
+6ec59eb854a95dfcad7561c08a11d278d69b797a2578d254244f0158e66dd899da77dc8936efda4104fadec83aa09af770efd56a4b5bb93de119818cefac8fc0  050-network.sh
 "

@@ -1,0 +1,629 @@
+#!/usr/bin/env python3
+"""Build a bootable emerixx disk image from the aports checkout this script lives in.
+
+    emx-mkimage base    -o base.img
+    emx-mkimage builder -o builder.img --ip 192.168.1.90 --gw 192.168.1.1 --ssh-key ~/.ssh/id.pub
+
+What it does:
+  1. read every APKBUILD in main/ and extra/
+  2. work out which packages the profile needs and build the missing ones with abuild,
+     dependencies first
+  3. install the profile into a directory with apk
+  4. write a GPT disk (ESP + root), compress it
+
+Run it as root on emerixx. --dry-run works anywhere and only prints the plan.
+Profiles live in profiles.toml next to this file.
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import tempfile
+import tomllib
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROFILES_FILE = SCRIPT_DIR / "profiles.toml"
+ARCH = os.uname().machine
+REPO_NAMES = ("main", "extra")
+
+# Disk layout the initramfs expects: sda1 = ESP, sda2 = root.
+ESP_START = 2048  # sectors, 1 MiB
+TAIL_SECTORS = 2048  # room for the backup GPT
+
+REQUIRED_TOOLS = ("apk", "parted", "mkfs.vfat", "mcopy", "mke2fs")
+
+
+class Error(Exception):
+    pass
+
+
+# ---------------------------------------------------------------------------
+# aports
+# ---------------------------------------------------------------------------
+
+_VERSION_OP = re.compile(r"[<>=~].*$")
+
+
+def dep_names(items: list[str]) -> list[str]:
+    """Package names of a depends-style list: no conflicts, no so:/cmd:/pc: names, no versions."""
+    names = []
+    for item in items:
+        if item.startswith("!") or ":" in item:
+            continue
+        names.append(_VERSION_OP.sub("", item))
+    return names
+
+
+@dataclasses.dataclass
+class Aport:
+    key: str  # directory name
+    repo: str  # main, extra
+    path: Path
+    pkgname: str
+    pkgver: str
+    pkgrel: str
+    arch: list[str]
+    subpackages: list[str]
+    provides: list[str]
+    depends: list[str]
+    makedepends: list[str]
+
+    @property
+    def version(self) -> str:
+        return f"{self.pkgname}-{self.pkgver}-r{self.pkgrel}"
+
+    @property
+    def buildable(self) -> bool:
+        if f"!{ARCH}" in self.arch:
+            return False
+        return any(a in ("all", "noarch", ARCH) for a in self.arch)
+
+    def is_built(self, repodest: Path) -> bool:
+        return any((repodest / self.repo / d / f"{self.version}.apk").exists() for d in (ARCH, "noarch"))
+
+
+_FIELDS = ("pkgname", "pkgver", "pkgrel", "arch", "subpackages", "provides", "depends", "makedepends")
+
+
+def read_apkbuild(path: Path) -> Aport | None:
+    """Source the APKBUILD in a shell, the same way abuild does, and read the variables."""
+    script = "set -f; { . ./APKBUILD; } >/dev/null 2>&1 </dev/null; " + "; ".join(f"echo ${f}" for f in _FIELDS)
+    env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "CARCH": ARCH,
+        "CBUILD": ARCH,
+        "CHOST": ARCH,
+        "srcdir": "/nonexistent",
+        "pkgdir": "/nonexistent",
+        "startdir": str(path.parent),
+    }
+    proc = subprocess.run(["sh", "-c", script], cwd=path.parent, env=env, capture_output=True, text=True)
+    lines = proc.stdout.splitlines()
+    if len(lines) != len(_FIELDS) or not lines[0]:
+        return None
+    v = dict(zip(_FIELDS, lines))
+    return Aport(
+        key=path.parent.name,
+        repo=path.parent.parent.name,
+        path=path.parent,
+        pkgname=v["pkgname"].strip(),
+        pkgver=v["pkgver"].strip(),
+        pkgrel=v["pkgrel"].strip() or "0",
+        arch=v["arch"].split(),
+        subpackages=[s.split(":")[0] for s in v["subpackages"].split()],
+        provides=dep_names(v["provides"].split()),
+        depends=dep_names(v["depends"].split()),
+        makedepends=dep_names(v["makedepends"].split()),
+    )
+
+
+class Aports:
+    """All packages of an aports checkout."""
+
+    def __init__(self, root: Path):
+        self.root = root
+        self.items: dict[str, Aport] = {}  # key -> Aport
+        self.owner: dict[str, str] = {}  # package/subpackage/provides name -> key
+        self.warnings: list[str] = []
+
+        for repo in REPO_NAMES:
+            for apkbuild in sorted((root / repo).glob("*/APKBUILD")):
+                aport = read_apkbuild(apkbuild)
+                if aport is None:
+                    self.warnings.append(f"cannot read {apkbuild}, skipped")
+                elif aport.buildable:
+                    self.items[aport.key] = aport
+
+        if not self.items:
+            raise Error(f"no APKBUILDs found in {root}")
+
+        for aport in self.items.values():
+            for name in aport.subpackages + aport.provides:
+                self.owner.setdefault(name, aport.key)
+        for aport in self.items.values():
+            self.owner[aport.pkgname] = aport.key
+            self.owner[aport.key] = aport.key
+
+    def order(self, wanted: set[str]) -> tuple[list[Aport], list[str]]:
+        """Build order of the wanted aport keys plus everything they need, dependencies first.
+
+        A makedepends cycle cannot be solved by ordering, it is reported and the edge dropped,
+        so one package of the cycle has to be built by hand first. Runtime depends cycles are
+        harmless for building and ignored.
+        """
+        state: dict[str, int] = {}  # 1 = visiting, 2 = done
+        result: list[Aport] = []
+        stack: list[str] = []
+        cycles: list[str] = []
+
+        def visit(key: str) -> bool:
+            if state.get(key) == 2:
+                return True
+            if state.get(key) == 1:
+                return False
+            state[key] = 1
+            stack.append(key)
+            aport = self.items[key]
+            for hard, names in ((True, aport.makedepends), (False, aport.depends)):
+                for name in names:
+                    dep = self.owner.get(name)
+                    if dep is None or dep == key:
+                        continue
+                    if not visit(dep) and hard:
+                        cycles.append(" -> ".join(stack + [dep]))
+            stack.pop()
+            state[key] = 2
+            result.append(aport)
+            return True
+
+        for key in sorted(wanted):
+            visit(key)
+        return result, cycles
+
+
+# ---------------------------------------------------------------------------
+# profiles and plan
+# ---------------------------------------------------------------------------
+
+
+@dataclasses.dataclass
+class Profile:
+    name: str
+    description: str = ""
+    packages: list[str] = dataclasses.field(default_factory=list)
+    all_makedepends: bool = False
+    ship_aports: bool = False
+    serve_port: int = 0
+    first_boot_build: bool = False
+
+def profile_names(path: Path = PROFILES_FILE) -> list[str]:
+    return sorted(tomllib.loads(path.read_text()))
+
+
+def load_profile(name: str, path: Path = PROFILES_FILE) -> Profile:
+    data = tomllib.loads(path.read_text())
+
+    def resolve(n: str, seen: tuple[str, ...]) -> Profile:
+        if n not in data:
+            raise Error(f"unknown profile {n!r}, available: {', '.join(sorted(data))}")
+        if n in seen:
+            raise Error(f"profile {n!r} extends itself")
+        entry = data[n]
+        base = resolve(entry["extends"], seen + (n,)) if "extends" in entry else Profile(n)
+        return Profile(
+            name=n,
+            description=entry.get("description", base.description),
+            packages=base.packages + [p for p in entry.get("packages", []) if p not in base.packages],
+            all_makedepends=entry.get("all_makedepends", base.all_makedepends),
+            ship_aports=entry.get("ship_aports", base.ship_aports),
+            serve_port=entry.get("serve_port", base.serve_port),
+            first_boot_build=entry.get("first_boot_build", base.first_boot_build),
+        )
+
+    return resolve(name, ())
+
+
+@dataclasses.dataclass
+class Plan:
+    install: list[str]  # package names given to apk add
+    order: list[Aport]  # everything that has to exist in the repository, dependencies first
+    unresolved: list[str]  # makedepends that no aport provides
+    cycles: list[str]
+
+
+def make_plan(aports: Aports, profile: Profile, extra: list[str], build_all: bool) -> Plan:
+    wanted_names = list(dict.fromkeys(profile.packages + extra))
+    missing = [n for n in wanted_names if n not in aports.owner]
+    if missing:
+        raise Error(f"no aport provides: {', '.join(missing)}")
+
+    install = list(wanted_names)
+    unresolved: set[str] = set()
+    if profile.all_makedepends:
+        for aport in aports.items.values():
+            for name in aport.makedepends:
+                if name in aports.owner:
+                    install.append(name)
+                else:
+                    unresolved.add(name)
+    install = list(dict.fromkeys(install))
+
+    wanted = {aports.owner[n] for n in install}
+    if build_all:
+        wanted |= set(aports.items)
+    order, cycles = aports.order(wanted)
+    return Plan(install, order, sorted(unresolved), cycles)
+
+
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+
+
+def call(cmd: list, **kwargs) -> None:
+    print("+ " + shlex.join(str(c) for c in cmd), flush=True)
+    subprocess.run([str(c) for c in cmd], check=True, **kwargs)
+
+
+def parse_size(text: str) -> int:
+    m = re.fullmatch(r"(\d+)([KMGT]?)", text.upper())
+    if not m:
+        raise argparse.ArgumentTypeError(f"bad size {text!r}, use e.g. 4G or 512M")
+    return int(m.group(1)) * {"": 1, "K": 1 << 10, "M": 1 << 20, "G": 1 << 30, "T": 1 << 40}[m.group(2)]
+
+
+def _pattern(regex: str, what: str):
+    compiled = re.compile(regex)
+
+    def check(text: str) -> str:
+        if not compiled.fullmatch(text):
+            raise argparse.ArgumentTypeError(f"bad {what}: {text!r}")
+        return text
+
+    return check
+
+
+hostname_arg = _pattern(r"[A-Za-z0-9.-]+", "hostname")
+iface_arg = _pattern(r"[A-Za-z0-9._-]+", "interface name")
+addr_arg = _pattern(r"[0-9A-Fa-f:.]+", "address")
+hash_arg = _pattern(r"[A-Za-z0-9./$_-]+", "password hash")
+package_arg = _pattern(r"[A-Za-z0-9._+-]+", "package name")
+
+
+def readable_file(text: str) -> Path:
+    path = Path(text).expanduser()
+    if not path.is_file():
+        raise argparse.ArgumentTypeError(f"cannot read {text}")
+    return path
+
+
+# ---------------------------------------------------------------------------
+# building
+# ---------------------------------------------------------------------------
+
+
+def abuild_keys() -> list[Path]:
+    """Make sure a signing key exists and its public half is trusted by apk."""
+    home = Path(os.environ.get("HOME", "/root"))
+    if not list((home / ".abuild").glob("*.rsa")):
+        call(["abuild-keygen", "-a", "-n"])
+    keys = sorted((home / ".abuild").glob("*.rsa.pub"))
+    Path("/etc/apk/keys").mkdir(parents=True, exist_ok=True)
+    for key in keys:
+        shutil.copy(key, "/etc/apk/keys/")
+    return keys
+
+
+def build_packages(todo: list[Aport], repodest: Path, abuild_flags: list[str], register_repos: bool = False) -> None:
+    abuild_keys()
+    env = {**os.environ, "REPODEST": str(repodest)}
+    for i, aport in enumerate(todo, 1):
+        print(f"== [{i}/{len(todo)}] {aport.version}", flush=True)
+        try:
+            call(["abuild", "-r", *abuild_flags], cwd=aport.path, env=env)
+        except subprocess.CalledProcessError:
+            raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
+        if register_repos:
+            register_local_repo(repodest / aport.repo)
+
+
+def register_local_repo(repo: Path) -> None:
+    """Add a repository abuild has just filled to /etc/apk/repositories, so later builds can install from it."""
+    if not (repo / ARCH / "APKINDEX.tar.gz").exists():
+        return
+    repos_file = Path("/etc/apk/repositories")
+    known = repos_file.read_text().split() if repos_file.exists() else []
+    if str(repo) not in known:
+        with open(repos_file, "a") as f:
+            f.write(f"{repo}\n")
+
+
+# ---------------------------------------------------------------------------
+# image
+# ---------------------------------------------------------------------------
+
+
+def local_repos(repodest: Path) -> list[Path]:
+    return [repodest / r for r in REPO_NAMES if (repodest / r / ARCH / "APKINDEX.tar.gz").exists()]
+
+
+def install_root(root: Path, args, plan: Plan, public_keys: list[Path]) -> None:
+    keys_dir = root / "etc/apk/keys"
+    keys_dir.mkdir(parents=True)
+    for key in [*Path("/etc/apk/keys").glob("*.pub"), *public_keys]:
+        shutil.copy(key, keys_dir)
+
+    repos = local_repos(args.repodest)
+    if not repos:
+        raise Error(f"no repository in {args.repodest}, nothing to install from")
+    (root / "etc/apk/repositories").write_text("".join(f"{r}\n" for r in repos))
+
+    cmd = ["apk", "--root", root, "--initdb"]
+    if args.untrusted:
+        cmd.append("--allow-untrusted")
+    call([*cmd, "add", *plan.install])
+
+    for need in ("boot/efi/kernel.elf", "boot/efi/EFI/BOOT/BOOTX64.EFI"):
+        if not (root / need).is_file():
+            raise Error(f"{need} is missing from the root, kernel and emerixx-loader must be installed")
+
+
+def merge_usr(root: Path) -> None:
+    """/bin, /sbin and /lib are symlinks into /usr on emerixx."""
+    for name in ("bin", "sbin", "lib"):
+        path = root / name
+        if path.is_dir() and not path.is_symlink():
+            (root / "usr" / name).mkdir(parents=True, exist_ok=True)
+            shutil.copytree(path, root / "usr" / name, symlinks=True, dirs_exist_ok=True)
+            shutil.rmtree(path)
+        if not (path.exists() or path.is_symlink()):
+            path.symlink_to(f"usr/{name}")
+
+
+def configure_root(root: Path, args, profile: Profile) -> None:
+    (root / "etc/hostname").write_text(args.hostname + "\n")
+    hosts = root / "etc/hosts"
+    if hosts.exists():
+        hosts.write_text(re.sub(r"(?m)^127\.0\.1\.1.*$", f"127.0.1.1   {args.hostname}", hosts.read_text()))
+
+    if args.dns:
+        (root / "etc/resolv.conf").write_text("".join(f"nameserver {n}\n" for n in args.dns))
+
+    if args.ip:
+        (root / "etc/emx").mkdir(parents=True, exist_ok=True)
+        (root / "etc/emx/network.conf").write_text(
+            f"IFACE={args.iface}\nADDRESS={args.ip}\nNETMASK={args.netmask}\nGATEWAY={args.gw or ''}\n"
+        )
+
+    shadow = root / "etc/shadow"
+    if args.root_password_hash and shadow.exists():
+        text = re.sub(r"(?m)^root:[^:]*:", lambda _: f"root:{args.root_password_hash}:", shadow.read_text())
+        shadow.write_text(text)
+
+    if args.ssh_key:
+        ssh = root / "root/.ssh"
+        ssh.mkdir(parents=True, exist_ok=True)
+        ssh.chmod(0o700)
+        (ssh / "authorized_keys").write_text(args.ssh_key.read_text())
+        (ssh / "authorized_keys").chmod(0o600)
+
+    repos = list(args.image_repo)
+    if not repos and not profile.first_boot_build:
+        print("warning: the image has no apk repositories, point /etc/apk/repositories at one", file=sys.stderr)
+    (root / "etc/apk/repositories").write_text("".join(f"{r}\n" for r in repos))
+
+    if profile.serve_port:
+        rc = root / "etc/rc.d/090-repohost.sh"
+        rc.parent.mkdir(parents=True, exist_ok=True)
+        rc.write_text(
+            "#!/bin/sh\n"
+            f'run "Package host on port {profile.serve_port}" sh -c '
+            f"'mkdir -p /root/packages && python3 -m http.server {profile.serve_port} --directory /root/packages "
+            ">>/var/log/repohost.log 2>&1 &'\n"
+        )
+        rc.chmod(0o755)
+
+    if profile.first_boot_build:
+        # The image has the toolchain and the aports tree but no .apk files. On first boot it builds
+        # every package with that toolchain, in the background, and retries on every boot until it
+        # succeeded. Each finished repository is added to /etc/apk/repositories by --register-repos.
+        rc = root / "etc/rc.d/080-first-build.sh"
+        rc.parent.mkdir(parents=True, exist_ok=True)
+        rc.write_text(
+            "#!/bin/sh\n"
+            "if [ ! -e /var/lib/emx/first-build-done ]; then\n"
+            "    mkdir -p /var/lib/emx\n"
+            '    run "Building every package in the background, log in /var/log/first-build.log" sh -c '
+            "'(HOME=/root /usr/bin/python3 /root/aports/scripts/emx-mkimage builder --build-all --no-image "
+            "--register-repos && touch /var/lib/emx/first-build-done) >>/var/log/first-build.log 2>&1 &'\n"
+            "fi\n"
+        )
+        rc.chmod(0o755)
+
+def ship_content(root: Path, args, profile: Profile) -> None:
+    """Copy the aports checkout into the image. Packages are never copied, the image builds them."""
+    if profile.ship_aports:
+        print("== Copying aports to /root/aports", flush=True)
+        shutil.copytree(args.aports, root / "root/aports", symlinks=True, dirs_exist_ok=True)
+    (root / "root/packages").mkdir(parents=True, exist_ok=True)
+
+
+def write_disk(root: Path, out: Path, esp_mb: int, root_bytes: int) -> None:
+    root_bytes -= root_bytes % 4096
+    esp_sectors = esp_mb * 2048
+    root_start = ESP_START + esp_sectors
+    root_sectors = root_bytes // 512
+    total = root_start + root_sectors + TAIL_SECTORS
+
+    out.unlink(missing_ok=True)
+    with open(out, "wb") as f:
+        f.truncate(total * 512)
+
+    call(
+        [
+            "parted", "-s", out,
+            "mklabel", "gpt",
+            "mkpart", "ESP", "fat32", f"{ESP_START}s", f"{root_start - 1}s",
+            "set", "1", "esp", "on",
+            "mkpart", "root", "ext2", f"{root_start}s", f"{root_start + root_sectors - 1}s",
+        ]
+    )  # fmt: skip
+
+    esp = root / "boot/efi"
+    call(["mkfs.vfat", "-F", "32", "-n", "EMXESP", "--offset", ESP_START, out, esp_mb * 1024])
+    call(["mcopy", "-i", f"{out}@@{ESP_START * 512}", "-s", "-o", *sorted(esp.iterdir()), "::/"])
+    for entry in list(esp.iterdir()):  # the ESP is a mount point inside the root
+        shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
+
+    # Features of the hand built image, fuse2fs and the kernel need nothing more.
+    call(
+        [
+            "mke2fs", "-q", "-t", "ext2", "-b", 4096, "-I", 256, "-m", 5,
+            "-O", "none,ext_attr,resize_inode,dir_index,filetype,sparse_super,large_file",
+            "-E", f"offset={root_start * 512},root_owner=0:0",
+            "-d", root, out, root_bytes // 4096,
+        ]
+    )  # fmt: skip
+
+
+def compress(image: Path, method: str, keep_raw: bool) -> Path:
+    if method == "none":
+        return image
+    if method == "zstd":
+        result = Path(f"{image}.zst")
+        call(["zstd", "-T0", "-9", "-f", "-q", image, "-o", result])
+    else:
+        result = Path(f"{image}.xz")
+        call(["xz", "-T0", "-6", "-f", "-k", image])
+    if not keep_raw:
+        image.unlink()
+    return result
+
+
+# ---------------------------------------------------------------------------
+# command line
+# ---------------------------------------------------------------------------
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="emx-mkimage",
+        description="Build a bootable emerixx disk image from aports. Profiles: " + ", ".join(profile_names()),
+    )
+    p.add_argument("profile", choices=profile_names())
+    p.add_argument("-o", "--output", type=Path, help="image file (default: <profile>.img)")
+    p.add_argument("--aports", type=Path, default=SCRIPT_DIR.parent, help="aports checkout (default: the one this script is in)")
+    p.add_argument("--pull", action="store_true", help="git pull --ff-only the aports first")
+    p.add_argument("--repodest", type=Path, default=Path(os.environ.get("REPODEST", Path.home() / "packages")), help="where abuild puts packages (default: ~/packages)")
+    p.add_argument("--add", action="append", default=[], type=package_arg, metavar="PKG", help="install another package, repeatable")
+    p.add_argument("--build-all", action="store_true", help="build every aport, not only what the profile needs")
+    p.add_argument("--no-image", action="store_true", help="only build the packages, do not write an image")
+    p.add_argument("--register-repos", action="store_true", help="add each repository abuild fills to /etc/apk/repositories (used by the first boot build)")
+    p.add_argument("--force", action="store_true", help="rebuild packages that already exist")
+    p.add_argument("--abuild-flags", default="", help="extra abuild flags, e.g. -F")
+    p.add_argument("-n", "--dry-run", action="store_true", help="print the plan and stop")
+    p.add_argument("--image-repo", action="append", default=[], metavar="URL", help="apk repository for /etc/apk/repositories, repeatable")
+    p.add_argument("--key", action="append", default=[], type=readable_file, metavar="FILE.pub", help="public key the image trusts, repeatable")
+    p.add_argument("--untrusted", action="store_true", help="apk --allow-untrusted")
+    p.add_argument("--root-size", type=parse_size, default=parse_size("32G"), help="root filesystem size (default 32G)")
+    p.add_argument("--esp-size", type=int, default=64, metavar="MB", help="ESP size in MiB (default 64)")
+    p.add_argument("--hostname", type=hostname_arg, default="emerixx")
+    p.add_argument("--ip", type=addr_arg, help="static address, without it the network is not configured")
+    p.add_argument("--netmask", type=addr_arg, default="255.255.255.0")
+    p.add_argument("--gw", type=addr_arg)
+    p.add_argument("--dns", action="append", default=[], type=addr_arg, metavar="ADDR")
+    p.add_argument("--iface", type=iface_arg, default="en1")
+    p.add_argument("--root-password-hash", type=hash_arg, help="crypt(3) hash, root is locked without it")
+    p.add_argument("--ssh-key", type=readable_file, metavar="FILE.pub", help="authorized key for root")
+    p.add_argument("--compress", choices=("zstd", "xz", "none"), default="zstd")
+    p.add_argument("--keep-raw", action="store_true", help="keep the raw image after compressing")
+    p.add_argument("--workdir", type=Path, default=Path("/var/tmp"), help="where the root tree is assembled (needs room for the whole image content)")
+    return p
+
+
+def print_plan(profile: Profile, aports: Aports, plan: Plan, todo: list[Aport]) -> None:
+    for w in aports.warnings:
+        print(f"warning: {w}", file=sys.stderr)
+    for c in plan.cycles:
+        print(f"warning: makedepends cycle {c}, an already built package of the cycle is needed", file=sys.stderr)
+    print(f"== Profile {profile.name}: {profile.description}")
+    print(f"== {len(plan.install)} packages to install, {len(plan.order)} in the repository, {len(todo)} to build")
+    done = {a.key for a in todo}
+    for aport in plan.order:
+        print(f"  {aport.version:<44} {'build' if aport.key in done else 'up to date'}")
+    if plan.unresolved:
+        print(f"== {len(plan.unresolved)} makedepends have no aport and are not installed: {' '.join(plan.unresolved)}")
+
+
+def run(args: argparse.Namespace) -> int:
+    if args.pull:
+        call(["git", "-C", args.aports, "pull", "--ff-only"])
+
+    aports = Aports(args.aports)
+    profile = load_profile(args.profile)
+    plan = make_plan(aports, profile, args.add, args.build_all)
+    todo = [a for a in plan.order if args.force or not a.is_built(args.repodest)]
+    print_plan(profile, aports, plan, todo)
+    if args.dry_run:
+        return 0
+
+    if os.geteuid() != 0:
+        raise Error("must run as root (apk --root, abuild and mke2fs -d need it)")
+    tools = [] if args.no_image else list(REQUIRED_TOOLS)
+    if todo:
+        tools.append("abuild")
+    if args.compress != "none" and not args.no_image:
+        tools.append(args.compress)
+    if args.pull:
+        tools.append("git")
+    missing = [t for t in tools if not shutil.which(t)]
+    if missing:
+        raise Error(f"missing tools: {' '.join(missing)}")
+
+    public_keys = list(args.key)
+    if todo:
+        build_packages(todo, args.repodest, shlex.split(args.abuild_flags), args.register_repos)
+    else:
+        public_keys += sorted((Path.home() / ".abuild").glob("*.rsa.pub"))
+    if args.no_image:
+        return 0
+
+    out = (args.output or Path(f"{args.profile}.img")).resolve()
+    work = Path(tempfile.mkdtemp(prefix="emx-mkimage.", dir=args.workdir))
+    try:
+        root = work / "root"
+        print(f"== Installing into {root}", flush=True)
+        install_root(root, args, plan, public_keys)
+        merge_usr(root)
+        ship_content(root, args, profile)
+        configure_root(root, args, profile)
+        print("== Writing the disk", flush=True)
+        write_disk(root, out, args.esp_size, args.root_size)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    print(compress(out, args.compress, args.keep_raw))
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        return run(args)
+    except Error as e:
+        print(f"emx-mkimage: {e}", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"emx-mkimage: command failed ({e.returncode}): {shlex.join(map(str, e.cmd))}", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

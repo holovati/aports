@@ -1,0 +1,85 @@
+# Image profiles for emx-mkimage. Package names must exist in this aports tree, no profile
+# may need a package that has no APKBUILD.
+#
+# Keys
+#   extends          inherit packages and flags from another profile
+#   packages         installed into the image (apk resolves the dependencies)
+#   all_makedepends  also install the makedepends of every aport (a machine that can build everything)
+#   ship_aports      copy this aports checkout to /root/aports
+#   first_boot_build on first boot build every aport with the toolchain installed in the image.
+#                    The image contains no .apk files, /root/packages starts empty
+#   serve_port       serve /root/packages over HTTP on this port at boot (needs python3)
+
+# base: what Debian's netinst image gives you that aports already has. The user adds the rest
+# with `apk add`.
+#
+# Debian essential/required/important packages with no aport yet, so left out:
+#   dpkg (apk-tools replaces it), debianutils, procps, iproute2, iputils-ping, kmod, udev,
+#   ifupdown, isc-dhcp-client, man-db, tzdata, locales, cron, rsyslog, logrotate, tasksel
+[base]
+description = "Boots to a login prompt. Debian netinst equivalent, apk add whatever else you need"
+packages = [
+    "emx-base",         # baselayout, sysvinit, util-linux, apk-tools, coreutils, bash, inetutils, nano ...
+    "kernel",
+    "emerixx-loader",
+    "mingetty",
+    "shadow",
+    "findutils",
+    "grep",
+    "sed",
+    "gzip",
+    "tar",
+    "diffutils",
+    "bzip2",
+    "xz",
+    "zstd",
+    "unzip",
+    "less",
+    "file",
+    "gawk",
+    "perl",
+    "ncurses",
+    "psmisc",
+    "e2fsprogs",
+    "fuse3",
+    "openssh",
+    "curl",
+    "wget",
+    "vim",
+]
+
+[builder]
+description = "Toolchain and the aports tree, builds every package itself on first boot and hosts the result"
+extends = "base"
+all_makedepends = true
+ship_aports = true
+first_boot_build = true
+serve_port = 8080
+packages = [
+    "abuild",
+    "gcc",
+    "binutils",
+    "make",
+    "patch",
+    "pkgconf",
+    "autoconf",
+    "automake",
+    "libtool",
+    "m4",
+    "bison",
+    "flex",
+    "gperf",
+    "help2man",
+    "texinfo",
+    "cmake",
+    "meson",
+    "ninja",
+    "python3",
+    "py3-elftools",
+    "git",
+    "cpio",
+    "libarchive",
+    "mtools",
+    "dosfstools",
+    "parted",
+]

@@ -1,0 +1,7 @@
+#/etc/inittab
+#id:runlevels:action:process
+id:3:initdefault:
+
+si::sysinit:/bin/sh /etc/rc.sysinit
+
+c0:3:respawn:/sbin/mingetty tty1 --nohangup --noclear

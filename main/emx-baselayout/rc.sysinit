@@ -1,0 +1,31 @@
+#!/bin/sh
+
+COLUMNS=$(stty size 2>/dev/null | cut -d' ' -f2)
+COLUMNS=${COLUMNS:-80}
+STATUS_WIDTH=$((COLUMNS - 12))
+
+print_status() {
+    printf "%-${STATUS_WIDTH}s" "  $1..."
+}
+
+print_ok() {
+    printf "[ \033[32mOK\033[0m ]\n"
+}
+
+print_fail() {
+    printf "[\033[31mFAIL\033[0m]\n"
+}
+
+run() {
+    print_status "$1"
+    shift
+    if "$@" >/dev/null 2>&1; then
+        print_ok
+    else
+        print_fail
+    fi
+}
+
+for script in /etc/rc.d/[0-9][0-9][0-9]-*.sh; do
+    [ -x "$script" ] && . "$script"
+done
