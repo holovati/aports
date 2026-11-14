@@ -13,7 +13,7 @@ makedepends="pcre2 autoconf automake"
 checkdepends="coreutils bash diffutils"
 subpackages="$pkgname-doc"
 
-source="https://mirrors.kernel.org/gnu/grep/grep-$pkgver.tar.xz
+source="https://ftp.gnu.org/gnu/grep/grep-$pkgver.tar.xz
 	gnulib.patch"
 
 build() {
