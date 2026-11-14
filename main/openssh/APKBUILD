@@ -10,7 +10,7 @@ arch="all"
 license="BSD-2-Clause AND ISC AND SSH-OpenSSH"
 depends="openssl zlib"
 makedepends="openssl zlib"
-options="!check"
+options="!check suid"
 
 install="$pkgname.post-install"
 subpackages="$pkgname-doc"
@@ -22,15 +22,7 @@ builddir="$srcdir/openssh-$_myver"
 
 prepare() {
 	default_prepare
-
-	# gcc here defines __emerixx__ but not __linux__, and configure keys its
-	# platform settings off the host triplet (x86_64-unknown-emerixx-musl).
-	# Without the Linux case it would not use openpty() instead of
-	# /dev/ptmx, would not add _GNU_SOURCE and would miss the musl
-	# specific quirks. The kernel ABI and musl are Linux-like, so treat it
-	# as Linux.
-	sed -i 's/^\*-\*-linux\*)$/*-*-linux*|*-*-emerixx*)/' configure
-	grep -q '^\*-\*-linux\*|\*-\*-emerixx\*)$' configure
+	emerixx_prepare
 }
 
 build() {
