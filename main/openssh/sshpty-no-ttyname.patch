@@ -1,0 +1,26 @@
+emerixx has no /proc, and musl's ttyname() resolves the name through
+/proc/self/fd/N, so it always fails and sshd dies with "openpty returns
+device for which ttyname fails.". openpty() already hands back the slave
+name when it is given a buffer, use that when ttyname() has no answer.
+
+--- a/sshpty.c
++++ b/sshpty.c
+@@ -59,13 +59,17 @@
+ 	/* openpty(3) exists in OSF/1 and some other os'es */
+ 	char *name;
++	char openpty_name[64];
+ 	int i;
+ 
+-	i = openpty(ptyfd, ttyfd, NULL, NULL, NULL);
++	openpty_name[0] = '\0';
++	i = openpty(ptyfd, ttyfd, openpty_name, NULL, NULL);
+ 	if (i == -1) {
+ 		error("openpty: %.100s", strerror(errno));
+ 		return 0;
+ 	}
+ 	name = ttyname(*ttyfd);
++	if (name == NULL && openpty_name[0] != '\0')
++		name = openpty_name;
+ 	if (!name)
+ 		fatal("openpty returns device for which ttyname fails.");
+ 

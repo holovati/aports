@@ -17,6 +17,7 @@ subpackages="$pkgname-doc"
 
 source="https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$_myver.tar.gz
 	openssh.post-install
+	sshpty-no-ttyname.patch
 	"
 builddir="$srcdir/openssh-$_myver"
 
@@ -70,4 +71,5 @@ package() {
 sha512sums="
 70696ed12bd1be04f67440415528f1ced1ef68c8ee7836e587395618d0992f3fd20c9498c44d46ad9f5806b9a73ce256fd6a2807f9c5c02e6496cf06816c749e  openssh-10.6p2.tar.gz
 dab36f048914cb367ed7eda5aa0bec9de43d9c06d1280d352d5e28eb8b6d2e4c20a1df6e1ccb0a5ab870da82ecb11b196c29569a34f316ec64da687b520c9134  openssh.post-install
+5a5a1eef8d205ad1c560ac56898d094fe17d5aac7e4a5dd51dbf27e3cec421cc2d7f56b49d0872413ba46165020edec0519df0e0446c17516aec3f9386f6f0e0  sshpty-no-ttyname.patch
 "
