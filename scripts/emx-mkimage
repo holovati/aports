@@ -372,7 +372,10 @@ def build_packages(
             print(f"warning: {aport.key}: no aport provides {' '.join(unknown)}, not installed", file=sys.stderr)
         virtual = f".emx-build-{aport.key}"
         if deps:
-            repo_args = [a for r in local_repos(repodest) for a in ("--repository", r)]
+            # Only the repositories built here: a dead entry in /etc/apk/repositories (the host that
+            # served the image) makes apk fail even when nothing has to be downloaded.
+            repo_args = ["--repositories-file", "/dev/null"]
+            repo_args += [a for r in local_repos(repodest) for a in ("--repository", str(r))]
             try:
                 call(["apk", "add", "--virtual", virtual, *repo_args, *deps])
             except subprocess.CalledProcessError:
@@ -388,7 +391,7 @@ def build_packages(
         finally:
             clean_build_dirs(aport)
             if deps and not keep_deps:
-                subprocess.run(["apk", "del", virtual], check=False)
+                subprocess.run(["apk", "del", "--repositories-file", "/dev/null", virtual], check=False)
         if register_repos:
             register_local_repo(repodest / aport.repo)
 
