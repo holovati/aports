@@ -2,7 +2,7 @@
 
 pkgname=abuild
 pkgver=3.16.0
-pkgrel=5
+pkgrel=6
 pkgdesc="Script to build Alpine Packages"
 url="https://gitlab.alpinelinux.org/alpine/abuild/"
 
@@ -15,6 +15,7 @@ depends="apk-tools
 	openssl
 	patch
 	pkgconf
+	scanelf
 	tar
 	scdoc
 	bc
@@ -77,7 +78,6 @@ package() {
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/getcap
  	# ln -s /usr/bin/true "$pkgdir"/usr/bin/getopt
  	ln -s /usr/bin/true "$pkgdir"/usr/bin/fakeroot
- 	ln -s /usr/bin/true "$pkgdir"/usr/bin/scanelf
 
 
 	install -m 644 abuild.conf "$pkgdir"/etc/abuild.conf
