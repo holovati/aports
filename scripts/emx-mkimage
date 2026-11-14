@@ -372,6 +372,25 @@ def build_packages(
             register_local_repo(repodest / aport.repo)
 
 
+def quarantine_untrusted(repodest: Path) -> list[Path]:
+    """Move packages that apk does not trust (signed with a key that is gone) out of the repository.
+
+    abuild re-indexes every .apk of the repository and stops at the first untrusted one. The
+    packages are moved to <repo>/untrusted and are built again.
+    """
+    moved: list[Path] = []
+    for repo in REPO_NAMES:
+        for d in (ARCH, "noarch"):
+            for apk in sorted((repodest / repo / d).glob("*.apk")):
+                if subprocess.run(["apk", "verify", str(apk)], capture_output=True).returncode == 0:
+                    continue
+                dest = repodest / repo / "untrusted"
+                dest.mkdir(exist_ok=True)
+                shutil.move(str(apk), dest / apk.name)
+                moved.append(apk)
+    return moved
+
+
 def register_local_repo(repo: Path) -> None:
     """Add a repository abuild has just filled to /etc/apk/repositories, so later builds can install from it."""
     if not (repo / ARCH / "APKINDEX.tar.gz").exists():
@@ -615,6 +634,12 @@ def run(args: argparse.Namespace) -> int:
 
     if os.geteuid() != 0:
         raise Error("must run as root (apk --root, abuild and mke2fs -d need it)")
+    if shutil.which("abuild-keygen") and shutil.which("apk"):
+        abuild_keys()
+        moved = quarantine_untrusted(args.repodest)
+        if moved:
+            print(f"warning: {len(moved)} packages signed with an unknown key moved to <repo>/untrusted, they are built again", file=sys.stderr)
+            todo = [a for a in plan.order if args.force or not a.is_built(args.repodest)]
     tools = [] if args.no_image else list(REQUIRED_TOOLS)
     if todo:
         tools.append("abuild")
