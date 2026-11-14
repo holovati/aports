@@ -380,9 +380,9 @@ def build_packages(
         clean_build_dirs(aport)
         try:
             # -F: abuild refuses to run as root, -d: dependencies are installed above,
-            # -k: abuild does not clean up, its rm -rf aborts the build when a directory cannot be
+            # -K: abuild does not clean up, its rm -rf aborts the build when a directory cannot be
             # removed, emx-mkimage cleans up below and ignores failures
-            call(["abuild", "-F", "-d", "-k", *abuild_flags], cwd=aport.path, env=env)
+            call(["abuild", "-F", "-d", "-K", *abuild_flags], cwd=aport.path, env=env)
         except subprocess.CalledProcessError:
             raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
         finally:
