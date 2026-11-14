@@ -64,7 +64,9 @@ build() {
 
 	cd src
 
-	make posix V=${pkgver%.*} CC="$CC" MYLIBS="-lreadline" \
+	# -j1: the goals posix and alpine_all both build liblua.la and luac through libtool, in
+	# parallel they overwrite each other's .libs and .lo files
+	make -j1 posix V=${pkgver%.*} CC="$CC" MYLIBS="-lreadline" \
 		SYSLDFLAGS="$LDFLAGS" \
 		RPATH="/usr/lib" \
 		alpine_all
