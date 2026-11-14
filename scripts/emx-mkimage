@@ -355,6 +355,10 @@ def clean_build_dirs(aport: Aport) -> None:
         force_remove(aport.path / d)
 
 
+def apk_installed(name: str) -> bool:
+    return subprocess.run(["apk", "info", "-e", name], capture_output=True).returncode == 0
+
+
 def build_packages(
     aports: Aports,
     todo: list[Aport],
@@ -371,15 +375,18 @@ def build_packages(
         if unknown:
             print(f"warning: {aport.key}: no aport provides {' '.join(unknown)}, not installed", file=sys.stderr)
         virtual = f".emx-build-{aport.key}"
-        if deps:
+        if apk_installed(virtual):  # left over from an aborted run
+            subprocess.run(["apk", "del", "--repositories-file", "/dev/null", virtual], check=False)
+        missing = [d for d in deps if not apk_installed(d)]
+        if missing:
             # Only the repositories built here: a dead entry in /etc/apk/repositories (the host that
             # served the image) makes apk fail even when nothing has to be downloaded.
             repo_args = ["--repositories-file", "/dev/null"]
             repo_args += [a for r in local_repos(repodest) for a in ("--repository", str(r))]
             try:
-                call(["apk", "add", "--virtual", virtual, *repo_args, *deps])
+                call(["apk", "add", "--verbose", "--virtual", virtual, *repo_args, *missing])
             except subprocess.CalledProcessError:
-                raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(deps)}")
+                raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(missing)}")
         clean_build_dirs(aport)
         try:
             # -F: abuild refuses to run as root, -d: dependencies are installed above,
@@ -390,7 +397,7 @@ def build_packages(
             raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
         finally:
             clean_build_dirs(aport)
-            if deps and not keep_deps:
+            if missing and not keep_deps:
                 subprocess.run(["apk", "del", "--repositories-file", "/dev/null", virtual], check=False)
         if register_repos:
             register_local_repo(repodest / aport.repo)
