@@ -1,0 +1,31 @@
+# Maintainer Damir Holovati
+pkgname=kernel-headers
+pkgver=0.1
+pkgrel=0
+pkgdesc="emerixx kernel user API and boot interface headers"
+url="https://gitlab.com/holovati/emerixx"
+arch="noarch"
+license="MIT"
+options="!check"
+
+_commit=71a73a3e213b467d227d11964204aaa68cc6038d
+source="emerixx-$_commit.tar.gz::https://gitlab.com/holovati/emerixx/-/archive/$_commit/emerixx-$_commit.tar.gz"
+builddir="$srcdir/emerixx-$_commit"
+
+build() {
+	:
+}
+
+package() {
+	# Same split as uapi/include/meson.build: the emerixx/ headers are the
+	# userland API, the boot/ headers are the loader <-> kernel interface.
+	local dir
+	for dir in emerixx boot; do
+		mkdir -p "$pkgdir"/usr/include/$dir
+		install -m644 "$builddir"/uapi/include/$dir/*.h "$pkgdir"/usr/include/$dir/
+	done
+}
+
+sha512sums="
+add2f7b56ff1ab4d0ea0b408b9094ff5bdd83cda05d910a493c44e722437fb60e4ff3772344a8deb619caaec706514eb15bbbbc311fcbb7819515513184e0bff  emerixx-$_commit.tar.gz
+"

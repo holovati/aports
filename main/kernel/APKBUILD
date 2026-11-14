@@ -1,0 +1,74 @@
+# Maintainer Damir Holovati
+pkgname=kernel
+pkgver=0.1
+pkgrel=0
+pkgdesc="emerixx kernel image (kernel.elf)"
+url="https://gitlab.com/holovati/emerixx"
+arch="x86_64"
+license="MIT"
+makedepends="meson ninja python3 py3-elftools binutils cpio"
+options="!check !strip"
+
+_commit=71a73a3e213b467d227d11964204aaa68cc6038d
+_acpica=d7eadcdbd43dcfad33e997d50c7682ec30ecb911
+_lwip=d0efd9ef7ba08e54b46b1060e2b4629a4907391b
+
+# The git archives do not contain the submodules, they are fetched separately
+# and placed in 3rdparty/ in prepare(). The commits are the ones pinned in the
+# kernel repository.
+source="emerixx-$_commit.tar.gz::https://gitlab.com/holovati/emerixx/-/archive/$_commit/emerixx-$_commit.tar.gz
+	rs64-acpica-$_acpica.tar.gz::https://gitlab.com/holovati/rs64-acpica/-/archive/$_acpica/rs64-acpica-$_acpica.tar.gz
+	lwip-$_lwip.tar.gz::https://codeload.github.com/lwip-tcpip/lwip/tar.gz/$_lwip
+	"
+builddir="$srcdir/emerixx-$_commit"
+
+prepare() {
+	default_prepare
+
+	rm -rf "$builddir"/3rdparty/rs64-acpica "$builddir"/3rdparty/lwip
+	mv "$srcdir"/rs64-acpica-$_acpica "$builddir"/3rdparty/rs64-acpica
+	mv "$srcdir"/lwip-$_lwip "$builddir"/3rdparty/lwip
+
+	# Freestanding build with the native toolchain. Nothing is executed on the
+	# build machine, so it is described as a cross build, same as
+	# arch/x86_64/cross.ini.
+	cat > "$srcdir"/native.ini <<-EOF
+	[binaries]
+	c = 'gcc'
+	cpp = 'g++'
+	ar = 'ar'
+	strip = 'strip'
+	ld = 'ld'
+
+	[host_machine]
+	system = 'emerixx'
+	cpu_family = 'x86_64'
+	cpu = 'x86_64'
+	endian = 'little'
+
+	[properties]
+	needs_exe_wrapper = true
+	EOF
+}
+
+build() {
+	# The kernel sets its own flags.
+	unset CFLAGS CXXFLAGS LDFLAGS
+
+	meson setup output \
+		--cross-file "$srcdir"/native.ini \
+		--buildtype=debug
+	ninja -C output kernel.stripped.elf
+}
+
+package() {
+	# The loader reads \kernel.elf from the root of the boot volume, which is
+	# the ESP mounted on /boot/efi.
+	install -Dm644 output/kernel.stripped.elf "$pkgdir"/boot/efi/kernel.elf
+}
+
+sha512sums="
+add2f7b56ff1ab4d0ea0b408b9094ff5bdd83cda05d910a493c44e722437fb60e4ff3772344a8deb619caaec706514eb15bbbbc311fcbb7819515513184e0bff  emerixx-$_commit.tar.gz
+67113c64b6593e43aa77dfde6907ab4870cf6d4be0a7cc799233ca3300d18d506ed73ba2c4b020e75079daa3afd267ecd7e40207ef3ab7fe4947356f6e4c30ff  rs64-acpica-$_acpica.tar.gz
+d34771bf6526a47e6727c686a044579510c4004c7b85cac8a63961037a8b20cc007a4fcf1bb47ee1680b103af5c26ae2cfac733b2505866d82baa5b4ef44425c  lwip-$_lwip.tar.gz
+"

@@ -1,0 +1,55 @@
+# Maintainer Damir Holovati
+pkgname=emerixx-loader
+pkgver=0.1
+pkgrel=0
+pkgdesc="UEFI loader for the emerixx kernel"
+url="https://gitlab.com/holovati/emerixx-loader"
+arch="x86_64"
+license="MIT"
+makedepends="meson ninja python3 py3-elftools kernel-headers"
+options="!check"
+
+_commit=0dca91f0daeb37741f94a1ed2116062cbcea3af6
+source="$pkgname-$_commit.tar.gz::https://gitlab.com/holovati/emerixx-loader/-/archive/$_commit/emerixx-loader-$_commit.tar.gz"
+builddir="$srcdir/emerixx-loader-$_commit"
+
+build() {
+	# The loader is freestanding and sets its own flags.
+	unset CFLAGS CXXFLAGS LDFLAGS
+
+	# cross.ini names the host cross toolchain. Here the compiler is the native
+	# one, but the loader is still built as a freestanding EFI binary, so keep
+	# the cross build mode (nothing is executed) with the plain tool names.
+	cat > "$srcdir"/native.ini <<-EOF
+	[binaries]
+	c = 'gcc'
+	ar = 'ar'
+	strip = 'strip'
+	ld = 'ld'
+
+	[host_machine]
+	system = 'emerixx'
+	cpu_family = 'x86_64'
+	cpu = 'x86_64'
+	endian = 'little'
+
+	[properties]
+	needs_exe_wrapper = true
+	EOF
+
+	meson setup output \
+		--cross-file "$srcdir"/native.ini \
+		--prefix=/usr \
+		--buildtype=release
+	ninja -C output
+}
+
+package() {
+	# kernel.elf is read from the root of the boot volume (see main.c), the
+	# loader itself is the removable media path the firmware looks at.
+	install -Dm644 output/BOOTX64.EFI "$pkgdir"/boot/efi/EFI/BOOT/BOOTX64.EFI
+}
+
+sha512sums="
+30fa3398f095dab9d1b92910ed327f443eb64a77e31294d4e96b7033fe1368fccdf667592ef6275ade805ab6d933cd0c5fc01906a664d34e7e5b31b88d6aae73  emerixx-loader-$_commit.tar.gz
+"
