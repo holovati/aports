@@ -10,7 +10,7 @@ arch="all"
 license="GPL-3.0-or-later"
 depends="ncurses"
 options="suid"
-makedepends="ncurses-dev"
+makedepends="ncurses"
 
 subpackages="$pkgname-doc"
 

@@ -8,7 +8,7 @@ url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
 options="!check"  # No test suite.
-makedepends="libx11-dev util-macros"
+makedepends="libx11 util-macros"
 subpackages="$pkgname-doc"
 source="https://www.x.org/releases/individual/app/xmodmap-$pkgver.tar.gz"
 

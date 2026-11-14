@@ -7,8 +7,7 @@ url="https://xorg.freedesktop.org/"
 arch="all"
 license="X11"
 subpackages="$pkgname-doc"
-depends_dev="libxcb xtrans"
-makedepends="$depends_dev xorgproto util-macros xmlto"
+makedepends="libxcb xtrans xorgproto util-macros"
 source="https://www.x.org/releases/individual/lib/libX11-$pkgver.tar.xz"
 builddir="$srcdir"/libX11-$pkgver
 

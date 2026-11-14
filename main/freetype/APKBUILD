@@ -17,7 +17,7 @@ makedepends="
 	libpng
 	libx11
 	meson
-	zlib-dev
+	zlib
 	"
 # subpackages="$pkgname-doc"
 
