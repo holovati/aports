@@ -103,6 +103,12 @@ class PlanTest(unittest.TestCase):
         plan = mk.make_plan(aports, mk.Profile("p", packages=["base-pkg"]), [], True)
         self.assertEqual({a.key for a in plan.order}, set(aports.items))
 
+    def test_build_deps_split(self):
+        aports = mk.Aports(self.root)
+        found, unknown = mk.build_deps(aports, aports.items["big"])
+        self.assertEqual(found, ["dep-dev"])
+        self.assertEqual(unknown, ["linux-headers"])
+
 
 class ProfileTest(unittest.TestCase):
     def test_shipped_profiles_load(self):
@@ -134,7 +140,7 @@ class FirstBootTest(unittest.TestCase):
             )
             mk.configure_root(root, args, mk.load_profile("builder"))
             script = (root / "etc/rc.d/080-first-build.sh").read_text()
-            self.assertIn("--build-all --no-image --register-repos", script)
+            self.assertIn("--build-all --no-image --register-repos --keep-deps", script)
             self.assertIn("first-build-done", script)
             self.assertTrue((root / "etc/rc.d/090-repohost.sh").exists())
             self.assertEqual((root / "etc/apk/repositories").read_text(), "")

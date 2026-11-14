@@ -322,15 +322,52 @@ def abuild_keys() -> list[Path]:
     return keys
 
 
-def build_packages(todo: list[Aport], repodest: Path, abuild_flags: list[str], register_repos: bool = False) -> None:
+def build_deps(aports: Aports, aport: Aport) -> tuple[list[str], list[str]]:
+    """Makedepends of an aport split in (installable, no aport provides them).
+
+    abuild would install these itself, but it needs abuild-apk, adds build-base and fails on names
+    like zlib-dev that emerixx does not have, so emx-mkimage does it and runs abuild with -d.
+    """
+    found: list[str] = []
+    unknown: list[str] = []
+    for name in aport.makedepends:
+        if name not in aports.owner:
+            unknown.append(name)
+        elif aports.owner[name] != aport.key and name not in found:
+            found.append(name)
+    return found, unknown
+
+
+def build_packages(
+    aports: Aports,
+    todo: list[Aport],
+    repodest: Path,
+    abuild_flags: list[str],
+    register_repos: bool = False,
+    keep_deps: bool = False,
+) -> None:
     abuild_keys()
     env = {**os.environ, "REPODEST": str(repodest)}
     for i, aport in enumerate(todo, 1):
         print(f"== [{i}/{len(todo)}] {aport.version}", flush=True)
+        deps, unknown = build_deps(aports, aport)
+        if unknown:
+            print(f"warning: {aport.key}: no aport provides {' '.join(unknown)}, not installed", file=sys.stderr)
+        virtual = f".emx-build-{aport.key}"
+        if deps:
+            repo_args = [a for r in local_repos(repodest) for a in ("--repository", r)]
+            try:
+                call(["apk", "add", "--virtual", virtual, *repo_args, *deps])
+            except subprocess.CalledProcessError:
+                raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(deps)}")
         try:
-            call(["abuild", "-r", *abuild_flags], cwd=aport.path, env=env)
+            # -F: abuild refuses to run as root, -d: dependencies are installed above
+            call(["abuild", "-F", "-d", *abuild_flags], cwd=aport.path, env=env)
         except subprocess.CalledProcessError:
             raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
+        finally:
+            if deps and not keep_deps:
+                subprocess.run(["apk", "del", virtual], check=False)
         if register_repos:
             register_local_repo(repodest / aport.repo)
 
@@ -443,7 +480,7 @@ def configure_root(root: Path, args, profile: Profile) -> None:
             "    mkdir -p /var/lib/emx\n"
             '    run "Building every package in the background, log in /var/log/first-build.log" sh -c '
             "'(HOME=/root /usr/bin/python3 /root/aports/scripts/emx-mkimage builder --build-all --no-image "
-            "--register-repos && touch /var/lib/emx/first-build-done) >>/var/log/first-build.log 2>&1 &'\n"
+            "--register-repos --keep-deps && touch /var/lib/emx/first-build-done) >>/var/log/first-build.log 2>&1 &'\n"
             "fi\n"
         )
         rc.chmod(0o755)
@@ -528,7 +565,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-image", action="store_true", help="only build the packages, do not write an image")
     p.add_argument("--register-repos", action="store_true", help="add each repository abuild fills to /etc/apk/repositories (used by the first boot build)")
     p.add_argument("--force", action="store_true", help="rebuild packages that already exist")
-    p.add_argument("--abuild-flags", default="", help="extra abuild flags, e.g. -F")
+    p.add_argument("--abuild-flags", default="", help="extra abuild flags")
+    p.add_argument("--keep-deps", action="store_true", help="do not uninstall the build dependencies after each package (the builder image keeps them)")
     p.add_argument("-n", "--dry-run", action="store_true", help="print the plan and stop")
     p.add_argument("--image-repo", action="append", default=[], metavar="URL", help="apk repository for /etc/apk/repositories, repeatable")
     p.add_argument("--key", action="append", default=[], type=readable_file, metavar="FILE.pub", help="public key the image trusts, repeatable")
@@ -590,7 +628,7 @@ def run(args: argparse.Namespace) -> int:
 
     public_keys = list(args.key)
     if todo:
-        build_packages(todo, args.repodest, shlex.split(args.abuild_flags), args.register_repos)
+        build_packages(aports, todo, args.repodest, shlex.split(args.abuild_flags), args.register_repos, args.keep_deps)
     else:
         public_keys += sorted((Path.home() / ".abuild").glob("*.rsa.pub"))
     if args.no_image:
