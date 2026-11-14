@@ -16,6 +16,12 @@ source="https://github.com/shadow-maint/shadow/releases/download/$pkgver/shadow-
 	"
 
 build() {
+	# Upstream bug: without nscd support the nscd_flush_cache() stub takes an int, but callers
+	# pass a string. GCC 14 made -Wint-conversion an error.
+	sed -i 's/nscd_flush_cache(MAYBE_UNUSED int _1)/nscd_flush_cache(MAYBE_UNUSED const char *_1)/' \
+		lib/nscd.h
+	grep -q 'MAYBE_UNUSED const char \*_1' lib/nscd.h || { echo "nscd.h patch did not apply"; return 1; }
+
 	# musl has no readpassphrase(3) and libbsd is not packaged. shadow needs it for password
 	# prompts, so build a minimal one and link it in statically. It is not installed.
 	${CC:-gcc} $CFLAGS -I"$srcdir" -c "$srcdir"/readpassphrase.c -o "$srcdir"/readpassphrase.o
