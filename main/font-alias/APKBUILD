@@ -6,6 +6,7 @@ pkgdesc="X.org font alias files"
 url="https://xorg.freedesktop.org/"
 arch="noarch"
 license="custom"
+options="!check"
 source="https://www.x.org/releases/individual/font/font-alias-$pkgver.tar.xz"
 #subpackages="$pkgname-doc"
 

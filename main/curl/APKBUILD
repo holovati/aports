@@ -21,7 +21,7 @@ subpackages="$pkgname-static $pkgname-doc"
 
 source="https://curl.se/download/curl-$pkgver.tar.xz"
 
-options="net" # Required for running tests
+options="net !check" # net: required for running tests
 
 build() {
 	CFLAGS="$CFLAGS -pipe" \

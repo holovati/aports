@@ -111,10 +111,6 @@ class PlanTest(unittest.TestCase):
 
 
 class ProfileTest(unittest.TestCase):
-    def test_abuild_never_runs_check(self):
-        env = mk.abuild_env(Path("/tmp/repo"))
-        self.assertEqual(env["ABUILD_BOOTSTRAP"], "1")
-        self.assertEqual(env["REPODEST"], "/tmp/repo")
     def test_shipped_profiles_load(self):
         base = mk.load_profile("base")
         builder = mk.load_profile("builder")

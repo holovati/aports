@@ -7,6 +7,7 @@ pkgdesc="Distributed version control system"
 url="https://www.git-scm.com/"
 arch="all"
 license="GPL-2.0-only"
+options="!check"
 
 makedepends="curl file openssl perl zlib"
 

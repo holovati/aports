@@ -6,6 +6,7 @@ pkgdesc="X.org evdev input driver"
 url="https://xorg.freedesktop.org"
 arch="all"
 license="MIT"
+options="!check"
 subpackages="$pkgname-doc"
 
 makedepends="libxkbfile xorg-server libxrandr mtdev libevdev"

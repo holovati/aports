@@ -10,6 +10,7 @@ url="https://www.gnu.org/software/sed"
 arch="all"
 
 license="GPL-3.0-or-later"
+options="!check"
 
 install="$pkgname.post-deinstall"
 

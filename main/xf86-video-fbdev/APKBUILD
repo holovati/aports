@@ -6,6 +6,7 @@ pkgdesc="Video driver for framebuffer device"
 url="https://www.x.org"
 arch="all"
 license="MIT"
+options="!check"
 subpackages="$pkgname-doc"
 
 # libxi-dev

@@ -25,7 +25,7 @@ source="https://www.cpan.org/src/5.0/perl-$pkgver.tar.xz
 	"
 
 # creates empty usr/local/{lib,share} for local sitedirs
-options="!fhs"
+options="!fhs !check"
 
 prepare() {
 	# most sources are readonly but we patch some

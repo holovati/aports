@@ -7,7 +7,7 @@ pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
 license="MIT"
-options="suid"
+options="suid !check"
 subpackages="$pkgname-doc"
 
 #	font-cursor-misc

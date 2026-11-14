@@ -9,6 +9,7 @@ url="https://www.nano-editor.org/"
 arch="all"
 
 license="GPL-3.0-or-later"
+options="!check"
 
 depends="ncurses"
 

@@ -6,6 +6,7 @@ pkgdesc="DOS emulator"
 url="https://dosbox-x.com"
 arch="all"
 license="GPL-2.0"
+options="!check"
 
 subpackages="$pkgname-doc"
 

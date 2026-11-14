@@ -13,6 +13,7 @@ url="https://www.gnu.org/software/bash/bash.html"
 arch="all"
 
 license="GPL-3.0-or-later"
+options="!check"
 
 # install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
 

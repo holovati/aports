@@ -6,6 +6,7 @@ pkgdesc="portable, high level programming interface to various calling conventio
 url="https://sourceware.org/libffi/"
 arch="all"
 license="MIT"
+options="!check"
 
 makedepends_build="texinfo"
 

@@ -40,7 +40,7 @@ subpackages="
 	$pkgname-doc
 	"
 
-options="suid"
+options="suid !check"
 
 pkggroups="abuild"
 

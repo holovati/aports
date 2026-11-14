@@ -6,6 +6,7 @@ pkgdesc="xorg xcvt library and cvt program"
 url="https://gitlab.freedesktop.org/xorg/lib/libxcvt"
 arch="all"
 license="custom"
+options="!check"
 
 makedepends="meson"
 subpackages="$$pkgname-doc"

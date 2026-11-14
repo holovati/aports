@@ -9,7 +9,7 @@ url="https://www.gnu.org/software/inetutils"
 arch="all"
 license="GPL-3.0-or-later"
 depends="ncurses"
-options="suid"
+options="suid !check"
 makedepends="ncurses"
 
 subpackages="$pkgname-doc"

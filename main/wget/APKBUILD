@@ -6,6 +6,7 @@ pkgdesc="Network utility to retrieve files from the Web"
 url="https://www.gnu.org/software/wget/wget.html"
 arch="all"
 license="GPL-3.0-or-later WITH OpenSSL-Exception"
+options="!check"
 makedepends="
 	openssl
 	pcre2

@@ -6,6 +6,7 @@ pkgdesc="X11 Inter-Client Exchange library"
 url="https://xorg.freedesktop.org/"
 arch="all"
 license="X11"
+options="!check"
 #	check-dev
 #	xmlto
 makedepends="util-macros xorgproto xtrans"

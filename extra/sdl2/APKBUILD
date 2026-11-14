@@ -6,6 +6,7 @@ pkgdesc="Game development library"
 url="https://www.libsdl.org"
 arch="all"
 license="Zlib"
+options="!check"
 
 # libxi libxkbcommon 
 makedepends="make autoconf automake libx11 libxcursor libxext libxrandr libxrender libevdev"

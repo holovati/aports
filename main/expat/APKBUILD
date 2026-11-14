@@ -6,6 +6,7 @@ pkgdesc="XML Parser library written in C"
 url="https://libexpat.github.io/"
 arch="all"
 license="MIT"
+options="!check"
 checkdepends="bash"
 source="https://github.com/libexpat/libexpat/releases/download/R_${pkgver//./_}/expat-$pkgver.tar.bz2"
 

@@ -6,6 +6,7 @@ pkgdesc="Perfect hash function generator."
 url="https://www.gnu.org/software/gperf/"
 arch="all"
 license="GPL-3.0-or-later"
+options="!check"
 subpackages="$pkgname-doc"
 source="https://ftp.gnu.org/gnu/gperf/gperf-$pkgver.tar.gz"
 

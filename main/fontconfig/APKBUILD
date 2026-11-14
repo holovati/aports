@@ -6,6 +6,7 @@ pkgdesc="Library for configuring and customizing font access"
 url="https://www.freedesktop.org/wiki/Software/fontconfig"
 arch="all"
 license="MIT"
+options="!check"
 #docbook2x
 makedepends="freetype python3 gperf util-linux expat"
 checkdepends="bash json-c-dev uuidgen curl"

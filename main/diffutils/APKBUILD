@@ -10,6 +10,7 @@ url="https://www.gnu.org/software/diffutils/"
 arch="all"
 
 license="GPL-3.0-or-later"
+options="!check"
 
 checkdepends="perl"
 

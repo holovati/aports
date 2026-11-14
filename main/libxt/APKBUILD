@@ -6,6 +6,7 @@ pkgdesc="X11 toolkit intrinsics library"
 url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
+options="!check"
 subpackages="$pkgname-doc"
 
 makedepends="libsm libice libx11 util-macros xorgproto"

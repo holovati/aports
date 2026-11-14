@@ -6,6 +6,7 @@ pkgdesc="Multitouch Protocol Translation Library Development Package"
 url="http://bitmath.org/code/mtdev/"
 arch="all"
 license="MIT"
+options="!check"
 #depends_dev="emerixx-headers"
 source="http://bitmath.org/code/mtdev/mtdev-$pkgver.tar.gz"
 

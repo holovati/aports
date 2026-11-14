@@ -359,15 +359,6 @@ def apk_installed(name: str) -> bool:
     return subprocess.run(["apk", "info", "-e", name], capture_output=True).returncode == 0
 
 
-def abuild_env(repodest: Path) -> dict[str, str]:
-    """Environment of the abuild runs.
-
-    ABUILD_BOOTSTRAP=1 makes abuild skip check() and not install checkdepends. The test suites can
-    hang the emerixx kernel, so they never run here. No aport reads this variable.
-    """
-    return {**os.environ, "REPODEST": str(repodest), "ABUILD_BOOTSTRAP": "1"}
-
-
 def build_packages(
     aports: Aports,
     todo: list[Aport],
@@ -377,7 +368,7 @@ def build_packages(
     keep_deps: bool = False,
 ) -> None:
     abuild_keys()
-    env = abuild_env(repodest)
+    env = {**os.environ, "REPODEST": str(repodest)}
     for i, aport in enumerate(todo, 1):
         print(f"== [{i}/{len(todo)}] {aport.version}", flush=True)
         deps, unknown = build_deps(aports, aport)

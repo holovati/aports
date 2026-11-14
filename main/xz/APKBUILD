@@ -8,6 +8,7 @@ url="https://tukaani.org/xz/"
 arch="all"
 
 license="GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later"
+options="!check"
 
 depends_dev="$pkgname=$pkgver-r$pkgrel"
 

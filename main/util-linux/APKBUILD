@@ -23,7 +23,7 @@ makedepends="$makedepends_build $makedepends_host"
 
 builddir="$srcdir/util-linux-$pkgver"
 
-options="$options suid"
+options="$options suid !check"
 
 case $pkgver in
 	*.*.*) _v=${pkgver%.*};;

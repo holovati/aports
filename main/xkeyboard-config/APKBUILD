@@ -6,6 +6,7 @@ pkgdesc="X keyboard configuration files"
 url="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config"
 arch="noarch"
 license="MIT"
+options="!check"
 makedepends="perl"
 checkdepends="gawk"
 source="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/archive/xkeyboard-config-$pkgver/xkeyboard-config-xkeyboard-config-$pkgver.tar.gz

@@ -6,6 +6,7 @@ pkgdesc="LZ4 is lossless compression algorithm with fast decoder @ multiple GB/s
 url="https://github.com/lz4/lz4"
 arch="all"
 license="BSD-2-Clause AND GPL-2.0-or-later"
+options="!check"
 checkdepends="diffutils"
 subpackages="$pkgname-doc"
 

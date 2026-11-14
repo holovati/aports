@@ -9,6 +9,7 @@ pkgdesc="High-level scripting language"
 url="https://www.python.org/"
 arch="all"
 license="PSF-2.0"
+options="!check"
 
 subpackages="$pkgname-doc"
 

@@ -31,7 +31,7 @@ source="https://alpha.gnu.org/gnu/libtool/libtool-$pkgver.tar.gz
 	add-emerixx-libtool-m4.patch
 	"
 	
-options="libtool !archcheck" # arch-specific files moved into libltdl
+options="libtool !archcheck !check" # arch-specific files moved into libltdl
 
 prepare() {
 	default_prepare

@@ -6,6 +6,7 @@ pkgdesc="Meta package for EMX base system"
 url="https://www.github.com/holovati/emx"
 arch="noarch"
 license="MIT"
+options="!check"
 
 depends="emx-baselayout sysvinit util-linux apk-tools sash coreutils bash readline emerixx-utils inetutils ca-certificates nano"
 

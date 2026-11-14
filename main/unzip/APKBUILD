@@ -13,6 +13,7 @@ subpackages="$pkgname-doc"
 url="http://www.info-zip.org/UnZip.html"
 arch="all"
 license="custom"
+options="!check"
 
 source="https://dev.alpinelinux.org/archive/unzip/unzip$_pkgver.tgz
 	gcc15.patch"

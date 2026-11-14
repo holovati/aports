@@ -6,6 +6,7 @@ pkgdesc="Standard Ext2/3/4 filesystem utilities"
 url="https://e2fsprogs.sourceforge.net/"
 arch="all"
 license="GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
+options="!check"
 # linux-headers
 makedepends="util-linux gawk fuse3"
 checkdepends="diffutils perl coreutils"

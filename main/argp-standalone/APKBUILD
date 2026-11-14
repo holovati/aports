@@ -6,6 +6,7 @@ pkgdesc="Hierarchial argument parsing library broken out from glibc"
 url="http://www.lysator.liu.se/~nisse/misc/"
 arch="all"
 license="LGPL-2.1-or-later"
+options="!check"
 
 makedepends="libtool automake autoconf"
 

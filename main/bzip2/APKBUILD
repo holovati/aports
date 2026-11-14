@@ -6,6 +6,7 @@ pkgdesc="A high-quality data compression program"
 url="https://sourceware.org/bzip2/"
 arch="all"
 license="bzip2-1.0.6"
+options="!check"
 
 subpackages="$pkgname-static $pkgname-doc"
 

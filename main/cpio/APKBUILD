@@ -6,6 +6,7 @@ pkgdesc="tool to copy files into or out of a cpio or tar archive"
 url="https://www.gnu.org/software/cpio"
 arch="all"
 license="GPL-3.0-or-later"
+options="!check"
 checkdepends="autoconf"
 subpackages="$pkgname-doc"
 source="https://ftp.gnu.org/gnu/cpio/cpio-$pkgver.tar.bz2
