@@ -9,6 +9,7 @@ license="MIT"
 options="!check"
 makedepends="meson perl"
 checkdepends="gawk"
+subpackages="$pkgname-doc"
 source="https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/archive/xkeyboard-config-$pkgver/xkeyboard-config-xkeyboard-config-$pkgver.tar.gz
 	"
 builddir="$srcdir"/xkeyboard-config-xkeyboard-config-$pkgver
