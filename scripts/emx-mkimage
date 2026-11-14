@@ -488,6 +488,32 @@ def apk_installed(name: str) -> bool:
     return subprocess.run(["apk", "info", "-e", name], capture_output=True).returncode == 0
 
 
+def installed_versions() -> dict[str, str]:
+    """Installed packages as {name: version-rN}, empty when apk list cannot be read."""
+    run = subprocess.run(["apk", "list", "--installed"], capture_output=True, text=True)
+    versions: dict[str, str] = {}
+    for line in run.stdout.splitlines():
+        m = re.match(r"(\S+?)-(\d[^-\s]*-r\d+)(\s|$)", line)
+        if m:
+            versions[m.group(1)] = m.group(2)
+    return versions
+
+
+def stale_deps(aports: Aports, deps: list[str]) -> list[str]:
+    """Build dependencies that are not installed or installed in another version than the aport has.
+
+    A rebuilt library must replace the old one, otherwise packages keep being linked against it.
+    """
+    have = installed_versions()
+    stale = []
+    for d in deps:
+        owner = aports.items[aports.owner[d]]
+        wanted = f"{owner.pkgver}-r{owner.pkgrel}"
+        if not apk_installed(d) or have.get(d, wanted) != wanted:
+            stale.append(d)
+    return stale
+
+
 def build_packages(
     aports: Aports,
     todo: list[Step],
@@ -510,7 +536,7 @@ def build_packages(
         virtual = f".emx-build-{aport.key}"
         if apk_installed(virtual):  # left over from an aborted run
             subprocess.run(["apk", "del", "--repositories-file", "/dev/null", virtual], check=False)
-        missing = [d for d in deps if not apk_installed(d)]
+        missing = stale_deps(aports, deps)
         if missing:
             # Only the repositories built here: a dead entry in /etc/apk/repositories (the host that
             # served the image) makes apk fail even when nothing has to be downloaded.

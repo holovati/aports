@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 _path = Path(__file__).resolve().parent / "emx-mkimage"
 _loader = importlib.machinery.SourceFileLoader("emx_mkimage", str(_path))
@@ -161,6 +162,20 @@ class PlanTest(unittest.TestCase):
         found, unknown = mk.build_deps(aports, aports.items["big"])
         self.assertEqual(found, ["dep-dev"])
         self.assertEqual(unknown, ["linux-headers"])
+
+    def test_stale_deps_reinstalls_other_versions(self):
+        aports = mk.Aports(self.root)
+        want = aports.items["dev-owner"]
+        version = f"{want.pkgver}-r{want.pkgrel}"
+        with mock.patch.object(mk, "apk_installed", return_value=True):
+            with mock.patch.object(mk, "installed_versions", return_value={"dep-dev": version}):
+                self.assertEqual(mk.stale_deps(aports, ["dep-dev"]), [])
+            with mock.patch.object(mk, "installed_versions", return_value={"dep-dev": "0.1-r0"}):
+                self.assertEqual(mk.stale_deps(aports, ["dep-dev"]), ["dep-dev"])
+        with mock.patch.object(mk, "apk_installed", return_value=False), mock.patch.object(
+            mk, "installed_versions", return_value={}
+        ):
+            self.assertEqual(mk.stale_deps(aports, ["dep-dev"]), ["dep-dev"])
 
 
 class ProfileTest(unittest.TestCase):
