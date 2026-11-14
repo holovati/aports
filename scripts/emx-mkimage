@@ -90,6 +90,34 @@ class Aport:
         return any((repodest / self.repo / d / f"{self.version}.apk").exists() for d in (ARCH, "noarch"))
 
 
+@dataclasses.dataclass
+class Step:
+    """One abuild run. A package of a dependency cycle takes two: a bootstrap pass without the
+    dependencies that close the cycle and a rebuild once everything it needs exists."""
+
+    aport: Aport  # for a bootstrap step the variant read with APORTS_BOOTSTRAP=1
+    stage: str = ""  # "", "bootstrap" or "rebuild"
+    dropped: list[str] = dataclasses.field(default_factory=list)  # dependencies the bootstrap pass leaves out
+
+    def marker_path(self, repodest: Path) -> Path:
+        """Exists between the bootstrap pass and the rebuild, so an aborted run is continued."""
+        return repodest / self.aport.repo / f".bootstrap-{self.aport.version}"
+
+    def needed(self, repodest: Path, force: bool) -> bool:
+        if force or not self.aport.is_built(repodest):
+            return True
+        # the bootstrap pass is done but the rebuild is not (an earlier run stopped in between)
+        return self.stage == "rebuild" and self.marker_path(repodest).exists()
+
+    @property
+    def label(self) -> str:
+        if self.stage == "bootstrap":
+            return f"{self.aport.version} (pass 1 of 2, without {' '.join(self.dropped)})"
+        if self.stage == "rebuild":
+            return f"{self.aport.version} (pass 2 of 2, complete)"
+        return self.aport.version
+
+
 _FIELDS = (
     "pkgname",
     "pkgver",
@@ -104,8 +132,12 @@ _FIELDS = (
 )
 
 
-def read_apkbuild(path: Path) -> Aport | None:
-    """Source the APKBUILD in a shell, the same way abuild does, and read the variables."""
+def read_apkbuild(path: Path, bootstrap: bool = False) -> Aport | None:
+    """Source the APKBUILD in a shell, the same way abuild does, and read the variables.
+
+    bootstrap=True sets APORTS_BOOTSTRAP=1, an APKBUILD can use it to leave out dependencies
+    (and the features that need them) to break a dependency cycle.
+    """
     script = "set -f; { . ./APKBUILD; } >/dev/null 2>&1 </dev/null; " + "; ".join(f"echo ${f}" for f in _FIELDS)
     env = {
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
@@ -116,6 +148,8 @@ def read_apkbuild(path: Path) -> Aport | None:
         "pkgdir": "/nonexistent",
         "startdir": str(path.parent),
     }
+    if bootstrap:
+        env["APORTS_BOOTSTRAP"] = "1"
     proc = subprocess.run(["sh", "-c", script], cwd=path.parent, env=env, capture_output=True, text=True)
     lines = proc.stdout.splitlines()
     if len(lines) != len(_FIELDS) or not lines[0]:
@@ -147,6 +181,7 @@ class Aports:
         self.items: dict[str, Aport] = {}  # key -> Aport
         self.owner: dict[str, str] = {}  # package/subpackage/provides name -> key
         self.warnings: list[str] = []
+        self._variants: dict[str, Aport | None] = {}
 
         for repo in REPO_NAMES:
             for apkbuild in sorted((root / repo).glob("*/APKBUILD")):
@@ -166,17 +201,42 @@ class Aports:
             self.owner[aport.pkgname] = aport.key
             self.owner[aport.key] = aport.key
 
-    def order(self, wanted: set[str]) -> tuple[list[Aport], list[str]]:
-        """Build order of the wanted aport keys plus everything they need, dependencies first.
+    def dep_keys(self, aport: Aport) -> list[str]:
+        """Aports that provide the makedepends and depends of an aport, without itself."""
+        keys = [self.owner.get(n) for n in aport.makedepends + aport.depends]
+        return [k for k in dict.fromkeys(keys) if k is not None and k != aport.key]
 
-        A makedepends cycle cannot be solved by ordering, it is reported and the edge dropped,
-        so one package of the cycle has to be built by hand first. Runtime depends cycles are
-        harmless for building and ignored.
+    def bootstrap_variant(self, key: str) -> Aport | None:
+        """The aport as read with APORTS_BOOTSTRAP=1, None when that changes no dependency."""
+        if key not in self._variants:
+            full = self.items[key]
+            variant = read_apkbuild(full.path / "APKBUILD", bootstrap=True)
+            if variant is not None and set(variant.makedepends + variant.depends) == set(full.makedepends + full.depends):
+                variant = None
+            self._variants[key] = variant
+        return self._variants[key]
+
+    def _drops_edge(self, key: str, target: str) -> bool:
+        """Does the bootstrap variant of key leave out everything that pulls in the aport target?"""
+        variant = self.bootstrap_variant(key)
+        if variant is None:
+            return False
+
+        def pulls(a: Aport) -> bool:
+            return any(self.owner.get(n) == target for n in a.makedepends + a.depends)
+
+        return pulls(self.items[key]) and not pulls(variant)
+
+    def _sort(self, wanted: set[str], variants: dict[str, Aport]) -> tuple[list[Aport], list[list[str]]]:
+        """Depth first order of the wanted keys, dependencies first, plus the makedepends cycles.
+
+        A cycle member list is in dependency order, the last one needs the first. Runtime depends
+        cycles are harmless for building and ignored. A cycle edge is dropped from the order.
         """
         state: dict[str, int] = {}  # 1 = visiting, 2 = done
         result: list[Aport] = []
         stack: list[str] = []
-        cycles: list[str] = []
+        cycles: list[list[str]] = []
 
         def visit(key: str) -> bool:
             if state.get(key) == 2:
@@ -185,14 +245,14 @@ class Aports:
                 return False
             state[key] = 1
             stack.append(key)
-            aport = self.items[key]
+            aport = variants.get(key, self.items[key])
             for hard, names in ((True, aport.makedepends), (False, aport.depends)):
                 for name in names:
                     dep = self.owner.get(name)
                     if dep is None or dep == key:
                         continue
                     if not visit(dep) and hard:
-                        cycles.append(" -> ".join(stack + [dep]))
+                        cycles.append(stack[stack.index(dep) :])
             stack.pop()
             state[key] = 2
             result.append(aport)
@@ -201,6 +261,56 @@ class Aports:
         for key in sorted(wanted):
             visit(key)
         return result, cycles
+
+    def order(self, wanted: set[str]) -> tuple[list[Step], list[str]]:
+        """Build steps for the wanted aport keys plus everything they need, dependencies first.
+
+        A makedepends cycle is solved in two passes when one of its packages can leave out the
+        dependency that closes it: the APKBUILD checks APORTS_BOOTSTRAP and drops the dependency
+        and the feature that needs it. That package is built first without it and once more,
+        complete, after the packages it was missing. Cycles nobody can break are returned as text,
+        an already built package of such a cycle is needed.
+        """
+        wanted = set(wanted)
+        variants: dict[str, Aport] = {}
+        while True:
+            result, cycles = self._sort(wanted, variants)
+            breaker = next(
+                (
+                    key
+                    for cycle in cycles
+                    for i, key in enumerate(cycle)
+                    if key not in variants and self._drops_edge(key, cycle[(i + 1) % len(cycle)])
+                ),
+                None,
+            )
+            if breaker is None:
+                break
+            variant = self.bootstrap_variant(breaker)
+            assert variant is not None
+            variants[breaker] = variant
+            wanted |= set(self.dep_keys(self.items[breaker]))  # the rebuild needs all of them
+
+        steps = []
+        for aport in result:
+            if aport.key in variants:
+                full = self.items[aport.key]
+                dropped = sorted(set(full.makedepends + full.depends) - set(aport.makedepends + aport.depends))
+                steps.append(Step(aport, "bootstrap", dropped))
+            else:
+                steps.append(Step(aport))
+
+        position = {s.aport.key: i for i, s in enumerate(steps)}
+        rebuilds: dict[int, list[Step]] = {}
+        for key in variants:
+            full = self.items[key]
+            at = max([position[key]] + [position[k] for k in self.dep_keys(full) if k in position])
+            rebuilds.setdefault(at, []).append(Step(full, "rebuild"))
+        ordered: list[Step] = []
+        for i, step in enumerate(steps):
+            ordered.append(step)
+            ordered.extend(rebuilds.get(i, []))
+        return ordered, [" -> ".join(c + [c[0]]) for c in cycles]
 
 
 # ---------------------------------------------------------------------------
@@ -248,9 +358,14 @@ def load_profile(name: str, path: Path = PROFILES_FILE) -> Profile:
 @dataclasses.dataclass
 class Plan:
     install: list[str]  # package names given to apk add
-    order: list[Aport]  # everything that has to exist in the repository, dependencies first
+    steps: list[Step]  # everything that has to exist in the repository, dependencies first
     unresolved: list[str]  # makedepends that no aport provides
-    cycles: list[str]
+    cycles: list[str]  # cycles no package can break
+
+    @property
+    def order(self) -> list[Aport]:
+        """Every aport once, a package built in two passes at its first one."""
+        return [s.aport for s in self.steps if s.stage != "rebuild"]
 
 
 def make_plan(aports: Aports, profile: Profile, extra: list[str], build_all: bool) -> Plan:
@@ -273,8 +388,8 @@ def make_plan(aports: Aports, profile: Profile, extra: list[str], build_all: boo
     wanted = {aports.owner[n] for n in install}
     if build_all:
         wanted |= set(aports.items)
-    order, cycles = aports.order(wanted)
-    return Plan(install, order, sorted(unresolved), cycles)
+    steps, cycles = aports.order(wanted)
+    return Plan(install, steps, sorted(unresolved), cycles)
 
 
 # ---------------------------------------------------------------------------
@@ -375,16 +490,20 @@ def apk_installed(name: str) -> bool:
 
 def build_packages(
     aports: Aports,
-    todo: list[Aport],
+    todo: list[Step],
     repodest: Path,
     abuild_flags: list[str],
     register_repos: bool = False,
     keep_deps: bool = False,
 ) -> None:
     abuild_keys()
-    env = {**os.environ, "REPODEST": str(repodest)}
-    for i, aport in enumerate(todo, 1):
-        print(f"== [{i}/{len(todo)}] {aport.version}", flush=True)
+    for i, step in enumerate(todo, 1):
+        aport = step.aport
+        env = {**os.environ, "REPODEST": str(repodest)}
+        env.pop("APORTS_BOOTSTRAP", None)
+        if step.stage == "bootstrap":
+            env["APORTS_BOOTSTRAP"] = "1"
+        print(f"== [{i}/{len(todo)}] {step.label}", flush=True)
         deps, unknown = build_deps(aports, aport)
         if unknown:
             print(f"warning: {aport.key}: no aport provides {' '.join(unknown)}, not installed", file=sys.stderr)
@@ -405,14 +524,20 @@ def build_packages(
         try:
             # -F: abuild refuses to run as root, -d: dependencies are installed above,
             # -K: abuild does not clean up, its rm -rf aborts the build when a directory cannot be
-            # removed, emx-mkimage cleans up below and ignores failures
-            call(["abuild", "-F", "-d", "-K", *abuild_flags], cwd=aport.path, env=env)
+            # removed, emx-mkimage cleans up below and ignores failures. -f: the rebuild of a package
+            # built in two passes finds the apk of the first pass in the repository.
+            cmd = ["abuild", "-F", "-d", "-K", *(["-f"] if step.stage == "rebuild" else []), *abuild_flags]
+            call(cmd, cwd=aport.path, env=env)
         except subprocess.CalledProcessError:
             raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
         finally:
             clean_build_dirs(aport)
             if missing and not keep_deps:
                 subprocess.run(["apk", "del", "--repositories-file", "/dev/null", virtual], check=False)
+        if step.stage == "bootstrap":
+            step.marker_path(repodest).touch()
+        elif step.stage == "rebuild":
+            step.marker_path(repodest).unlink(missing_ok=True)
         if register_repos:
             register_local_repo(repodest / aport.repo)
 
@@ -651,16 +776,19 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def print_plan(profile: Profile, aports: Aports, plan: Plan, todo: list[Aport]) -> None:
+def print_plan(profile: Profile, aports: Aports, plan: Plan, todo: list[Step]) -> None:
     for w in aports.warnings:
         print(f"warning: {w}", file=sys.stderr)
     for c in plan.cycles:
-        print(f"warning: makedepends cycle {c}, an already built package of the cycle is needed", file=sys.stderr)
+        print(f"warning: makedepends cycle {c}, no package can break it, an already built package of the cycle is needed", file=sys.stderr)
     print(f"== Profile {profile.name}: {profile.description}")
     print(f"== {len(plan.install)} packages to install, {len(plan.order)} in the repository, {len(todo)} to build")
-    done = {a.key for a in todo}
-    for aport in plan.order:
-        print(f"  {aport.version:<44} {'build' if aport.key in done else 'up to date'}")
+    two_pass = [s.aport.key for s in plan.steps if s.stage == "bootstrap"]
+    if two_pass:
+        print(f"== {len(two_pass)} packages are built in two passes to break dependency cycles: {' '.join(two_pass)}")
+    wanted = {id(s) for s in todo}
+    for step in plan.steps:
+        print(f"  {step.label:<44} {'build' if id(step) in wanted else 'up to date'}")
     if plan.unresolved:
         print(f"== {len(plan.unresolved)} makedepends have no aport and are not installed: {' '.join(plan.unresolved)}")
 
@@ -672,7 +800,7 @@ def run(args: argparse.Namespace) -> int:
     aports = Aports(args.aports)
     profile = load_profile(args.profile)
     plan = make_plan(aports, profile, args.add, args.build_all)
-    todo = [a for a in plan.order if args.force or not a.is_built(args.repodest)]
+    todo = [s for s in plan.steps if s.needed(args.repodest, args.force)]
     print_plan(profile, aports, plan, todo)
     if args.dry_run:
         return 0
@@ -684,7 +812,7 @@ def run(args: argparse.Namespace) -> int:
         moved = quarantine_untrusted(args.repodest)
         if moved:
             print(f"warning: {len(moved)} packages signed with an unknown key moved to <repo>/untrusted, they are built again", file=sys.stderr)
-            todo = [a for a in plan.order if args.force or not a.is_built(args.repodest)]
+            todo = [s for s in plan.steps if s.needed(args.repodest, args.force)]
     tools = [] if args.no_image else list(REQUIRED_TOOLS)
     if todo:
         tools.append("abuild")

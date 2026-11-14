@@ -46,7 +46,7 @@ class AportsTest(unittest.TestCase):
         write_aport(self.root, "main", "tool")
         write_aport(self.root, "main", "rt")
         order, cycles = mk.Aports(self.root).order({"app"})
-        names = [a.key for a in order]
+        names = [s.aport.key for s in order]
         self.assertEqual(cycles, [])
         self.assertLess(names.index("tool"), names.index("lib"))
         self.assertLess(names.index("lib"), names.index("app"))
@@ -75,6 +75,49 @@ class AportsTest(unittest.TestCase):
         aports = mk.Aports(self.root)
         self.assertEqual(aports.items["split"].makedepends, ["tool", "lib"])
         self.assertEqual(aports.items["both"].makedepends, ["lib"])
+
+    def test_cycle_is_built_in_two_passes(self):
+        # curl needs brotli, brotli needs cmake, cmake needs curl; curl can leave brotli out
+        write_aport(self.root, "main", "curl", makedepends="brotli", extra='[ -n "$APORTS_BOOTSTRAP" ] && makedepends=""')
+        write_aport(self.root, "main", "brotli", makedepends="cmake")
+        write_aport(self.root, "main", "cmake", makedepends="curl")
+        steps, cycles = mk.Aports(self.root).order({"brotli"})
+        self.assertEqual(cycles, [])
+        self.assertEqual(
+            [(s.aport.key, s.stage) for s in steps],
+            [("curl", "bootstrap"), ("cmake", ""), ("brotli", ""), ("curl", "rebuild")],
+        )
+        self.assertEqual(steps[0].dropped, ["brotli"])
+        self.assertEqual(steps[0].aport.makedepends, [])
+        self.assertEqual(steps[3].aport.makedepends, ["brotli"])
+
+    def test_bootstrap_variant_must_break_the_cycle(self):
+        # x drops z, which is not part of the cycle x <-> y
+        write_aport(self.root, "main", "x", makedepends="y z", extra='[ -n "$APORTS_BOOTSTRAP" ] && makedepends="y"')
+        write_aport(self.root, "main", "y", makedepends="x")
+        write_aport(self.root, "main", "z")
+        steps, cycles = mk.Aports(self.root).order({"x"})
+        self.assertEqual(len(cycles), 1)
+        self.assertEqual({s.stage for s in steps}, {""})
+
+    def test_two_pass_step_is_needed_until_the_rebuild_is_done(self):
+        write_aport(self.root, "main", "curl", makedepends="brotli", extra='[ -n "$APORTS_BOOTSTRAP" ] && makedepends=""')
+        write_aport(self.root, "main", "brotli", makedepends="cmake")
+        write_aport(self.root, "main", "cmake", makedepends="curl")
+        steps, _ = mk.Aports(self.root).order({"brotli"})
+        first, rebuild = steps[0], steps[3]
+        repo = self.root / "packages"
+        self.assertTrue(first.needed(repo, False))
+        self.assertTrue(rebuild.needed(repo, False))
+        apk = repo / "main" / mk.ARCH / "curl-1.0-r2.apk"
+        apk.parent.mkdir(parents=True)
+        apk.touch()
+        first.marker_path(repo).touch()  # the first pass has run
+        self.assertFalse(first.needed(repo, False))
+        self.assertTrue(rebuild.needed(repo, False))
+        first.marker_path(repo).unlink()  # the rebuild has run
+        self.assertFalse(rebuild.needed(repo, False))
+        self.assertTrue(rebuild.needed(repo, True))
 
     def test_unbuildable_arch_is_skipped(self):
         write_aport(self.root, "main", "ok")

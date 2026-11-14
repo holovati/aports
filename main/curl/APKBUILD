@@ -7,9 +7,19 @@ pkgdesc="URL retrival utility and library"
 url="https://curl.se/"
 arch="all"
 license="curl"
-depends="brotli ca-certificates nghttp2 zlib zstd"
+# brotli -> cmake -> curl -> brotli is a cycle. With APORTS_BOOTSTRAP set, curl is
+# built without brotli and nghttp2 first, and rebuilt in full once they exist.
+if [ -z "$APORTS_BOOTSTRAP" ]; then
+	_optdeps="brotli nghttp2"
+	_with="--with"
+else
+	_optdeps=""
+	_with="--without"
+fi
 
-depends_dev="brotli ca-certificates nghttp2 openssl zlib zstd"
+depends="$_optdeps ca-certificates zlib zstd"
+
+depends_dev="$_optdeps ca-certificates openssl zlib zstd"
 
 checkdepends="python3"
 
@@ -46,8 +56,8 @@ build() {
 		--disable-smb \
 		--disable-mqtt \
 		--without-libpsl \
-		--with-nghttp2 \
-		--with-brotli \
+		$_with-nghttp2 \
+		$_with-brotli \
 		--without-libssh2 # https://bugs.alpinelinux.org/issues/10222
 	make
 }
