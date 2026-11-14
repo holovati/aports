@@ -90,7 +90,18 @@ class Aport:
         return any((repodest / self.repo / d / f"{self.version}.apk").exists() for d in (ARCH, "noarch"))
 
 
-_FIELDS = ("pkgname", "pkgver", "pkgrel", "arch", "subpackages", "provides", "depends", "makedepends")
+_FIELDS = (
+    "pkgname",
+    "pkgver",
+    "pkgrel",
+    "arch",
+    "subpackages",
+    "provides",
+    "depends",
+    "makedepends",
+    "makedepends_build",
+    "makedepends_host",
+)
 
 
 def read_apkbuild(path: Path) -> Aport | None:
@@ -110,6 +121,9 @@ def read_apkbuild(path: Path) -> Aport | None:
     if len(lines) != len(_FIELDS) or not lines[0]:
         return None
     v = dict(zip(_FIELDS, lines))
+    # abuild 3.16 calcdeps() for a native build: `[ -z "$makedepends" ] && makedepends="$makedepends_build $makedepends_host"`,
+    # so the split variables only count when makedepends is empty.
+    makedepends = v["makedepends"].split() or (v["makedepends_build"].split() + v["makedepends_host"].split())
     return Aport(
         key=path.parent.name,
         repo=path.parent.parent.name,
@@ -121,7 +135,7 @@ def read_apkbuild(path: Path) -> Aport | None:
         subpackages=[s.split(":")[0] for s in v["subpackages"].split()],
         provides=dep_names(v["provides"].split()),
         depends=dep_names(v["depends"].split()),
-        makedepends=dep_names(v["makedepends"].split()),
+        makedepends=dep_names(makedepends),
     )
 
 

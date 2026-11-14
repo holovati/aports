@@ -7,7 +7,7 @@ url="https://xorg.freedesktop.org/"
 arch="all"
 license="MIT"
 options="!check"
-makedepends="libx11 util-macros"
+makedepends="libx11 meson util-macros"
 source="https://www.x.org/releases/individual/lib/libxkbfile-$pkgver.tar.xz"
 
 build() {

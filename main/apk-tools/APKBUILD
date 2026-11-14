@@ -25,20 +25,18 @@ depends="
 	musl
 	openssl
 	zlib
-	ninja
-	lua5.5
 	libapk=$pkgver-r$pkgrel
 	"
 _lua="5.5"
 
-makedepends_build="meson openssl-dev>=3.5 lua$_lua lua$_lua-lzlib scdoc"
+makedepends_build="meson ninja lua$_lua scdoc"
 
 makedepends_host="openssl zlib"
 
 checkdepends="cmocka-dev"
 if [ -z "$BOOTSTRAP" ]; then
 	subpackages="$subpackages lua$_lua-apk:luaapk py3-apk:pyapk"
-	makedepends_host="$makedepends_host lua$_lua-dev python3-dev"
+	makedepends_host="$makedepends_host lua$_lua python3"
 
 	# ca-certificates-bundle needed for https certificate validation
 	depends="$depends ca-certificates"

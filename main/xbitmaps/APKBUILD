@@ -7,7 +7,7 @@ url="https://xorg.freedesktop.org/"
 arch="noarch"
 license="MIT"
 options="!check"  # No test suite.
-depends="util-macros"
+makedepends="util-macros"
 source="https://www.x.org/releases/individual/data/xbitmaps-$pkgver.tar.xz"
 
 build() {

@@ -15,7 +15,7 @@ checkdepends="python3"
 
 makedepends_host="$depends_dev"
 
-makedepends_build="groff perl"
+makedepends_build="perl"
 
 subpackages="$pkgname-static $pkgname-doc"
 

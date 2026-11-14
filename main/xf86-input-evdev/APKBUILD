@@ -9,7 +9,7 @@ license="MIT"
 options="!check"
 subpackages="$pkgname-doc"
 
-makedepends="libxkbfile xorg-server libxrandr mtdev libevdev"
+makedepends="autoconf automake libtool util-macros libxkbfile xorg-server libxrandr mtdev libevdev"
 
 source="https://www.x.org/releases/individual/driver/$pkgname-$pkgver.tar.gz"
 

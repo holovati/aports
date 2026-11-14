@@ -66,6 +66,16 @@ class AportsTest(unittest.TestCase):
         self.assertEqual(len(order), 2)
         self.assertEqual(cycles, [])
 
+    def test_split_makedepends_only_count_when_makedepends_is_empty(self):
+        # abuild 3.16 calcdeps(): makedepends_build/host are used only if makedepends is empty
+        write_aport(self.root, "main", "split", extra='makedepends_build="tool"\nmakedepends_host="lib"')
+        write_aport(self.root, "main", "both", makedepends="lib", extra='makedepends_build="tool"')
+        write_aport(self.root, "main", "tool")
+        write_aport(self.root, "main", "lib")
+        aports = mk.Aports(self.root)
+        self.assertEqual(aports.items["split"].makedepends, ["tool", "lib"])
+        self.assertEqual(aports.items["both"].makedepends, ["lib"])
+
     def test_unbuildable_arch_is_skipped(self):
         write_aport(self.root, "main", "ok")
         d = self.root / "main" / "other"

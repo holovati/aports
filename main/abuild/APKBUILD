@@ -17,11 +17,9 @@ depends="apk-tools
 	pkgconf
 	scanelf
 	tar
-	scdoc
 	bc
-	help2man
 	"
-makedepends_build="pkgconfig scdoc"
+makedepends_build="pkgconfig scdoc help2man"
 
 makedepends_host="openssl zlib"
 
