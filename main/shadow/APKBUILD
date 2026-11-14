@@ -1,8 +1,8 @@
 # Maintainer Damir Holovati
 pkgname=shadow
 pkgver=4.20.3
-pkgrel=0
-pkgdesc="Login and password utilities (passwd, su, login, useradd, ...)"
+pkgrel=2
+pkgdesc="Login and password utilities (login, passwd, su, useradd, ...)"
 url="https://github.com/shadow-maint/shadow"
 arch="all"
 license="BSD-3-Clause"

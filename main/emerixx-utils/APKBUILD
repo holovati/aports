@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emerixx-utils
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="A stand-alone shell with many built-in commands"
 url="https://gitlab.com/holovati/emerixx-utils"
 arch="all"
@@ -21,6 +21,9 @@ build() {
 
 package() {
 	make DESTDIR="$pkgdir" BINDIR=/usr/bin install
+
+	# login is provided by the shadow package.
+	rm -f "$pkgdir"/usr/bin/login
 }
 
 sha512sums="

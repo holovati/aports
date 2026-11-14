@@ -2,7 +2,7 @@
 
 pkgname=util-linux
 pkgver=2.41.3
-pkgrel=0
+pkgrel=1
 pkgdesc="Random collection of Linux utilities"
 url="https://git.kernel.org/cgit/utils/util-linux/util-linux.git"
 arch="all"
@@ -66,7 +66,7 @@ prepare() {
 }
 
 build() {
-	# --disable-chfn-chsh - chfn and chsh are provided by shadow package
+	# --disable-chfn-chsh, --disable-newgrp - provided by the shadow package
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -74,7 +74,7 @@ build() {
 		--prefix=/usr \
 		--libdir=/usr/lib \
 		--disable-silent-rules \
-		--enable-newgrp \
+		--disable-newgrp \
 		--disable-nls \
 		--disable-kill \
 		--disable-chfn-chsh \
