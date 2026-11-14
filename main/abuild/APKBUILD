@@ -40,7 +40,8 @@ subpackages="
 
 options="suid !check"
 
-pkggroups="abuild"
+# No pkggroups: abuild's mkusers needs getent and abuild-addgroup, which the guest
+# does not have while abuild itself is being built, and nothing here is group-owned.
 
 source="https://gitlab.alpinelinux.org/alpine/abuild/-/archive/$pkgver/abuild-$pkgver.tar.gz
 	https://gitlab.alpinelinux.org/alpine/aports/-/raw/master/main/meson/abuild-meson
