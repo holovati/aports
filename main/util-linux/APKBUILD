@@ -17,8 +17,6 @@ makedepends_host="
 	"
 subpackages="$pkgname-doc"
 
-install="$pkgname-misc.post-upgrade"
-
 makedepends="$makedepends_build $makedepends_host"
 
 builddir="$srcdir/util-linux-$pkgver"
