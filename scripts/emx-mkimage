@@ -338,6 +338,23 @@ def build_deps(aports: Aports, aport: Aport) -> tuple[list[str], list[str]]:
     return found, unknown
 
 
+def force_remove(path: Path) -> None:
+    """rm -rf that retries and only warns when the tree cannot be removed completely."""
+    for _ in range(3):
+        if not os.path.lexists(path):
+            return
+        shutil.rmtree(path, ignore_errors=True)
+        if os.path.lexists(path):
+            subprocess.run(["rm", "-rf", str(path)], check=False, stderr=subprocess.DEVNULL)
+    if os.path.lexists(path):
+        print(f"warning: could not remove {path}, ignored", file=sys.stderr)
+
+
+def clean_build_dirs(aport: Aport) -> None:
+    for d in ("src", "pkg", "tmp"):
+        force_remove(aport.path / d)
+
+
 def build_packages(
     aports: Aports,
     todo: list[Aport],
@@ -360,12 +377,16 @@ def build_packages(
                 call(["apk", "add", "--virtual", virtual, *repo_args, *deps])
             except subprocess.CalledProcessError:
                 raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(deps)}")
+        clean_build_dirs(aport)
         try:
-            # -F: abuild refuses to run as root, -d: dependencies are installed above
-            call(["abuild", "-F", "-d", *abuild_flags], cwd=aport.path, env=env)
+            # -F: abuild refuses to run as root, -d: dependencies are installed above,
+            # -k: abuild does not clean up, its rm -rf aborts the build when a directory cannot be
+            # removed, emx-mkimage cleans up below and ignores failures
+            call(["abuild", "-F", "-d", "-k", *abuild_flags], cwd=aport.path, env=env)
         except subprocess.CalledProcessError:
             raise Error(f"build of {aport.key} failed, fix it and run again, finished packages are kept")
         finally:
+            clean_build_dirs(aport)
             if deps and not keep_deps:
                 subprocess.run(["apk", "del", virtual], check=False)
         if register_repos:
