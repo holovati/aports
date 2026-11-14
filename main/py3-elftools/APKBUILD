@@ -1,0 +1,36 @@
+# Maintainer Damir Holovati
+
+pkgname=py3-elftools
+_pkgname=pyelftools
+pkgver=0.33
+pkgrel=0
+pkgdesc="Pure Python library for parsing ELF and DWARF"
+url="https://github.com/eliben/pyelftools"
+arch="noarch"
+license="Unlicense"
+depends="python3"
+options="!check"
+
+source="$_pkgname-$pkgver.tar.gz::https://files.pythonhosted.org/packages/source/p/$_pkgname/$_pkgname-$pkgver.tar.gz"
+builddir="$srcdir/$_pkgname-$pkgver"
+
+build() {
+	# Pure Python, nothing to compile. setuptools and pip are not part of the base system, so the package is
+	# installed by copying the module into site-packages.
+	:
+}
+
+package() {
+	local sitedir
+	sitedir="$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib"))')"
+
+	mkdir -p "$pkgdir$sitedir"
+	cp -r "$builddir"/elftools "$pkgdir$sitedir"/
+
+	find "$pkgdir$sitedir"/elftools -name __pycache__ -type d -prune -exec rm -rf {} +
+
+	install -Dm644 "$builddir"/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+sha512sums="
+ee9ce022e42057477a26ce256e05774c23ea699a57a841d88266a96d708cfef4f9b97810070f7dbd3de7ff7dbbae277a749e2f65a4d511ebcd86f0f918557866  pyelftools-0.33.tar.gz
+"

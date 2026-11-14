@@ -1,0 +1,45 @@
+# Maintainer Damir Holovati
+
+pkgname=meson
+pkgver=1.12.1
+pkgrel=0
+pkgdesc="Fast and user friendly build system"
+url="https://mesonbuild.com"
+arch="noarch"
+license="Apache-2.0"
+depends="python3 ninja"
+options="!check"
+
+subpackages="$pkgname-doc"
+
+source="https://github.com/mesonbuild/meson/releases/download/$pkgver/meson-$pkgver.tar.gz"
+
+build() {
+	# Pure Python, nothing to compile. setuptools, wheel and installer are not part of the base system, so meson is installed by
+	# copying the package into site-packages and writing the same launcher the wheel would generate.
+	:
+}
+
+package() {
+	local sitedir
+	sitedir="$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib"))')"
+
+	mkdir -p "$pkgdir$sitedir"
+	cp -r "$builddir"/mesonbuild "$pkgdir$sitedir"/
+
+	find "$pkgdir$sitedir"/mesonbuild -name __pycache__ -type d -prune -exec rm -rf {} +
+
+	mkdir -p "$pkgdir"/usr/bin
+	cat > "$pkgdir"/usr/bin/meson <<-EOF
+	#!/usr/bin/python3
+	import sys
+	from mesonbuild.mesonmain import main
+	sys.exit(main())
+	EOF
+	chmod 755 "$pkgdir"/usr/bin/meson
+
+	install -Dm644 "$builddir"/man/meson.1 "$pkgdir"/usr/share/man/man1/meson.1
+}
+sha512sums="
+64c75f9e4165e35059d560c8bb1e13f61893e391396974bf7b8b229491cd712f81e69d8ccabc55e2b49b1268d957ac8d365c258fce3e2c65c7634d140612da02  meson-1.12.1.tar.gz
+"
