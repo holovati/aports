@@ -65,6 +65,19 @@ package() {
 
 	install -dm755 "$pkgdir"/var/empty
 
+	# Hardening drop-in. sshd keeps the first value it reads for a keyword, so the Include has to
+	# come before everything else in sshd_config.
+	install -dm755 "$pkgdir"/etc/ssh/sshd_config.d
+	cat > "$pkgdir"/etc/ssh/sshd_config.d/10-emerixx.conf <<-'EOF'
+		# Root can log in with a public key only, never with a password.
+		PermitRootLogin prohibit-password
+		# An empty password field must not let anybody in.
+		PermitEmptyPasswords no
+		PasswordAuthentication yes
+		KbdInteractiveAuthentication no
+	EOF
+	sed -i '1i Include /etc/ssh/sshd_config.d/*.conf\n' "$pkgdir"/etc/ssh/sshd_config
+
 	install -Dm644 LICENCE -t "$pkgdir"/usr/share/licenses/$pkgname/
 }
 
