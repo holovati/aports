@@ -88,6 +88,28 @@ nogroup:x:65533:
 nobody:x:65534:
 EOF
 
+        # Create /etc/shadow. Every account is locked for password logins ('*' never matches a crypt() hash).
+        # Unlike '!' it does not stop sshd from accepting public key logins. Set a hash by hand to enable passwords.
+        cat > "$builddir/etc/shadow" << 'EOF'
+root:*:20000:0:99999:7:::
+bin:*:20000:0:99999:7:::
+daemon:*:20000:0:99999:7:::
+lp:*:20000:0:99999:7:::
+sync:*:20000:0:99999:7:::
+shutdown:*:20000:0:99999:7:::
+halt:*:20000:0:99999:7:::
+mail:*:20000:0:99999:7:::
+news:*:20000:0:99999:7:::
+uucp:*:20000:0:99999:7:::
+cron:*:20000:0:99999:7:::
+ftp:*:20000:0:99999:7:::
+sshd:*:20000:0:99999:7:::
+games:*:20000:0:99999:7:::
+ntp:*:20000:0:99999:7:::
+guest:*:20000:0:99999:7:::
+nobody:*:20000:0:99999:7:::
+EOF
+
         # Create /etc/shells placeholder
         cat > "$builddir/etc/shells" << 'EOF'
 # /etc/shells: valid login shells
@@ -282,6 +304,8 @@ package() {
         install -m 644 "$builddir/etc/fstab"       "$pkgdir/etc/fstab"
         install -m 644 "$builddir/etc/passwd"      "$pkgdir/etc/passwd"
         install -m 644 "$builddir/etc/group"       "$pkgdir/etc/group"
+        install -m 640 "$builddir/etc/shadow"      "$pkgdir/etc/shadow"
+        chown 0:42 "$pkgdir/etc/shadow" # root:shadow
         install -m 644 "$builddir/etc/shells"      "$pkgdir/etc/shells"
         install -m 644 "$builddir/etc/hostname"    "$pkgdir/etc/hostname"
         install -m 644 "$builddir/etc/hosts"       "$pkgdir/etc/hosts"
