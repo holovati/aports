@@ -45,7 +45,7 @@ packages = [
     "openssh",
     "curl",
     "wget",
-    "vim",
+    "vi",
 ]
 
 [builder]

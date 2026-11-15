@@ -8,6 +8,11 @@ arch="all"
 license="Vim"
 depends="ncurses font-dejavu gtk3"
 makedepends="gtk3 ncurses libx11 libxt libsm libice pkgconf"
+# Same sources as the vi package, which is the terminal-only edition. This package
+# replaces it: it provides vi and may overwrite its files.
+provides="vi=$pkgver-r$pkgrel"
+provider_priority=100
+replaces="vi"
 subpackages="$pkgname-doc"
 options="!check" # the test suite needs a pty, a display and a lot of tooling
 source="$pkgname-$pkgver.tar.gz::https://github.com/vim/vim/archive/refs/tags/v$pkgver.tar.gz"
@@ -50,6 +55,11 @@ package() {
 	# make install links gvim to vim only when the GTK GUI was built; fail
 	# otherwise, so a silent fallback to a console-only vim is noticed.
 	test -e "$pkgdir"/usr/bin/gvim
+}
+
+doc() {
+	replaces="vi-doc"
+	default_doc
 }
 
 sha512sums="
