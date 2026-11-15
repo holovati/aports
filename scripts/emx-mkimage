@@ -546,7 +546,13 @@ def build_packages(
             try:
                 call(["apk", "add", "--verbose", "--upgrade", "--virtual", virtual, *repo_args, *missing])
             except subprocess.CalledProcessError:
-                raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(missing)}")
+                # apk exits non-zero on every transaction while the database records a broken
+                # package ("1 error; N packages"), so only a dependency that is still missing is fatal.
+                still = stale_deps(aports, deps)
+                if still:
+                    raise Error(f"cannot install the build dependencies of {aport.key}: {' '.join(still)}")
+                print(f"warning: apk reported errors installing the build dependencies of {aport.key}, "
+                      "they are installed, continuing", file=sys.stderr)
         clean_build_dirs(aport)
         try:
             # -F: abuild refuses to run as root, -d: dependencies are installed above,
