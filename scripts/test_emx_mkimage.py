@@ -216,14 +216,22 @@ class FirstBootTest(unittest.TestCase):
                 self.assertEqual((root / name).readlink(), Path(f"usr/{name}"))
             mk.seed_usr_merge(root)  # idempotent
 
-    def test_dev_nodes_are_seeded_with_host_numbers(self):
+    def test_dev_nodes_copy_the_numbers_of_the_running_system(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            with mock.patch.object(mk.os, "mknod") as mknod, mock.patch.object(mk.os, "chmod"):
+            fake = mock.Mock(st_rdev=mk.os.makedev(2, 2))  # emerixx numbers, not Linux ones
+            real_stat = mk.os.stat
+
+            def stat(path, *a, **kw):
+                return fake if str(path).startswith("/dev/") else real_stat(path, *a, **kw)
+
+            with mock.patch.object(mk.os, "stat", side_effect=stat), mock.patch.object(
+                mk.os, "mknod"
+            ) as mknod, mock.patch.object(mk.os, "chmod"):
                 mk.seed_dev_nodes(root)
-            made = {Path(c.args[0]).name: mk.os.major(c.args[2]) for c in mknod.call_args_list}
+            made = {Path(c.args[0]).name: c.args[2] for c in mknod.call_args_list}
             self.assertEqual(set(made), {"null", "zero", "random", "urandom"})
-            self.assertEqual(set(made.values()), {1})
+            self.assertEqual(set(made.values()), {mk.os.makedev(2, 2)})
             self.assertTrue(all(c.args[1] & mk.stat.S_IFCHR for c in mknod.call_args_list))
             (root / "dev/null").write_text("")  # a regular file is not ours to remove
             mk.remove_dev_nodes(root)

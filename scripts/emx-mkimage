@@ -641,23 +641,28 @@ def install_root(root: Path, args, plan: Plan, public_keys: list[Path]) -> None:
             raise Error(f"{need} is missing from the root, kernel and emerixx-loader must be installed")
 
 
-# Host device numbers, only used while apk runs install scripts. The image gets no device
-# nodes from here, emerixx has its own numbers and devtmpfs.
-HOST_DEV_NODES = {"null": (1, 3), "zero": (1, 5), "random": (1, 8), "urandom": (1, 9)}
+# Install scripts run on the kernel that runs emx-mkimage (emerixx on the builder, Linux on a
+# Fedora host), so the nodes copy the numbers of this system's own /dev. They only exist while
+# apk runs, the image gets its /dev from devtmpfs.
+SCRIPT_DEV_NODES = ("null", "zero", "random", "urandom")
 
 
 def seed_dev_nodes(root: Path) -> None:
     dev = root / "dev"
     dev.mkdir(parents=True, exist_ok=True)
-    for name, (major, minor) in HOST_DEV_NODES.items():
+    for name in SCRIPT_DEV_NODES:
         node = dev / name
+        try:
+            rdev = os.stat(f"/dev/{name}").st_rdev
+        except FileNotFoundError:
+            continue
         if not node.exists():
-            os.mknod(node, 0o666 | stat.S_IFCHR, os.makedev(major, minor))
+            os.mknod(node, 0o666 | stat.S_IFCHR, rdev)
             os.chmod(node, 0o666)
 
 
 def remove_dev_nodes(root: Path) -> None:
-    for name in HOST_DEV_NODES:
+    for name in SCRIPT_DEV_NODES:
         node = root / "dev" / name
         if node.is_char_device():
             node.unlink()
