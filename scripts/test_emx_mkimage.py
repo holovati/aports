@@ -197,6 +197,16 @@ class ProfileTest(unittest.TestCase):
 
 
 class FirstBootTest(unittest.TestCase):
+    def test_esp_gets_512_byte_clusters(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "root"
+            (root / "boot/efi").mkdir(parents=True)
+            with mock.patch.object(mk, "call") as call:
+                mk.write_disk(root, Path(tmp) / "x.img", 64, 1 << 20)
+            mkfs = next(c.args[0] for c in call.call_args_list if c.args[0][0] == "mkfs.vfat")
+            self.assertEqual(mkfs[mkfs.index("-s") + 1], "1")
+            self.assertEqual(mkfs[mkfs.index("-S") + 1], "512")
+
     def test_usr_layout_is_seeded_before_install(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
