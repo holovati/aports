@@ -621,11 +621,23 @@ def install_root(root: Path, args, plan: Plan, public_keys: list[Path]) -> None:
     cmd = ["apk", "--root", root, "--initdb"]
     if args.untrusted:
         cmd.append("--allow-untrusted")
+    # apk runs install scripts chrooted into the new root. #!/bin/sh and the dynamic loader
+    # in /lib only resolve once /bin and /lib point into /usr, which emx-baselayout would
+    # create too late (abuild's pre-install runs before it is unpacked).
+    seed_usr_merge(root)
     call([*cmd, "add", *plan.install])
 
     for need in ("boot/efi/kernel.elf", "boot/efi/EFI/BOOT/BOOTX64.EFI"):
         if not (root / need).is_file():
             raise Error(f"{need} is missing from the root, kernel and emerixx-loader must be installed")
+
+
+def seed_usr_merge(root: Path) -> None:
+    """Create the /usr layout and the /bin, /sbin, /lib symlinks before packages are installed."""
+    for name in ("bin", "sbin", "lib"):
+        (root / "usr" / name).mkdir(parents=True, exist_ok=True)
+        if not (root / name).exists() and not (root / name).is_symlink():
+            (root / name).symlink_to(f"usr/{name}")
 
 
 def merge_usr(root: Path) -> None:

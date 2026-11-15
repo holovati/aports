@@ -197,6 +197,15 @@ class ProfileTest(unittest.TestCase):
 
 
 class FirstBootTest(unittest.TestCase):
+    def test_usr_layout_is_seeded_before_install(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mk.seed_usr_merge(root)
+            for name in ("bin", "sbin", "lib"):
+                self.assertTrue((root / "usr" / name).is_dir())
+                self.assertEqual((root / name).readlink(), Path(f"usr/{name}"))
+            mk.seed_usr_merge(root)  # idempotent
+
     def test_builder_writes_first_boot_build(self):
         import types
 
