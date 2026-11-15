@@ -51,7 +51,6 @@ packages = [
 [builder]
 description = "Toolchain and the aports tree, builds every package itself on first boot and hosts the result"
 extends = "base"
-all_makedepends = true
 ship_aports = true
 first_boot_build = true
 serve_port = 8080
