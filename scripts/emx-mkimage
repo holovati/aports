@@ -463,7 +463,15 @@ def build_deps(aports: Aports, aport: Aport) -> tuple[list[str], list[str]]:
     for name in aport.makedepends:
         if name not in aports.owner:
             unknown.append(name)
-        elif aports.owner[name] != aport.key and name not in found:
+            continue
+        owner = aports.items[aports.owner[name]]
+        if owner.key == aport.key:
+            continue
+        # A name that is only provided (libjpeg by libjpeg-turbo) is installed as the real package:
+        # apk refuses a virtual with several or no obvious providers.
+        if name != owner.pkgname and name not in owner.subpackages:
+            name = owner.pkgname
+        if name not in found:
             found.append(name)
     return found, unknown
 

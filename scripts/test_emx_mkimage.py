@@ -163,6 +163,14 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(found, ["dep-dev"])
         self.assertEqual(unknown, ["linux-headers"])
 
+    def test_build_deps_provided_name_becomes_the_real_package(self):
+        write_aport(self.root, "main", "jpeg-turbo", extra='provides="libjpeg"')
+        write_aport(self.root, "main", "tiffish", makedepends="libjpeg dep")
+        aports = mk.Aports(self.root)
+        found, unknown = mk.build_deps(aports, aports.items["tiffish"])
+        self.assertEqual(found, ["jpeg-turbo", "dep"])
+        self.assertEqual(unknown, [])
+
     def test_stale_deps_reinstalls_other_versions(self):
         aports = mk.Aports(self.root)
         want = aports.items["dev-owner"]
