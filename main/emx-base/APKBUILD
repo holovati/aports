@@ -8,7 +8,15 @@ arch="noarch"
 license="MIT"
 options="!check"
 
-depends="emx-baselayout sysvinit util-linux apk-tools sash coreutils bash readline emerixx-utils inetutils ca-certificates nano"
+# What the system needs to boot, log in and manage packages. Anything the user may want to
+# swap or remove (editors, pagers, network tools) belongs in the image profile instead.
+depends="
+	emx-baselayout sysvinit util-linux apk-tools sash coreutils bash readline
+	emerixx-utils inetutils ca-certificates
+	mingetty shadow
+	findutils grep sed gawk gzip tar diffutils
+	ncurses psmisc e2fsprogs
+	"
 
 package() {
     mkdir -p "$pkgdir"

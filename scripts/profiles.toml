@@ -19,33 +19,23 @@
 [base]
 description = "Boots to a login prompt. Debian netinst equivalent, apk add whatever else you need"
 packages = [
-    "emx-base",         # baselayout, sysvinit, util-linux, apk-tools, coreutils, bash, inetutils, nano ...
+    "emx-base",         # the system itself: baselayout, init, login, apk, core userland
     "kernel",
     "emerixx-loader",
-    "mingetty",
-    "shadow",
-    "findutils",
-    "grep",
-    "sed",
-    "gzip",
-    "tar",
-    "diffutils",
+    # Choices and extras the user can apk del
+    "nano",
+    "vi",
+    "less",
+    "file",
     "bzip2",
     "xz",
     "zstd",
     "unzip",
-    "less",
-    "file",
-    "gawk",
     "perl",
-    "ncurses",
-    "psmisc",
-    "e2fsprogs",
     "fuse3",
     "openssh",
     "curl",
     "wget",
-    "vi",
 ]
 
 [builder]
