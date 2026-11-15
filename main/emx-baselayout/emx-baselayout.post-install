@@ -44,7 +44,7 @@ makedev "random"  c 2 3 644
 makedev "urandom" c 2 4 644
 makedev "ptmx"    c 18 0
 makedev "fb0"     c 23 0
-makedev "fuse"    c 10 229
+makedev "fuse"    c 50 1
 
 makedev "sda"     b 13 0
 makedev "sda1"    b 13 1
