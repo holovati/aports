@@ -23,7 +23,6 @@ import os
 import re
 import shlex
 import shutil
-import stat
 import subprocess
 import sys
 import tempfile
@@ -622,50 +621,20 @@ def install_root(root: Path, args, plan: Plan, public_keys: list[Path]) -> None:
     cmd = ["apk", "--root", root, "--initdb"]
     if args.untrusted:
         cmd.append("--allow-untrusted")
-    # apk runs install scripts chrooted into the new root. #!/bin/sh and the
-    # dynamic loader in /lib only resolve once /bin and /lib point into /usr, and scripts
-    # redirect to /dev/null. Neither exists in an empty root.
+    # apk runs install scripts chrooted into the new root. #!/bin/sh and the dynamic loader in
+    # /lib only resolve once /bin and /lib point into /usr, which nothing has created yet in an
+    # empty root.
     seed_usr_merge(root)
-    seed_dev_nodes(root)
-    try:
-        # apk orders packages by dependencies only, so emx-baselayout (/etc/passwd, /etc/group,
-        # ...) must be its own transaction to be there before any other install script runs.
-        if "emx-baselayout" in plan.install or "emx-base" in plan.install:
-            call([*cmd, "add", "emx-baselayout"])
-        call([*cmd, "add", *plan.install])
-    finally:
-        remove_dev_nodes(root)
+    # apk orders packages by dependencies only. emx-baselayout is its own transaction so that its
+    # post-install script has created /dev/null and the other device nodes (and /etc/passwd, ...)
+    # before the install script of any other package runs.
+    if "emx-baselayout" in plan.install or "emx-base" in plan.install:
+        call([*cmd, "add", "emx-baselayout"])
+    call([*cmd, "add", *plan.install])
 
     for need in ("boot/efi/kernel.elf", "boot/efi/EFI/BOOT/BOOTX64.EFI"):
         if not (root / need).is_file():
             raise Error(f"{need} is missing from the root, kernel and emerixx-loader must be installed")
-
-
-# Install scripts run on the kernel that runs emx-mkimage and need /dev/null and friends in the
-# new root, so the nodes copy the device numbers of this system's own /dev. They are removed
-# again after apk is done, nothing here puts device nodes into the image.
-SCRIPT_DEV_NODES = ("null", "zero", "random", "urandom")
-
-
-def seed_dev_nodes(root: Path) -> None:
-    dev = root / "dev"
-    dev.mkdir(parents=True, exist_ok=True)
-    for name in SCRIPT_DEV_NODES:
-        node = dev / name
-        try:
-            rdev = os.stat(f"/dev/{name}").st_rdev
-        except FileNotFoundError:
-            continue
-        if not node.exists():
-            os.mknod(node, 0o666 | stat.S_IFCHR, rdev)
-            os.chmod(node, 0o666)
-
-
-def remove_dev_nodes(root: Path) -> None:
-    for name in SCRIPT_DEV_NODES:
-        node = root / "dev" / name
-        if node.is_char_device():
-            node.unlink()
 
 
 def seed_usr_merge(root: Path) -> None:

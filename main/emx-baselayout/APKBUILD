@@ -1,17 +1,20 @@
 # Maintainer Damir Holovati
 pkgname=emx-baselayout
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
 url="https://www.github.com/holovati/emx"
 arch="noarch"
 license="MIT"
 options="!check !fhs keepdirs !usrmerge"
+# The post-install script creates the device nodes with bash and mknod, so a fresh install
+# needs both unpacked first.
+depends="bash coreutils"
+install="$pkgname.post-install"
 
 builddir="$srcdir/$pkgname"
 
-source="emx-devnodes.post-install
-	inittab
+source="inittab
 	rc.sysinit
 	000-disk-cleanup.sh
 	050-network.sh
@@ -331,7 +334,6 @@ package() {
 }
 
 sha512sums="
-0f5051d1d61b6feb0699786dc6fec850d94764fe43e05e5dee86bbde555a065f4d6e48e06f31ea8d61da21511e6c376c52146f941d9d1618455b02b133cd7edb  emx-devnodes.post-install
 69300ef15f752e63737d6d0cf9ae281cb334db246118799f0c099ee80f09490b70f2888bb30f5af4345e51df2bc0fcc5e60e4a8859c5790a55c15ff1d100a047  inittab
 58bd29ef73687fee88d789c3149b21ee2aa2b5333d1a631c054a904e4f81254a553d6d5f3e510e9f17c8a3522e247a1138d07cf328070a73c358635b82c26fc3  rc.sysinit
 fb046bb453941c64a424916441e64ece3cc0f901b1a4383083466174688ae36e7dc786f5999e4c4694214a7d099fd612992c2876a30d77a04d17460d5a0d887e  000-disk-cleanup.sh
