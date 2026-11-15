@@ -9,7 +9,7 @@ license="MIT"
 options="!check"  # Requires CONFIG_INPUT_UINPUT in kernel
 subpackages="$pkgname-doc"
 #doxygen
-makedepends=" meson python3"
+makedepends=" meson python3 kernel-headers"
 
 source="https://www.freedesktop.org/software/libevdev/libevdev-$pkgver.tar.xz"
 
