@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emerixx-utils
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="A stand-alone shell with many built-in commands"
 url="https://gitlab.com/holovati/emerixx-utils"
 arch="all"
