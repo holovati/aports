@@ -2,7 +2,7 @@
 
 pkgname=gcc
 pkgver=15.2.0
-pkgrel=0
+pkgrel=1
 pkgdesc="The GNU Compiler Collection"
 url="https://gcc.gnu.org/"
 arch="x86_64"
@@ -10,9 +10,11 @@ license="GPL-3.0-or-later WITH GCC-exception-3.1"
 depends="binutils libc-dev"
 makedepends="gmp mpfr mpc zlib zstd flex bison"
 
-subpackages="$pkgname-doc"
+# libgcc and libstdc++ are the runtime libraries every C/C++ program needs, they must be
+# installable without the compiler
+subpackages="$pkgname-doc libgcc libstdc++:libstdcxx"
 
-depends="binutils gmp mpfr mpc zlib zstd"
+depends="binutils gmp mpfr mpc zlib zstd libgcc libstdc++"
 
 source="
 	gcc-$pkgver.tar.gz::https://mirrors.dotsrc.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.gz
@@ -83,6 +85,18 @@ package() {
 
 	ln -sf gcc "$pkgdir"/usr/bin/cc
 	ln -sf g++ "$pkgdir"/usr/bin/c++
+}
+
+libgcc() {
+	pkgdesc="GCC shared runtime library"
+	depends=""
+	amove usr/lib/libgcc_s.so.*
+}
+
+libstdcxx() {
+	pkgdesc="GNU C++ standard library"
+	depends=""
+	amove usr/lib/libstdc++.so.*
 }
 
 sha512sums="
