@@ -68,7 +68,7 @@ Keys of a profile:
 | `all_makedepends` | also install the makedepends of every aport (a machine that can build everything) |
 | `ship_aports` | copy this checkout to `/root/aports` |
 | `rebuild_script` | install `/usr/local/bin/emx-rebuild-all`, which builds every aport in the foreground. Nothing builds by itself, the image contains no `.apk` files |
-| `serve_port` | serve `/root/packages` over HTTP on this port at boot (needs `python3`) |
+| `serve_port` | install `/usr/local/bin/emx-repohost`, which serves `/root/packages` over HTTP on this port when you run it (needs `python3`). Nothing starts at boot |
 
 Every name in `packages` must have an APKBUILD in this tree. The `kernel` and `emerixx-loader`
 packages put `kernel.elf` and `BOOTX64.EFI` on the ESP, an image without them is refused.
@@ -262,8 +262,9 @@ The `builder` profile is an image that builds the whole distribution itself, wit
    in `/root/aports/scripts`. It builds every aport and adds each finished repository to
    `/etc/apk/repositories`. To keep a log: `emx-rebuild-all 2>&1 | tee /var/log/rebuild-all.log`.
 
-4. `/etc/rc.d/090-repohost.sh` serves `/root/packages` on port 8080, so other machines can use it
-   as an apk repository (`http://builder:8080/main`).
+4. Run `emx-repohost` to serve `/root/packages` on port 8080, so other machines can use it as an
+   apk repository (`http://builder:8080/main`). It runs in the foreground, stop it with Ctrl-C or
+   start it with `emx-repohost &`. Optional arguments: `emx-repohost [port] [directory]`.
 
 If a package fails, abuild's error is the last thing on the terminal. Fix it in the aports tree,
 `git pull` in `/root/aports` (or edit it there) and run `emx-rebuild-all` again, it only builds

@@ -705,15 +705,21 @@ def configure_root(root: Path, args, profile: Profile) -> None:
     (root / "etc/apk/repositories").write_text("".join(f"{r}\n" for r in repos))
 
     if profile.serve_port:
-        rc = root / "etc/rc.d/090-repohost.sh"
-        rc.parent.mkdir(parents=True, exist_ok=True)
-        rc.write_text(
+        # Nothing starts at boot. The user runs this by hand, in the foreground, like emx-rebuild-all.
+        script = root / "usr/local/bin/emx-repohost"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(
             "#!/bin/sh\n"
-            f'run "Package host on port {profile.serve_port}" sh -c '
-            f"'mkdir -p /root/packages && python3 -m http.server {profile.serve_port} --directory /root/packages "
-            ">>/var/log/repohost.log 2>&1 &'\n"
+            "# Serve /root/packages over HTTP so other machines can use it as an apk repository.\n"
+            "#   emx-repohost [port] [directory]\n"
+            "# Runs in the foreground, stop it with Ctrl-C. To keep it running: emx-repohost &\n"
+            f"port=${{1:-{profile.serve_port}}}\n"
+            "dir=${2:-/root/packages}\n"
+            'mkdir -p "$dir" || exit 1\n'
+            'echo "Serving $dir on port $port"\n'
+            'exec python3 -m http.server "$port" --directory "$dir"\n'
         )
-        rc.chmod(0o755)
+        script.chmod(0o755)
 
     if profile.rebuild_script:
         # The image has the toolchain and the aports tree but no .apk files. Nothing builds by

@@ -245,7 +245,10 @@ class FirstBootTest(unittest.TestCase):
             self.assertNotIn("&\n", script)  # foreground, nothing in the background
             self.assertTrue(path.stat().st_mode & 0o111)
             self.assertFalse(list((root / "etc/rc.d").glob("*build*")))
-            self.assertTrue((root / "etc/rc.d/090-repohost.sh").exists())
+            self.assertFalse((root / "etc/rc.d/090-repohost.sh").exists())
+            host = (root / "usr/local/bin/emx-repohost")
+            self.assertIn("port=${1:-8080}", host.read_text())
+            self.assertTrue(host.stat().st_mode & 0o111)
             self.assertEqual((root / "etc/apk/repositories").read_text(), "")
 
     def test_base_has_no_rebuild_script(self):
