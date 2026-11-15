@@ -33,6 +33,7 @@ makedepends="
 	libx11
 	libxau
 	libxcb
+	libxcvt
 	libxdmcp
 	libxfont2
 	libxkbfile
