@@ -326,7 +326,8 @@ class Profile:
     all_makedepends: bool = False
     ship_aports: bool = False
     serve_port: int = 0
-    first_boot_build: bool = False
+    rebuild_script: bool = False
+
 
 def profile_names(path: Path = PROFILES_FILE) -> list[str]:
     return sorted(tomllib.loads(path.read_text()))
@@ -349,7 +350,7 @@ def load_profile(name: str, path: Path = PROFILES_FILE) -> Profile:
             all_makedepends=entry.get("all_makedepends", base.all_makedepends),
             ship_aports=entry.get("ship_aports", base.ship_aports),
             serve_port=entry.get("serve_port", base.serve_port),
-            first_boot_build=entry.get("first_boot_build", base.first_boot_build),
+            rebuild_script=entry.get("rebuild_script", base.rebuild_script),
         )
 
     return resolve(name, ())
@@ -685,7 +686,7 @@ def configure_root(root: Path, args, profile: Profile) -> None:
         (ssh / "authorized_keys").chmod(0o600)
 
     repos = list(args.image_repo)
-    if not repos and not profile.first_boot_build:
+    if not repos and not profile.rebuild_script:
         print("warning: the image has no apk repositories, point /etc/apk/repositories at one", file=sys.stderr)
     (root / "etc/apk/repositories").write_text("".join(f"{r}\n" for r in repos))
 
@@ -700,22 +701,29 @@ def configure_root(root: Path, args, profile: Profile) -> None:
         )
         rc.chmod(0o755)
 
-    if profile.first_boot_build:
-        # The image has the toolchain and the aports tree but no .apk files. On first boot it builds
-        # every package with that toolchain, in the background, and retries on every boot until it
-        # succeeded. Each finished repository is added to /etc/apk/repositories by --register-repos.
-        rc = root / "etc/rc.d/080-first-build.sh"
-        rc.parent.mkdir(parents=True, exist_ok=True)
-        rc.write_text(
+    if profile.rebuild_script:
+        # The image has the toolchain and the aports tree but no .apk files. Nothing builds by
+        # itself: the user runs this after logging in, in the foreground, with all output on the
+        # terminal. It only builds what is missing, so it can be run again after a failure.
+        # Each finished repository is added to /etc/apk/repositories by --register-repos.
+        script = root / "usr/local/bin/emx-rebuild-all"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(
             "#!/bin/sh\n"
-            "if [ ! -e /var/lib/emx/first-build-done ]; then\n"
-            "    mkdir -p /var/lib/emx\n"
-            '    run "Building every package in the background, log in /var/log/first-build.log" sh -c '
-            "'(HOME=/root /usr/bin/python3 /root/aports/scripts/emx-mkimage builder --build-all --no-image "
-            "--register-repos --keep-deps && touch /var/lib/emx/first-build-done) >>/var/log/first-build.log 2>&1 &'\n"
+            "# Build every package in /root/aports. Extra arguments go to emx-mkimage, for example\n"
+            "#   emx-rebuild-all --force      build everything again\n"
+            "#   emx-rebuild-all --dry-run    show what is left to build\n"
+            "#   emx-rebuild-all --pull       git pull --ff-only first\n"
+            "# To keep a log: emx-rebuild-all 2>&1 | tee /var/log/rebuild-all.log\n"
+            "if [ ! -d /root/aports/scripts ]; then\n"
+            "    echo 'emx-rebuild-all: /root/aports is missing' >&2\n"
+            "    exit 1\n"
             "fi\n"
+            "cd /root/aports/scripts || exit 1\n"
+            "HOME=/root exec python3 ./emx-mkimage builder --build-all --no-image --register-repos --keep-deps \"$@\"\n"
         )
-        rc.chmod(0o755)
+        script.chmod(0o755)
+
 
 def ship_content(root: Path, args, profile: Profile) -> None:
     """Copy the aports checkout into the image. Packages are never copied, the image builds them."""
@@ -810,7 +818,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--add", action="append", default=[], type=package_arg, metavar="PKG", help="install another package, repeatable")
     p.add_argument("--build-all", action="store_true", help="build every aport, not only what the profile needs")
     p.add_argument("--no-image", action="store_true", help="only build the packages, do not write an image")
-    p.add_argument("--register-repos", action="store_true", help="add each repository abuild fills to /etc/apk/repositories (used by the first boot build)")
+    p.add_argument("--register-repos", action="store_true", help="add each repository abuild fills to /etc/apk/repositories (used by emx-rebuild-all)")
     p.add_argument("--force", action="store_true", help="rebuild packages that already exist")
     p.add_argument("--abuild-flags", default="", help="extra abuild flags")
     p.add_argument("--keep-deps", action="store_true", help="do not uninstall the build dependencies after each package (the builder image keeps them)")

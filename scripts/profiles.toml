@@ -6,8 +6,9 @@
 #   packages         installed into the image (apk resolves the dependencies)
 #   all_makedepends  also install the makedepends of every aport (a machine that can build everything)
 #   ship_aports      copy this aports checkout to /root/aports
-#   first_boot_build on first boot build every aport with the toolchain installed in the image.
-#                    The image contains no .apk files, /root/packages starts empty
+#   rebuild_script   install /usr/local/bin/emx-rebuild-all, run it after logging in to build every
+#                    aport with the toolchain installed in the image, in the foreground. Nothing
+#                    builds by itself. The image contains no .apk files, /root/packages starts empty
 #   serve_port       serve /root/packages over HTTP on this port at boot (needs python3)
 
 # base: what Debian's netinst image gives you that aports already has. The user adds the rest
@@ -39,10 +40,10 @@ packages = [
 ]
 
 [builder]
-description = "Toolchain and the aports tree, builds every package itself on first boot and hosts the result"
+description = "Toolchain and the aports tree, run emx-rebuild-all to build every package and host the result"
 extends = "base"
 ship_aports = true
-first_boot_build = true
+rebuild_script = true
 serve_port = 8080
 packages = [
     "abuild",

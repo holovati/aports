@@ -56,7 +56,7 @@ Profiles are in `profiles.toml`.
 | Profile | What it is |
 | --- | --- |
 | `base` | Boots to a login prompt, about what Debian's netinst gives you. Add the rest with `apk add`. |
-| `builder` | `base` plus the toolchain and this aports tree in `/root/aports`. It builds every package itself on first boot and hosts the result. |
+| `builder` | `base` plus the toolchain and this aports tree in `/root/aports`. It does not build anything by itself, you run `emx-rebuild-all` after logging in. |
 
 Keys of a profile:
 
@@ -67,7 +67,7 @@ Keys of a profile:
 | `packages` | installed into the image, apk resolves their dependencies |
 | `all_makedepends` | also install the makedepends of every aport (a machine that can build everything) |
 | `ship_aports` | copy this checkout to `/root/aports` |
-| `first_boot_build` | build every aport on first boot, the image contains no `.apk` files |
+| `rebuild_script` | install `/usr/local/bin/emx-rebuild-all`, which builds every aport in the foreground. Nothing builds by itself, the image contains no `.apk` files |
 | `serve_port` | serve `/root/packages` over HTTP on this port at boot (needs `python3`) |
 
 Every name in `packages` must have an APKBUILD in this tree. The `kernel` and `emerixx-loader`
@@ -251,39 +251,31 @@ The `builder` profile is an image that builds the whole distribution itself, wit
    zstd -d builder.img.zst
    ```
 
-3. On the first boot `/etc/rc.d/080-first-build.sh` runs, in the background:
+3. Log in and run `emx-rebuild-all`. Nothing is built before that. It runs in the foreground and
+   prints everything abuild says:
 
    ```sh
-   emx-mkimage builder --build-all --no-image --register-repos --keep-deps
+   emx-rebuild-all
    ```
 
-   It builds every aport in `/root/aports` and adds each finished repository to
-   `/etc/apk/repositories`. The log is `/var/log/first-build.log`. A marker
-   `/var/lib/emx/first-build-done` is written when it succeeded, until then it is retried on every
-   boot. Follow it with:
-
-   ```sh
-   tail -f /var/log/first-build.log
-   ```
+   It is a wrapper for `emx-mkimage builder --build-all --no-image --register-repos --keep-deps`
+   in `/root/aports/scripts`. It builds every aport and adds each finished repository to
+   `/etc/apk/repositories`. To keep a log: `emx-rebuild-all 2>&1 | tee /var/log/rebuild-all.log`.
 
 4. `/etc/rc.d/090-repohost.sh` serves `/root/packages` on port 8080, so other machines can use it
    as an apk repository (`http://builder:8080/main`).
 
-If a package fails, the log says which one. Fix it in the aports tree, `git pull` in
-`/root/aports` (or edit it there) and run the build again by hand, it only builds what is missing:
-
-```sh
-cd /root/aports/scripts
-./emx-mkimage builder --build-all --no-image --register-repos --keep-deps
-```
+If a package fails, abuild's error is the last thing on the terminal. Fix it in the aports tree,
+`git pull` in `/root/aports` (or edit it there) and run `emx-rebuild-all` again, it only builds
+what is missing.
 
 Useful variations:
 
 ```sh
-./emx-mkimage builder --build-all --no-image --dry-run   # what is left to build
-./emx-mkimage builder --build-all --no-image --force     # build everything again
-./emx-mkimage builder --build-all --no-image --pull      # git pull --ff-only first
-./emx-mkimage builder --build-all --no-image --abuild-flags '-v'   # extra abuild flags
+emx-rebuild-all --dry-run                # what is left to build
+emx-rebuild-all --force                  # build everything again
+emx-rebuild-all --pull                   # git pull --ff-only first
+emx-rebuild-all --abuild-flags '-v'      # extra abuild flags
 ```
 
 ## Options

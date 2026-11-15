@@ -183,8 +183,8 @@ class ProfileTest(unittest.TestCase):
         base = mk.load_profile("base")
         builder = mk.load_profile("builder")
         self.assertTrue(set(base.packages) <= set(builder.packages))
-        self.assertTrue(builder.first_boot_build)
-        self.assertFalse(base.first_boot_build)
+        self.assertTrue(builder.rebuild_script)
+        self.assertFalse(base.rebuild_script)
 
     def test_unknown_profile(self):
         with self.assertRaises(mk.Error):
@@ -221,7 +221,7 @@ class FirstBootTest(unittest.TestCase):
                 self.assertEqual((root / name).readlink(), Path(f"usr/{name}"))
             mk.seed_usr_merge(root)  # idempotent
 
-    def test_builder_writes_first_boot_build(self):
+    def test_builder_writes_rebuild_script_and_no_autostart(self):
         import types
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -231,13 +231,16 @@ class FirstBootTest(unittest.TestCase):
                 hostname="h", dns=[], ip=None, root_password_hash=None, ssh_key=None, image_repo=[]
             )
             mk.configure_root(root, args, mk.load_profile("builder"))
-            script = (root / "etc/rc.d/080-first-build.sh").read_text()
+            path = root / "usr/local/bin/emx-rebuild-all"
+            script = path.read_text()
             self.assertIn("--build-all --no-image --register-repos --keep-deps", script)
-            self.assertIn("first-build-done", script)
+            self.assertNotIn("&\n", script)  # foreground, nothing in the background
+            self.assertTrue(path.stat().st_mode & 0o111)
+            self.assertFalse(list((root / "etc/rc.d").glob("*build*")))
             self.assertTrue((root / "etc/rc.d/090-repohost.sh").exists())
             self.assertEqual((root / "etc/apk/repositories").read_text(), "")
 
-    def test_base_has_no_first_boot_build(self):
+    def test_base_has_no_rebuild_script(self):
         import types
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -247,7 +250,7 @@ class FirstBootTest(unittest.TestCase):
                 hostname="h", dns=[], ip=None, root_password_hash=None, ssh_key=None, image_repo=[]
             )
             mk.configure_root(root, args, mk.load_profile("base"))
-            self.assertFalse((root / "etc/rc.d/080-first-build.sh").exists())
+            self.assertFalse((root / "usr/local/bin/emx-rebuild-all").exists())
 
 
 class ParseTest(unittest.TestCase):
