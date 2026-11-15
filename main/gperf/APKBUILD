@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=gperf
 pkgver=3.3
-pkgrel=0
+pkgrel=1
 pkgdesc="Perfect hash function generator."
 url="https://www.gnu.org/software/gperf/"
 arch="all"

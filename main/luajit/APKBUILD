@@ -4,7 +4,7 @@ pkgname=luajit
 # patch level is the commit timestamp (the .relver file of the archive).
 pkgver=2.1.1794386141
 _commit=63c8f1a9b479ba5518cf6a170ff7729178bc3cfd
-pkgrel=0
+pkgrel=1
 pkgdesc="Just-In-Time compiler for the Lua programming language"
 url="https://luajit.org/"
 arch="x86_64"

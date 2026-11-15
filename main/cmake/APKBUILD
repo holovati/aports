@@ -2,7 +2,7 @@
 
 pkgname=cmake
 pkgver=3.31.6
-pkgrel=0
+pkgrel=1
 pkgdesc="Cross-platform, open-source build system"
 url="https://cmake.org/"
 arch="x86_64"
