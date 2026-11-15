@@ -551,8 +551,11 @@ def build_packages(
             # served the image) makes apk fail even when nothing has to be downloaded.
             repo_args = ["--repositories-file", "/dev/null"]
             repo_args += [a for r in local_repos(repodest) for a in ("--repository", str(r))]
+            # --keep-deps: plain packages, a virtual package per aport stays in `apk list` for ever.
+            # Otherwise a virtual package, so that the dependencies are removed after the build.
+            virtual_args = [] if keep_deps else ["--virtual", virtual]
             try:
-                call(["apk", "add", "--verbose", "--upgrade", "--virtual", virtual, *repo_args, *missing])
+                call(["apk", "add", "--verbose", "--upgrade", *virtual_args, *repo_args, *missing])
             except subprocess.CalledProcessError:
                 # apk exits non-zero on every transaction while the database records a broken
                 # package ("1 error; N packages"), so only a dependency that is still missing is fatal.
