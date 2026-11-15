@@ -15,6 +15,7 @@ subpackages="$pkgname-doc"
 depends="
 	xkbcomp
 	xkeyboard-config
+	libxfont2
 	"
 
 #	libxcvt-dev
@@ -33,6 +34,7 @@ makedepends="
 	libxau
 	libxcb
 	libxdmcp
+	libxfont2
 	libxkbfile
 	libpciaccess
 	pixman
