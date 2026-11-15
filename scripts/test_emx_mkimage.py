@@ -206,6 +206,19 @@ class FirstBootTest(unittest.TestCase):
                 self.assertEqual((root / name).readlink(), Path(f"usr/{name}"))
             mk.seed_usr_merge(root)  # idempotent
 
+    def test_dev_nodes_are_seeded_with_host_numbers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(mk.os, "mknod") as mknod, mock.patch.object(mk.os, "chmod"):
+                mk.seed_dev_nodes(root)
+            made = {Path(c.args[0]).name: mk.os.major(c.args[2]) for c in mknod.call_args_list}
+            self.assertEqual(set(made), {"null", "zero", "random", "urandom"})
+            self.assertEqual(set(made.values()), {1})
+            self.assertTrue(all(c.args[1] & mk.stat.S_IFCHR for c in mknod.call_args_list))
+            (root / "dev/null").write_text("")  # a regular file is not ours to remove
+            mk.remove_dev_nodes(root)
+            self.assertTrue((root / "dev/null").exists())
+
     def test_builder_writes_first_boot_build(self):
         import types
 
