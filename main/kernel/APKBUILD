@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=kernel
 pkgver=0.1
-pkgrel=0
+pkgrel=1
 pkgdesc="emerixx kernel image (kernel.elf)"
 url="https://gitlab.com/holovati/emerixx"
 arch="x86_64"
@@ -9,7 +9,7 @@ license="MIT"
 makedepends="meson ninja python3 py3-elftools binutils cpio"
 options="!check !strip"
 
-_commit=71a73a3e213b467d227d11964204aaa68cc6038d
+_commit=c93b0a6d8e32b425197533925cc2784fcff86dd3
 _acpica=d7eadcdbd43dcfad33e997d50c7682ec30ecb911
 _lwip=d0efd9ef7ba08e54b46b1060e2b4629a4907391b
 
@@ -68,7 +68,7 @@ package() {
 }
 
 sha512sums="
-add2f7b56ff1ab4d0ea0b408b9094ff5bdd83cda05d910a493c44e722437fb60e4ff3772344a8deb619caaec706514eb15bbbbc311fcbb7819515513184e0bff  emerixx-$_commit.tar.gz
+b737fd586bcb0d8a08d83084bf8f323897c67ea2247d21faa81a70faa6727f99e98f758073093861a2daf78dceeb052f744d72ac89dfc3bb429b27f4e2486aa5  emerixx-$_commit.tar.gz
 67113c64b6593e43aa77dfde6907ab4870cf6d4be0a7cc799233ca3300d18d506ed73ba2c4b020e75079daa3afd267ecd7e40207ef3ab7fe4947356f6e4c30ff  rs64-acpica-$_acpica.tar.gz
 d34771bf6526a47e6727c686a044579510c4004c7b85cac8a63961037a8b20cc007a4fcf1bb47ee1680b103af5c26ae2cfac733b2505866d82baa5b4ef44425c  lwip-$_lwip.tar.gz
 "
