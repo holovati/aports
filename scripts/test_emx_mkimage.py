@@ -206,6 +206,11 @@ class FirstBootTest(unittest.TestCase):
             mkfs = next(c.args[0] for c in call.call_args_list if c.args[0][0] == "mkfs.vfat")
             self.assertEqual(mkfs[mkfs.index("-s") + 1], "1")
             self.assertEqual(mkfs[mkfs.index("-S") + 1], "512")
+            # a file of its own, so mkfs.fat does not look at the whole disk
+            self.assertNotIn("--offset", mkfs)
+            self.assertTrue(str(mkfs[-1]).endswith(".esp"))
+            self.assertFalse(Path(mkfs[-1]).exists())
+            self.assertEqual((Path(tmp) / "x.img").stat().st_size >= 64 * 2048 * 512, True)
 
     def test_usr_layout_is_seeded_before_install(self):
         with tempfile.TemporaryDirectory() as tmp:

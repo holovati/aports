@@ -747,12 +747,23 @@ def write_disk(root: Path, out: Path, esp_mb: int, root_bytes: int) -> None:
     )  # fmt: skip
 
     esp = root / "boot/efi"
-    # mkfs.fat sizes the clusters from the whole file, not from the block count given, so a 32G
-    # image gets 16K clusters and the 64M ESP ends up with 4092 of them. Firmware tells FAT12,
-    # FAT16 and FAT32 apart by the cluster count (FAT32 needs 65525), so it would not mount that.
-    # 512 byte clusters give about 129000.
-    call(["mkfs.vfat", "-F", "32", "-S", "512", "-s", "1", "-n", "EMXESP", "--offset", ESP_START, out, esp_mb * 1024])
-    call(["mcopy", "-i", f"{out}@@{ESP_START * 512}", "-s", "-o", *sorted(esp.iterdir()), "::/"])
+    # The ESP is built as a file of its own and copied into the disk. mkfs.fat with --offset
+    # looks at the whole disk file instead of the partition: it warns about a block count
+    # mismatch and sizes the clusters from the disk, so a 32G image gets 16K clusters and the 64M
+    # ESP ends up with 4092 of them. Firmware tells FAT12, FAT16 and FAT32 apart by the cluster
+    # count (FAT32 needs 65525), so it would not mount that. 512 byte clusters give about 129000.
+    esp_img = Path(f"{out}.esp")
+    esp_img.unlink(missing_ok=True)
+    with open(esp_img, "wb") as f:
+        f.truncate(esp_mb * 1024 * 1024)
+    try:
+        call(["mkfs.vfat", "-F", "32", "-S", "512", "-s", "1", "-n", "EMXESP", esp_img])
+        call(["mcopy", "-i", esp_img, "-s", "-o", *sorted(esp.iterdir()), "::/"])
+        with open(esp_img, "rb") as src, open(out, "r+b") as dst:
+            dst.seek(ESP_START * 512)
+            shutil.copyfileobj(src, dst, 1 << 20)
+    finally:
+        esp_img.unlink(missing_ok=True)
     for entry in list(esp.iterdir()):  # the ESP is a mount point inside the root
         shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
 

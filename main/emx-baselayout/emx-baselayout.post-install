@@ -2,12 +2,15 @@
 
 mkdir -p /dev/{pts,input}
 
-# Helper function
+# Helper function: makedev name type major minor [mode [owner:group]]
+# The modes are the ones of the hand built image that this package replaces.
 makedev() {
     name="$1"
     type="$2"
     major="$3"
     minor="$4"
+    mode="${5:-600}"
+    owner="${6:-0:0}"
     path="/dev/$name"
     
     # Force overwrite: delete if exists
@@ -16,19 +19,20 @@ makedev() {
     fi
 
     mknod "$path" "$type" "$major" "$minor"
-    chmod 600 "$path"
+    chmod "$mode" "$path"
+    chown "$owner" "$path"
 }
 
 # Emerixx Kernel specific device numbers
-makedev "console" c 0 1
+makedev "console" c 0 1 644
 
 # Active VT
-makedev "tty0"     c 0 0
+makedev "tty0"     c 0 0 644
 
 # VT's 
 makedev "tty1"     c 0 1
-makedev "tty2"     c 0 2
-makedev "tty3"     c 0 3
+makedev "tty2"     c 0 2 644
+makedev "tty3"     c 0 3 644
 makedev "tty4"     c 0 4
 
 # Controlling terminal
@@ -36,6 +40,8 @@ makedev "tty"     c 17 0
 
 makedev "null"    c 2 2
 makedev "zero"    c 2 12
+makedev "random"  c 2 3 644
+makedev "urandom" c 2 4 644
 makedev "ptmx"    c 18 0
 makedev "fb0"     c 23 0
 makedev "fuse"    c 10 229
@@ -44,11 +50,20 @@ makedev "sda"     b 13 0
 makedev "sda1"    b 13 1
 makedev "sda2"    b 13 2
 
-makedev "input/event0" c 16 0
-makedev "input/event1" c 16 1
+makedev "input/event0" c 16 0 644
+makedev "input/event1" c 16 1 644
 
+# devpts is mounted with gid=5,mode=620, the first two nodes of the old image looked like that
 for i in $(seq 0 16); do
-    makedev "pts/$i" c 19 "$i"
+    if [ "$i" -le 1 ]; then
+        makedev "pts/$i" c 19 "$i" 620 0:5
+    else
+        makedev "pts/$i" c 19 "$i"
+    fi
 done
 
 makedev "pts/ptmx" c 18 0
+
+# /dev/shm is a tmpfs mount point (see /etc/fstab)
+mkdir -p /dev/shm
+chmod 1777 /dev/shm

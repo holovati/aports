@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emx-baselayout
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
 url="https://www.github.com/holovati/emx"
 arch="noarch"
@@ -324,6 +324,10 @@ package() {
 
         # Skeleton files
         install -m 644 "$builddir/etc/skel/.profile" "$pkgdir/etc/skel/.profile"	
+
+        # The hand built image restricted the musl loader to /usr/lib
+        echo /usr/lib > "$pkgdir/etc/ld-musl-x86_64.path"
+        chmod 644 "$pkgdir/etc/ld-musl-x86_64.path"
 
         # Init: sysvinit runs rc.sysinit, which sources the executable /etc/rc.d/NNN-*.sh scripts
         install -m 644 "$srcdir/inittab"    "$pkgdir/etc/inittab"
