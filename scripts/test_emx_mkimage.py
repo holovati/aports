@@ -219,7 +219,7 @@ class FirstBootTest(unittest.TestCase):
     def test_dev_nodes_copy_the_numbers_of_the_running_system(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            fake = mock.Mock(st_rdev=mk.os.makedev(2, 2))  # emerixx numbers, not Linux ones
+            fake = mock.Mock(st_rdev=mk.os.makedev(2, 2))  # whatever the running kernel uses
             real_stat = mk.os.stat
 
             def stat(path, *a, **kw):
