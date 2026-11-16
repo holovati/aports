@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=kernel
 pkgver=0.1
-pkgrel=5
+pkgrel=6
 pkgdesc="emerixx kernel image (kernel.elf)"
 url="https://gitlab.com/holovati/emerixx"
 arch="x86_64"
@@ -34,7 +34,7 @@ build() {
 	# The kernel sets its own flags.
 	unset CFLAGS CXXFLAGS LDFLAGS
 
-	meson setup output
+	meson setup --buildtype=release output
 	ninja -C output kernel.stripped.elf
 }
 
