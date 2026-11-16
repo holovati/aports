@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=kernel
 pkgver=0.1
-pkgrel=3
+pkgrel=4
 pkgdesc="emerixx kernel image (kernel.elf)"
 url="https://gitlab.com/holovati/emerixx"
 arch="x86_64"
@@ -9,7 +9,7 @@ license="MIT"
 makedepends="meson ninja python3 py3-elftools binutils cpio"
 options="!check !strip"
 
-_commit=db40b667d149a1a6ee05dcbf7b3c9fb4bfb3b4c3
+_commit=561ec17814c792b71f2e1af004802cf3207a59df
 _acpica=d7eadcdbd43dcfad33e997d50c7682ec30ecb911
 _lwip=d0efd9ef7ba08e54b46b1060e2b4629a4907391b
 
