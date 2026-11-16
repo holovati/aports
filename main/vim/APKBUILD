@@ -1,32 +1,31 @@
 # Maintainer Damir Holovati
 pkgname=vim
 pkgver=9.2.1332
-pkgrel=0
-pkgdesc="Improved vi-style text editor, with a GTK3 GUI (gvim)"
+pkgrel=1
+pkgdesc="Improved vi-style text editor"
 url="https://www.vim.org"
 arch="all"
 license="Vim"
-depends="ncurses font-dejavu gtk3"
 makedepends="gtk3 ncurses libx11 libxt libsm libice pkgconf"
-# Same sources as the vi package, which is the terminal-only edition. This package
-# replaces it: it provides vi and may overwrite its files.
-provides="vi=$pkgver-r$pkgrel"
-provider_priority=100
-replaces="vi"
-subpackages="$pkgname-doc"
+# Same layout as Alpine: vim is the terminal-only build, gvim the GTK3 one. The files both
+# builds share (the runtime directory) are in vim-common, so gvim does not duplicate them.
+# gvim provides vim at a lower priority, so a plain "apk add vim" never pulls in GTK.
+subpackages="$pkgname-doc $pkgname-common::noarch xxd gvim"
 options="!check" # the test suite needs a pty, a display and a lot of tooling
 source="$pkgname-$pkgver.tar.gz::https://github.com/vim/vim/archive/refs/tags/v$pkgver.tar.gz"
 
-build() {
-	# vim shares the feature set between the terminal and GUI binaries, so
-	# one GUI-enabled "vim" is built. It still runs in a terminal when
-	# there is no DISPLAY; gvim, gview and gvimdiff are links to it.
+prepare() {
+	default_prepare
+
+	# The GUI edition is configured and built in a copy of the tree.
+	cp -RT "$builddir" "$builddir"-gvim
+}
+
+_build() {
 	./configure \
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--with-features=normal \
-		--enable-gui=gtk3 \
-		--with-x \
 		--enable-multibyte \
 		--disable-nls \
 		--disable-gpm \
@@ -43,18 +42,60 @@ build() {
 		--disable-tclinterp \
 		--disable-cscope \
 		--disable-darwin \
-		--disable-smack
+		--disable-smack \
+		"$@"
 	make
 }
 
+build() {
+	_build --without-x --enable-gui=no
+
+	cd "$builddir"-gvim
+	_build --with-x --enable-gui=gtk3
+}
+
 package() {
-	make DESTDIR="$pkgdir" install
+	depends="ncurses vim-common=$pkgver-r$pkgrel xxd=$pkgver-r$pkgrel"
+	provider_priority=10
+	# The vi package ships the same /usr/bin/vi, ex and view names.
+	replaces="vi gvim"
 
-	ln -sf vim "$pkgdir"/usr/bin/vi
+	make -j1 DESTDIR="$pkgdir" install
 
-	# make install links gvim to vim only when the GTK GUI was built; fail
-	# otherwise, so a silent fallback to a console-only vim is noticed.
-	test -e "$pkgdir"/usr/bin/gvim
+	# Only relevant to gvim.
+	rm -rf "$pkgdir"/usr/share/icons "$pkgdir"/usr/share/applications
+}
+
+common() {
+	pkgdesc="$pkgdesc (common files)"
+	replaces="vi vim gvim"
+
+	amove usr/share/vim
+}
+
+xxd() {
+	pkgdesc="Tool to make (or reverse) a hex dump"
+	depends=""
+	replaces="vi vim gvim"
+
+	amove usr/bin/xxd
+}
+
+gvim() {
+	pkgdesc="$pkgdesc (GTK3 GUI)"
+	depends="ncurses font-dejavu gtk3 vim-common=$pkgver-r$pkgrel xxd=$pkgver-r$pkgrel"
+	provides="vim=$pkgver-r$pkgrel"
+	provider_priority=1
+	replaces="vi vim"
+
+	make -C "$builddir"-gvim -j1 DESTDIR="$subpkgdir" install
+
+	# The terminal edition's package has these.
+	rm -f "$subpkgdir"/usr/bin/vimdiff "$subpkgdir"/usr/bin/vimtutor "$subpkgdir"/usr/bin/xxd
+	rm -rf "$subpkgdir"/usr/share/man "$subpkgdir"/usr/share/vim
+
+	# A silent fallback to a console-only build must not go unnoticed.
+	test -e "$subpkgdir"/usr/bin/gvim || return 1
 }
 
 doc() {

@@ -1,13 +1,16 @@
 # Maintainer Damir Holovati
 pkgname=vi
 pkgver=9.2.1332
-pkgrel=0
-pkgdesc="Vi-style text editor, terminal only (the vim package adds the GTK3 GUI and replaces this one)"
+pkgrel=1
+pkgdesc="Vi-style text editor, terminal only"
 url="https://www.vim.org"
 arch="all"
 license="Vim"
 depends="ncurses"
 makedepends="ncurses"
+# It ships the runtime files, xxd and vimtutor too, the same files the vim, vim-common and xxd
+# packages have. Either side may overwrite the other, whichever is installed second.
+replaces="vim vim-common xxd gvim"
 subpackages="$pkgname-doc"
 options="!check" # the test suite needs a pty and a lot of tooling
 source="vim-$pkgver.tar.gz::https://github.com/vim/vim/archive/refs/tags/v$pkgver.tar.gz"
@@ -51,6 +54,11 @@ package() {
 	mv vim vi
 	ln -s vi ex
 	ln -s vi view
+}
+
+doc() {
+	replaces="vim-doc"
+	default_doc
 }
 
 sha512sums="
