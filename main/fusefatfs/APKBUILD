@@ -1,0 +1,39 @@
+# Maintainer Damir Holovati
+pkgname=fusefatfs
+pkgver=0.4
+pkgrel=0
+pkgdesc="fuse/vuos module for fat (12/16/32/exfat)"
+url="https://github.com/virtualsquare/fusefatfs"
+arch="all"
+license="GPL-2.0"
+makedepends="cmake make fuse3"
+options="!check"
+
+subpackages="$pkgname-doc"
+
+_commit=7772cfb06bc8cf4dbc943ef673fcea263b8f6eb8
+
+source="$pkgname-$_commit.tar.gz::https://github.com/virtualsquare/fusefatfs/archive/$_commit.tar.gz
+	CMakeLists.txt
+	"
+
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+        cp "$srcdir/CMakeLists.txt" "$builddir/CMakeLists.txt"
+    
+	cmake -B build -S . -G "Unix Makefiles" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+sha512sums="
+84fcb64afd1fcfd5f1ae6fc36d40b038d3b93b0e48501813eaa0e1dcd2a0fa4b2879349de643d82a97836ab9eb006545c859429eb62f34a176d5b1e466fc5623  fusefatfs-7772cfb06bc8cf4dbc943ef673fcea263b8f6eb8.tar.gz
+27fd6c6fc0572ecad982ae55c66d1bd641690ed081b5c7f2e885bcf78660c7f553d60b9f51178b24b1390ef290a01e7068d5dbbf43831636434283dcf06276a6  CMakeLists.txt
+"
