@@ -1,14 +1,15 @@
 # Maintainer Damir Holovati
 pkgname=e2fsprogs
 pkgver=1.47.4
-pkgrel=1
+pkgrel=2
 pkgdesc="Standard Ext2/3/4 filesystem utilities"
 url="https://e2fsprogs.sourceforge.net/"
 arch="all"
 license="GPL-2.0-or-later AND LGPL-2.0-or-later AND BSD-3-Clause AND MIT"
 options="!check"
-# linux-headers
+
 makedepends="util-linux gawk fuse3"
+
 checkdepends="diffutils perl coreutils"
 
 subpackages="
@@ -16,11 +17,14 @@ subpackages="
 	fuse2fs-doc:fuse2fs_doc:noarch
 	$pkgname-doc
 	"
+
 source="$pkgname-$pkgver.tar.gz::https://github.com/tytso/e2fsprogs/archive/v$pkgver.tar.gz
 	always-build-static-fuse2fs.patch
 	"
 
 build() {
+	sed -i 's/-pg//g' "misc/Makefile.in"
+	
 	ac_cv_func_llistxattr=no \
 	ac_cv_header_sys_xattr_h=no \
 	./configure \
@@ -32,13 +36,10 @@ build() {
 		--localstatedir=/var \
 		--disable-nls \
 		--disable-fsck \
+		--disable-profile \
 		--disable-lto
 
-#		--disable-fsck \
-#		--disable-uuidd \
-#		--disable-libuuid \
-#		--disable-libblkid \
-	make
+	make -j1 all all-static
 }
 
 check() {
@@ -58,26 +59,14 @@ check() {
 }
 
 package() {
-	make -j1 DESTDIR="$pkgdir" install install-libs
-	rm "$pkgdir"/usr/sbin/logsave
-	rm "$pkgdir"/usr/share/man/man8/e2fsck.8
-	rm "$pkgdir"/usr/share/man/man8/fsck.ext2.8
-	rm "$pkgdir"/usr/share/man/man8/fsck.ext3.8
-	rm "$pkgdir"/usr/share/man/man8/mke2fs.8
-	rm "$pkgdir"/usr/share/man/man8/mkfs.ext2.8
-	rm "$pkgdir"/usr/share/man/man8/mkfs.ext3.8
-	rm "$pkgdir"/usr/share/man/man5/ext2.5
-	rm "$pkgdir"/usr/share/man/man5/ext3.5	
-	
-	#mkdir -p "$pkgdir"/sbin/
-	#local i; for i in e2fsck mke2fs mkfs.* fsck.*; do
-	#	mv "$pkgdir"/usr/sbin/$i "$pkgdir"/sbin/
-	#done
-	# overwrite busybox symlinks
-	#mkdir -p "$pkgdir"/bin/
-	#for i in chattr lsattr; do
-	#	mv "$pkgdir"/usr/bin/$i "$pkgdir"/bin/
-	#done
+	make DESTDIR="$pkgdir" install
+
+	install -m 0755 e2fsck/e2fsck.static "$pkgdir/usr/sbin"
+
+	for f in "$pkgdir"/usr/share/man/man*/*; do
+	    cp --remove-destination "$(readlink -f "$f")" "$f.tmp"
+	    mv "$f.tmp" "$f"
+	done
 }
 
 fuse2fs() {
