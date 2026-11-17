@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=e2fsprogs
 pkgver=1.47.4
-pkgrel=2
+pkgrel=3
 pkgdesc="Standard Ext2/3/4 filesystem utilities"
 url="https://e2fsprogs.sourceforge.net/"
 arch="all"
@@ -24,7 +24,7 @@ source="$pkgname-$pkgver.tar.gz::https://github.com/tytso/e2fsprogs/archive/v$pk
 
 build() {
 	sed -i 's/-pg//g' "misc/Makefile.in"
-	
+
 	ac_cv_func_llistxattr=no \
 	ac_cv_header_sys_xattr_h=no \
 	./configure \
@@ -62,6 +62,9 @@ package() {
 	make DESTDIR="$pkgdir" install
 
 	install -m 0755 e2fsck/e2fsck.static "$pkgdir/usr/sbin"
+
+	# conflict with sysvinit
+	rm "$pkgdir"/usr/sbin/logsave
 
 	for f in "$pkgdir"/usr/share/man/man*/*; do
 	    cp --remove-destination "$(readlink -f "$f")" "$f.tmp"

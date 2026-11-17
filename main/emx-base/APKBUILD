@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emx-base
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Meta package for EMX base system"
 url="https://www.github.com/holovati/emx"
 arch="noarch"
