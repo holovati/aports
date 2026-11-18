@@ -2,7 +2,7 @@
 
 pkgname=xorg-server
 pkgver=21.1.18
-pkgrel=6
+pkgrel=7
 pkgdesc="X.Org X Server"
 url="https://www.x.org/wiki"
 arch="all"
@@ -10,25 +10,20 @@ license="MIT"
 options="suid !check"
 subpackages="$pkgname-doc"
 
-#	font-cursor-misc
-#	font-misc-misc
 depends="
 	xkbcomp
 	xkeyboard-config
 	libxfont2
+	font-misc-misc
+	font-cursor-misc
 	"
 
-#	libxcvt-dev
-#	libxext-dev
 #	libxshmfence-dev
 #	nettle-dev
 #	wayland-dev
 #	wayland-protocols
-#	xcb-util-dev
-#	xcb-util-image-dev
-#	xcb-util-keysyms-dev
 #	xcb-util-renderutil-dev
-#	xcb-util-wm-dev
+
 makedepends="
 	libx11
 	libxau
@@ -38,6 +33,10 @@ makedepends="
 	libxfont2
 	libxkbfile
 	libpciaccess
+	xcb-util
+	xcb-util-wm
+	xcb-util-keysyms
+	xcb-util-image
 	pixman
 	xkbcomp
 	xorgproto
@@ -100,7 +99,7 @@ build() {
 			-Dxcsecurity=false \
 			-Dxselinux=false \
 			-Dxf86bigfont=false \
-			-Dmitshm=false \
+			-Dmitshm=true \
 			-Dlinux_apm=false \
 			-Dlinux_acpi=false \
 			-Dinput_thread=false \

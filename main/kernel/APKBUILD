@@ -6,7 +6,7 @@ pkgdesc="emerixx kernel image (kernel.elf)"
 url="https://gitlab.com/holovati/emerixx"
 arch="x86_64"
 license="MIT"
-makedepends="meson ninja python3 py3-elftools binutils cpio"
+makedepends="meson ninja python3 py3-elftools binutils cpio e2fsprogs fusefatfs"
 options="!check !strip"
 
 _commit=561ec17814c792b71f2e1af004802cf3207a59df
