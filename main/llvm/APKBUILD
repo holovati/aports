@@ -32,6 +32,7 @@ builddir="$srcdir/llvm-project-$pkgver.src"
 
 prepare() {
 	default_prepare
+	emerixx_prepare
 
 	# The Emerixx toolchain is a new file, not a patch to an existing one.
 	cp "$srcdir"/Emerixx.h "$builddir"/clang/lib/Driver/ToolChains/Emerixx.h
