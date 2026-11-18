@@ -1,0 +1,24 @@
+diff --git a/llvm/include/llvm/TargetParser/Triple.h b/llvm/include/llvm/TargetParser/Triple.h
+index c5af23252..3fb0fc089 100644
+--- a/llvm/include/llvm/TargetParser/Triple.h
++++ b/llvm/include/llvm/TargetParser/Triple.h
+@@ -349,7 +349,8 @@ public:
+     Firmware,
+     QURT,
+     H2,
+-    LastOSType = H2
++    Emerixx,
++    LastOSType = Emerixx
+   };
+   enum EnvironmentType {
+     UnknownEnvironment,
+@@ -861,6 +862,9 @@ public:
+   /// Tests whether the OS is H2.
+   bool isOSH2() const { return getOS() == Triple::H2; }
+ 
++  /// Tests whether the OS is Emerixx.
++  bool isOSEmerixx() const { return getOS() == Triple::Emerixx; }
++
+   /// Tests whether the OS uses the ELF binary format.
+   bool isOSBinFormatELF() const { return getObjectFormat() == Triple::ELF; }
+ 

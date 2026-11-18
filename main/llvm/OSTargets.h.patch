@@ -1,0 +1,48 @@
+diff --git a/clang/lib/Basic/Targets/OSTargets.h b/clang/lib/Basic/Targets/OSTargets.h
+index 7c4666606..e8d1601e5 100644
+--- a/clang/lib/Basic/Targets/OSTargets.h
++++ b/clang/lib/Basic/Targets/OSTargets.h
+@@ -1139,6 +1139,43 @@ public:
+   }
+ };
+ 
++// Emerixx target
++template <typename Target>
++class LLVM_LIBRARY_VISIBILITY EmerixxTargetInfo : public OSTargetInfo<Target> {
++protected:
++  void getOSDefines(const LangOptions &Opts, const llvm::Triple &Triple,
++                    MacroBuilder &Builder) const override {
++    // Emerixx defines; list based off of gcc output. Unlike Linux, we do not
++    // define __linux__ or __gnu_linux__: emerixx is not Linux and does not
++    // implement all of its extensions (no epoll, no /proc, ...).
++    DefineStd(Builder, "unix", Opts);
++    Builder.defineMacro("__emerixx__");
++    if (Opts.POSIXThreads)
++      Builder.defineMacro("_REENTRANT");
++    if (this->HasFloat128)
++      Builder.defineMacro("__FLOAT128__");
++  }
++
++public:
++  EmerixxTargetInfo(const llvm::Triple &Triple, const TargetOptions &Opts)
++      : OSTargetInfo<Target>(Triple, Opts) {
++    this->WIntType = TargetInfo::UnsignedInt;
++
++    switch (Triple.getArch()) {
++    default:
++      break;
++    case llvm::Triple::x86:
++    case llvm::Triple::x86_64:
++      this->HasFloat128 = true;
++      break;
++    }
++  }
++
++  const char *getStaticInitSectionSpecifier() const override {
++    return ".text.startup";
++  }
++};
++
+ } // namespace targets
+ } // namespace clang
+ #endif // LLVM_CLANG_LIB_BASIC_TARGETS_OSTARGETS_H

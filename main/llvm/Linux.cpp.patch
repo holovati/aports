@@ -1,0 +1,14 @@
+diff --git a/clang/lib/Driver/ToolChains/Linux.cpp b/clang/lib/Driver/ToolChains/Linux.cpp
+index 8d30a5ead..5e73eabf9 100644
+--- a/clang/lib/Driver/ToolChains/Linux.cpp
++++ b/clang/lib/Driver/ToolChains/Linux.cpp
+@@ -203,6 +203,9 @@ static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {
+   if (Triple.getArch() == llvm::Triple::x86_64 && Triple.isX32())
+     return "libx32";
+ 
++  if (Triple.isOSEmerixx())
++    return "lib";
++
+   if (Triple.isRISCV32())
+     return "lib32";
+ 

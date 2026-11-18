@@ -1,0 +1,12 @@
+diff --git a/llvm/include/llvm/TargetParser/TripleName.def b/llvm/include/llvm/TargetParser/TripleName.def
+index bbc03b318..d689d26ca 100644
+--- a/llvm/include/llvm/TargetParser/TripleName.def
++++ b/llvm/include/llvm/TargetParser/TripleName.def
+@@ -81,6 +81,7 @@ TRIPLE_OS(ChipStar, "chipstar")
+ TRIPLE_OS(Firmware, "firmware")
+ TRIPLE_OS(QURT, "qurt")
+ TRIPLE_OS(H2, "h2")
++TRIPLE_OS(Emerixx, "emerixx")
+ 
+ #undef TRIPLE_OS
+ #undef TRIPLE_OS_ALIAS

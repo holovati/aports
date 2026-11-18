@@ -1,0 +1,22 @@
+diff --git a/clang/lib/Driver/Driver.cpp b/clang/lib/Driver/Driver.cpp
+index e606cdc4c..f18725dd6 100644
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -20,6 +20,7 @@
+ #include "ToolChains/Darwin.h"
+ #include "ToolChains/DragonFly.h"
+ #include "ToolChains/FreeBSD.h"
++#include "ToolChains/Emerixx.h"
+ #include "ToolChains/Fuchsia.h"
+ #include "ToolChains/Gnu.h"
+ #include "ToolChains/HIPAMD.h"
+@@ -7158,6 +7159,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
+       else
+         TC = std::make_unique<toolchains::Linux>(*this, Target, Args);
+       break;
++    case llvm::Triple::Emerixx:
++      TC = std::make_unique<toolchains::Emerixx>(*this, Target, Args);
++      break;
+     case llvm::Triple::Fuchsia:
+       TC = std::make_unique<toolchains::Fuchsia>(*this, Target, Args);
+       break;

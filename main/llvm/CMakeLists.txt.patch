@@ -1,0 +1,12 @@
+diff --git a/clang/lib/Driver/CMakeLists.txt b/clang/lib/Driver/CMakeLists.txt
+index 506536cdc..31f3d0008 100644
+--- a/clang/lib/Driver/CMakeLists.txt
++++ b/clang/lib/Driver/CMakeLists.txt
+@@ -65,6 +65,7 @@ add_clang_library(clangDriver
+   ToolChains/DragonFly.cpp
+   ToolChains/Flang.cpp
+   ToolChains/FreeBSD.cpp
++  ToolChains/Emerixx.cpp
+   ToolChains/Fuchsia.cpp
+   ToolChains/Gnu.cpp
+   ToolChains/Haiku.cpp

@@ -1,0 +1,125 @@
+# Maintainer Damir Holovati
+
+pkgname=llvm
+pkgver=23.1.6
+pkgrel=0
+pkgdesc="Low Level Virtual Machine compiler infrastructure"
+url="https://llvm.org/"
+arch="x86_64"
+license="Apache-2.0 WITH LLVM-exception"
+options="!check"
+
+# One build, split into separate apks. clang-format only pulls clang + llvm-libs.
+subpackages="$pkgname-libs clang clang-tools-extra:clang_tools_extra"
+
+depends="$pkgname-libs=$pkgver-r$pkgrel"
+
+makedepends="cmake ninja python3 zlib zstd libxml2"
+
+source="llvm-project-$pkgver.src.tar.xz::https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz
+	TripleName.def.patch
+	Triple.h.patch
+	OSTargets.h.patch
+	Targets.cpp.patch
+	Driver.cpp.patch
+	Linux.cpp.patch
+	CMakeLists.txt.patch
+	Emerixx.h
+	Emerixx.cpp
+	"
+
+builddir="$srcdir/llvm-project-$pkgver.src"
+
+prepare() {
+	default_prepare
+
+	# The Emerixx toolchain is a new file, not a patch to an existing one.
+	cp "$srcdir"/Emerixx.h "$builddir"/clang/lib/Driver/ToolChains/Emerixx.h
+	cp "$srcdir"/Emerixx.cpp "$builddir"/clang/lib/Driver/ToolChains/Emerixx.cpp
+}
+
+build() {
+	# X86 only (the only arch emerixx runs on). No LTO, no PIE (the kernel
+	# does not support PIE executables); shared-lib PIC is fine. libedit is
+	# skipped (no aport), so opt/llc fall back to a plain fgets editor.
+	cmake -B build -S llvm -G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+		-DLLVM_TARGETS_TO_BUILD=X86 \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_LINK_LLVM_DYLIB=ON \
+		-DLLVM_ENABLE_LIBEDIT=OFF \
+		-DLLVM_ENABLE_TERMINFO=OFF \
+		-DLLVM_ENABLE_FFI=OFF \
+		-DLLVM_ENABLE_LTO=OFF \
+		-DLLVM_INCLUDE_TESTS=OFF \
+		-DLLVM_INCLUDE_BENCHMARKS=OFF \
+		-DLLVM_INCLUDE_EXAMPLES=OFF \
+		-DLLVM_INCLUDE_DOCS=OFF \
+		-DLLVM_ENABLE_ZLIB=ON \
+		-DLLVM_ENABLE_ZSTD=ON \
+		-DLLVM_ENABLE_LIBXML2=ON
+	cmake --build build -j"${JOBS:-4}"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+libs() {
+	pkgdesc="LLVM shared libraries"
+	depends=""
+	amove usr/lib/libLLVM.so.*
+	amove usr/lib/libclang-cpp.so.*
+	amove usr/lib/libclang.so.*
+	amove usr/lib/libLTO.so.*
+	amove usr/lib/libRemarks.so.*
+}
+
+clang() {
+	pkgdesc="C language family frontend for LLVM"
+	depends="$pkgname-libs=$pkgver-r$pkgrel"
+	amove usr/bin/clang
+	amove usr/bin/clang++
+	amove usr/bin/clang-cpp
+	amove usr/bin/clang-cc1
+	amove usr/lib/clang
+	amove usr/include/clang
+	amove usr/include/clang-c
+	amove usr/lib/cmake/clang
+}
+
+clang_tools_extra() {
+	pkgdesc="Extra clang tools (clang-format, clang-tidy, ...)"
+	depends="clang=$pkgver-r$pkgrel"
+	amove usr/bin/clang-format
+	amove usr/bin/clang-tidy
+	amove usr/bin/clang-apply-replacements
+	amove usr/bin/clang-change-namespace
+	amove usr/bin/clang-doc
+	amove usr/bin/clang-include-fixer
+	amove usr/bin/clang-move
+	amove usr/bin/clang-offload-packager
+	amove usr/bin/clang-query
+	amove usr/bin/clang-reorder-fields
+	amove usr/bin/clang-scan-deps
+	amove usr/bin/clangd
+	amove usr/bin/modularize
+	amove usr/bin/pp-trace
+	amove usr/bin/run-clang-tidy
+}
+
+sha512sums="
+03beadbaf13ec29911d3934395cfa19a7d77d6c50532e70375f5c1d43369a9b17c10f00325c08d874776df6679a3bee77ce50110408748a3f661372f1fdfbce6  llvm-project-23.1.6.src.tar.xz
+c6f51389da76d13393ddd25861a8aba80c56e61f4886cc8ef0391266c0dad223cb3e6602bd733730b2e816e7fb10d2c718c5e1b6473d21fdf5df974ed82a5625  TripleName.def.patch
+23c705cd91f55cb7eeb21da170081172a36adf385a36da827dee8086bba64d6c0abba4f80b0e9fdd19ad37fd86960d0ed07ac9c41b3ba312e04819650dbd2067  Triple.h.patch
+8174b3d7aa9e48937f187b3014967a0b46a89781f2156ee3ce34a289149a3761596e62afccee07f4df3a93728af425c5b0194b1c71f88f2d0d8038a7a49b7b7b  OSTargets.h.patch
+4a38346a695efbb250d7e035af69571dc9b9b23c245381c30e4e0b7d503b900d6ebc7730235f4307e051661d4a6e0e5a4b3c3f128f8e89a6c62521fe53224076  Targets.cpp.patch
+fae74a74a46e3284f349cf56d8c61fa757138c7f00b7ed768f338593921aa35567437368eb73cd4fe985b6f8ec113297bec04ce3cba61eb315b6b73e59a91ecc  Driver.cpp.patch
+f77edf5563cbfea09eadbcf0395f98394a73f3adaea6c8ba9f9415bb44f937b5fe565f1f13745b4c316f0372fca19457d91aa5d3d6f9f6c64cd607f65c500ff0  Linux.cpp.patch
+501be1b9dea30b552ce61b05d36eb3aba6643c6923a0fb8ce1111ccfd516f13cdc6485adcb2ed66f5faa12da1c5e1054fe474e51890bea587d7e0ea5619ecff5  CMakeLists.txt.patch
+ca6ce56d014275011755f63db73a19e1a8a5e11211ef2a2f2f6b51a69d73c5a1541ed5153d184cfdcce1eb6d95529854e957ec047ac8aec8d3afc99d7b63270e  Emerixx.h
+fc5c0d1068740341603c9773e4a0191231a04fdad66c2e5179932461f7879f5a88c0ddd93e9520ef60a006381a79729bcdc05f31afa7b8b62d8c801a3d5ca4ac  Emerixx.cpp
+"
