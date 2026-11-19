@@ -10,7 +10,7 @@ license="Apache-2.0 WITH LLVM-exception"
 options="!check"
 
 # One build, split into separate apks. clang-format only pulls clang + llvm-libs.
-subpackages="$pkgname-libs clang clang-tools-extra:clang_tools_extra"
+subpackages="$pkgname-doc $pkgname-libs clang clang-tools-extra:clang_tools_extra"
 
 depends="$pkgname-libs=$pkgver-r$pkgrel"
 
@@ -87,7 +87,8 @@ clang() {
 	amove usr/bin/clang
 	amove usr/bin/clang++
 	amove usr/bin/clang-cpp
-	amove usr/bin/clang-cc1
+	amove usr/bin/clang-cl
+	amove usr/bin/clang-23
 	amove usr/lib/clang
 	amove usr/include/clang
 	amove usr/include/clang-c
