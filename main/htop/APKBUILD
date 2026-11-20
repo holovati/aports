@@ -2,7 +2,7 @@
 
 pkgname=htop
 pkgver=3.5.3
-pkgrel=0
+pkgrel=1
 pkgdesc="An interactive process viewer"
 url="https://htop.dev"
 arch="all"
@@ -19,7 +19,8 @@ depends="ncurses"
 subpackages="$pkgname-doc"
 
 source="htop-$pkgver.tar.gz::https://github.com/htop-dev/htop/archive/refs/tags/$pkgver.tar.gz
-	LinuxProcessTable.c.patch"
+	LinuxProcessTable.c.patch
+	LinuxMachine.c.patch"
 
 prepare() {
     default_prepare
@@ -45,4 +46,5 @@ package() {
 sha512sums="
 67bed32134f2d2f81e1fb0105883bf5f624d19d9d799acaf34b2237a9cc008d5384a7744bc103b90e5b4847190eefb5f0b7b1a1777e2a10790e1c6c122fe7548  htop-3.5.3.tar.gz
 b2580840b6008fc8705c157291838dacc51ab233b77f521a3c2c095438932ada6b22c3f95a2c7df2f1228a8fd40a71f2394a1bf7cfae09af23f257c81d64aaba  LinuxProcessTable.c.patch
+584653cba5dda6c6d3e8c02ca133b93666df89cd05fda5a1367382e6c762d6008fb95fb0d51993726e1b10cb632abe24a5006e507d981211ed1a9fb6449cb4a4  LinuxMachine.c.patch
 "

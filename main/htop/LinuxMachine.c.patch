@@ -1,0 +1,60 @@
+--- a/linux/LinuxMachine.c	2026-11-20 11:04:33.000000000 +0000
++++ b/linux/LinuxMachine.c	2026-11-20 11:04:33.000000000 +0000
+@@ -57,6 +57,57 @@
+       super->existingCPUs = 1;
+    }
+ 
++#ifdef __emerixx__
++   /* emerixx has no sysfs: the cpus are the lines of /proc/stat that start
++    * with "cpu", minus the first one, which is the total over all of them. */
++   FILE* statFile = fopen(PROCSTATFILE, "r");
++   if (statFile) {
++      unsigned int currExisting = super->existingCPUs;
++      unsigned int maxSeen = 0;
++
++      char line[256];
++      while (fgets(line, sizeof(line), statFile) != NULL) {
++         if (!String_startsWith(line, "cpu"))
++            continue;
++
++         /* "cpu0", "cpu1", ... carry the number of the cpu, the total line "cpu " does not */
++         if (line[3] < '0' || line[3] > '9')
++            continue;
++         unsigned long int sysid = strtoul(line + 3, NULL, 10);
++         if (sysid >= UINT_MAX)
++            continue;
++         unsigned int cpuid = (unsigned int)sysid + 1;
++
++         unsigned int max = MAXIMUM(existing, cpuid);
++         maxSeen = MAXIMUM(maxSeen, max);
++         if (max > currExisting) {
++            this->cpuData = xReallocArrayZero(this->cpuData, currExisting ? (currExisting + 1) : 0, max + /* aggregate */ 1, sizeof(CPUData));
++            this->cpuData[0].online = true; /* average is always "online" */
++            currExisting = max;
++         }
++
++         /* /proc/stat lists only the cpus that are up */
++         this->cpuData[cpuid].online = true;
++         existing++;
++         active++;
++      }
++
++      fclose(statFile);
++
++      if (existing > 0) {
++         if (maxSeen < currExisting) {
++            this->cpuData = xReallocArrayZero(this->cpuData, currExisting + 1, maxSeen + /* aggregate */ 1, sizeof(CPUData));
++            currExisting = maxSeen;
++         }
++
++         super->activeCPUs = active;
++         super->existingCPUs = currExisting;
++      }
++   }
++
++   return;
++#endif
++
+    DIR* dir = opendir("/sys/devices/system/cpu");
+    if (!dir)
+       return;
