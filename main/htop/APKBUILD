@@ -1,0 +1,48 @@
+# Maintainer Damir Holovati
+
+pkgname=htop
+pkgver=3.5.3
+pkgrel=0
+pkgdesc="An interactive process viewer"
+url="https://htop.dev"
+arch="all"
+license="GPL-2.0"
+options="!check"
+
+makedepends="
+	autotools
+	automake
+	make
+	"
+depends="ncurses"
+
+subpackages="$pkgname-doc"
+
+source="htop-$pkgver.tar.gz::https://github.com/htop-dev/htop/archive/refs/tags/$pkgver.tar.gz
+	LinuxProcessTable.c.patch"
+
+prepare() {
+    default_prepare
+    sed -i 's/linux\*|gnu\*)/linux\*|gnu\*|emerixx\*)/g' configure.ac
+    ./autogen.sh
+}
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--infodir=/usr/share/info \
+		--localstatedir=/var
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+sha512sums="
+67bed32134f2d2f81e1fb0105883bf5f624d19d9d799acaf34b2237a9cc008d5384a7744bc103b90e5b4847190eefb5f0b7b1a1777e2a10790e1c6c122fe7548  htop-3.5.3.tar.gz
+b2580840b6008fc8705c157291838dacc51ab233b77f521a3c2c095438932ada6b22c3f95a2c7df2f1228a8fd40a71f2394a1bf7cfae09af23f257c81d64aaba  LinuxProcessTable.c.patch
+"
