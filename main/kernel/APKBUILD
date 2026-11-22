@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=kernel
 pkgver=0.1
-pkgrel=7
+pkgrel=8
 pkgdesc="emerixx kernel image (kernel.elf)"
 url="https://gitlab.com/holovati/emerixx"
 arch="x86_64"
@@ -9,7 +9,7 @@ license="MIT"
 makedepends="meson ninja python3 py3-elftools binutils cpio e2fsprogs fusefatfs"
 options="!check !strip"
 
-_commit=b2d8ff5cafc94504c55042cca48169e57b1cfd8f
+_commit=ad3183e9eb2bae09ad25d5f9b8df54bebc0bd536
 _acpica=d7eadcdbd43dcfad33e997d50c7682ec30ecb911
 _lwip=d0efd9ef7ba08e54b46b1060e2b4629a4907391b
 
@@ -45,7 +45,7 @@ package() {
 }
 
 sha512sums="
-384ede551cae0ff98c6c127243e83c0bc38bf1ba37594a21e92152a207e25ba4cf07c4ae8c9c33e4f5eae25d6a8ccbb16f3b75c161cca400cc7ec9cf45df9cb1  emerixx-$_commit.tar.gz
+df07764e0cff2f14cc9260c9e351da67f32a9614714081b6209036588ced28fafffce71b60e8f293d84a0fe586b26028ab8394028cc2b575e4c72fc31394888b  emerixx-$_commit.tar.gz
 67113c64b6593e43aa77dfde6907ab4870cf6d4be0a7cc799233ca3300d18d506ed73ba2c4b020e75079daa3afd267ecd7e40207ef3ab7fe4947356f6e4c30ff  rs64-acpica-d7eadcdbd43dcfad33e997d50c7682ec30ecb911.tar.gz
 d34771bf6526a47e6727c686a044579510c4004c7b85cac8a63961037a8b20cc007a4fcf1bb47ee1680b103af5c26ae2cfac733b2505866d82baa5b4ef44425c  lwip-d0efd9ef7ba08e54b46b1060e2b4629a4907391b.tar.gz
 "
