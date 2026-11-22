@@ -1,7 +1,7 @@
 # Maintainer Damir Holovati
 pkgname=emx-baselayout
 pkgver=1.0
-pkgrel=5
+pkgrel=6
 pkgdesc="EMX filesystem layout and miscellaneous scripts and config files"
 url="https://www.github.com/holovati/emx"
 arch="noarch"

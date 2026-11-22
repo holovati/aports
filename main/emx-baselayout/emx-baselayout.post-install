@@ -50,6 +50,9 @@ makedev "sda"     b 13 0
 makedev "sda1"    b 13 1
 makedev "sda2"    b 13 2
 
+# The OSS audio device of the HDA driver, playback only
+makedev "dsp"     c 14 3 666
+
 makedev "input/event0" c 16 0 644
 makedev "input/event1" c 16 1 644
 
