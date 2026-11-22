@@ -1,14 +1,14 @@
 # Maintainer Damir Holovati
 pkgname=kernel-headers
 pkgver=0.1
-pkgrel=0
+pkgrel=1
 pkgdesc="emerixx kernel user API and boot interface headers"
 url="https://gitlab.com/holovati/emerixx"
 arch="noarch"
 license="MIT"
 options="!check"
 
-_commit=71a73a3e213b467d227d11964204aaa68cc6038d
+_commit=129daa6fee36bb3150feb098f9c2a05152e19c8e
 source="emerixx-$_commit.tar.gz::https://gitlab.com/holovati/emerixx/-/archive/$_commit/emerixx-$_commit.tar.gz"
 builddir="$srcdir/emerixx-$_commit"
 
@@ -27,5 +27,5 @@ package() {
 }
 
 sha512sums="
-add2f7b56ff1ab4d0ea0b408b9094ff5bdd83cda05d910a493c44e722437fb60e4ff3772344a8deb619caaec706514eb15bbbbc311fcbb7819515513184e0bff  emerixx-$_commit.tar.gz
+58a21c51dadc9443730eed2c13037f08ece75bfffe80702c382eaab72153d154bb65e1dddea398e6b01a05b40a25f2e9405d75f56de6f62d74c879564a58c1f3  emerixx-$_commit.tar.gz
 "
