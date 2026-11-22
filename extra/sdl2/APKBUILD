@@ -24,7 +24,7 @@ build() {
 	--host=$CHOST \
 	--prefix=/usr \
 	--disable-static \
-	--disable-joystick \
+	--enable-oss \
 	--disable-haptic \
 	--disable-hidapi \
 	--disable-sensor \
